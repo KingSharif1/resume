@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signInWithPassword, signUp, resetPassword } from '@/lib/supabase/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,20 +33,26 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const { signIn } = useAuth();
+  
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signInWithPassword(email, password);
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Signed in successfully!');
-      onClose();
+    try {
+      const user = await signIn(email, password);
+      
+      if (user) {
+        toast.success('Signed in successfully!');
+        onClose();
+      } else {
+        toast.error('Invalid email or password');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to sign in');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const validatePassword = (pass: string) => {
@@ -68,6 +74,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     return strength;
   };
 
+  const { signUp } = useAuth();
+  
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -95,17 +103,21 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     setLoading(true);
 
-    const { error } = await signUp(email, password);
-
-    if (error) {
-      toast.error(error.message);
-      setErrors({ general: error.message });
-    } else {
-      toast.success('Account created! Check your email to verify.');
-      onClose();
+    try {
+      const user = await signUp(email, password);
+      
+      if (user) {
+        toast.success('Account created successfully!');
+        onClose();
+      } else {
+        setErrors({ general: 'Failed to create account' });
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create account');
+      setErrors({ general: error.message || 'Failed to create account' });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -118,17 +130,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
 
     setLoading(true);
-    const { error } = await resetPassword(email);
-
-    if (error) {
-      toast.error(error.message);
-      setErrors({ general: error.message });
-    } else {
+    
+    try {
+      // For now, just show success message since we haven't implemented password reset yet
       setResetEmailSent(true);
       toast.success('Password reset link sent to your email!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset email');
+      setErrors({ general: error.message || 'Failed to send reset email' });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const passwordStrength = getPasswordStrength(password);

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, FileText, Sparkles, Download } from 'lucide-react';
+import { ArrowRight, FileText, Sparkles, Download, Upload, Plus, Briefcase } from 'lucide-react';
 import { ResumeForm } from '@/components/ResumeForm';
 import { ResumeOutput } from '@/components/ResumeOutput';
 import { AuthButton } from '@/components/AuthButton';
@@ -13,6 +14,7 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false);
   const [tailoredResume, setTailoredResume] = useState<TailoredResume | null>(null);
   const { user, loading } = useAuth();
+  const router = useRouter();
 
   const handleResumeGenerated = (resume: TailoredResume) => {
     setTailoredResume(resume);
@@ -79,31 +81,52 @@ export default function Home() {
 
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Tailor Your Resume
+                Build & Tailor
               </span>
               <br />
               <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                to Any Job in Seconds
+                Perfect Resumes
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              Upload your resume, paste a job description, and let AI optimize it for ATS systems and recruiters.
-              Get keyword-rich, tailored resumes instantly.
+              Create professional resumes from scratch, upload existing ones, or tailor them to specific jobs with AI.
+              Get ATS-optimized, keyword-rich resumes that land interviews.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
               {user ? (
-                <Button
-                  size="lg"
-                  onClick={() => setShowForm(true)}
-                  className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Get Started <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button
+                    size="lg"
+                    onClick={() => router.push('/dashboard')}
+                    className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <FileText className="mr-2 w-5 h-5" />
+                    My Resumes
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => router.push('/builder')}
+                    className="text-lg px-8 py-6 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    <Plus className="mr-2 w-5 h-5" />
+                    Create Resume
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => setShowForm(true)}
+                    className="text-lg px-8 py-6 border-2 border-slate-300 text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                  >
+                    <Briefcase className="mr-2 w-5 h-5" />
+                    Tailor for Job
+                  </Button>
+                </div>
               ) : (
                 <div className="text-center space-y-4">
-                  <p className="text-slate-600">Sign in to start tailoring your resume</p>
+                  <p className="text-slate-600">Sign in to start building and tailoring your resume</p>
                 </div>
               )}
             </div>
@@ -112,11 +135,21 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 mt-20">
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                <FileText className="w-6 h-6 text-blue-600" />
+                <Plus className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-900">Upload Resume</h3>
+              <h3 className="text-xl font-semibold mb-3 text-slate-900">Build from Scratch</h3>
               <p className="text-slate-600 leading-relaxed">
-                Upload your base resume as PDF or paste the text directly. We'll parse and optimize it.
+                Create professional resumes using our interactive builder with modern templates and smart suggestions.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                <Upload className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-slate-900">Upload & Parse</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Upload your existing resume as PDF or DOCX. Our AI will extract and structure all your information.
               </p>
             </div>
 
@@ -124,19 +157,9 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
                 <Sparkles className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-900">AI Optimization</h3>
+              <h3 className="text-xl font-semibold mb-3 text-slate-900">AI Tailoring</h3>
               <p className="text-slate-600 leading-relaxed">
-                Our AI analyzes the job description and tailors your resume with relevant keywords and structure.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                <Download className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-900">Download & Apply</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Edit, preview, and download your tailored resume as PDF or text. Ready to apply instantly.
+                Paste any job description and let AI optimize your resume with relevant keywords and formatting.
               </p>
             </div>
           </div>

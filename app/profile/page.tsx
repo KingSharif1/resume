@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase/client';
+import { updatePassword } from '@/lib/auth/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,11 +45,15 @@ export default function ProfilePage() {
     setUpdating(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (error) throw error;
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+      
+      const success = await updatePassword(user.id, currentPassword, newPassword);
+      
+      if (!success) {
+        throw new Error('Failed to update password. Current password may be incorrect.');
+      }
 
       toast.success('Password updated successfully!');
       setCurrentPassword('');

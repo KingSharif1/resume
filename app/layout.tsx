@@ -2,8 +2,10 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { SidebarProvider } from '@/contexts/SidebarContext';
 import { Toaster } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
+import { LayoutContent } from '@/components/LayoutContent';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,11 +23,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <Sidebar />
-          <div className="lg:pl-64">
-            {children}
-          </div>
-          <Toaster position="top-center" />
+          <SidebarProvider>
+            <Sidebar />
+            <LayoutContent>
+              {children}
+            </LayoutContent>
+            <Toaster position="top-center" />
+          </SidebarProvider>
         </AuthProvider>
       </body>
     </html>

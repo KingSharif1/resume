@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { TailoredResume, AIChange, AISuggestion } from '@/types/resume';
 import { AuthButton } from '@/components/AuthButton';
 import { AISuggestions } from '@/components/AISuggestions';
-import { supabase } from '@/lib/supabase/client';
+import { tailoredResumeRepository } from '@/lib/db';
 import toast from 'react-hot-toast';
 import { pdf } from '@react-pdf/renderer';
 import { ResumePDF } from '@/components/ResumePDF';
@@ -60,15 +60,13 @@ export function ResumeOutput({ resume: initialResume, onStartOver, user }: Resum
     const toastId = toast.loading('Saving resume...');
 
     try {
-      const { error } = await supabase.from('resumes').insert({
+      await tailoredResumeRepository.create({
         user_id: user.id,
         title: `Resume - ${new Date().toLocaleDateString()}`,
         original_content: '',
         job_description: '',
         tailored_content: resume,
       });
-
-      if (error) throw error;
 
       toast.success('Resume saved successfully!', { id: toastId });
     } catch (error: any) {

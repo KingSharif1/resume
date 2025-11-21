@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase/client';
+import { baseResumeRepository } from '@/lib/db';
 import { BaseResume, ContactInfo, Experience, Education, Skills } from '@/types/resume';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,24 +55,13 @@ export default function ResumeEditor() {
   const loadResume = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('base_resumes')
-        .select('*')
-        .eq('id', resumeId)
-        .maybeSingle();
+      if (!user?.id || !resumeId) return;
+      
+      const data = await baseResumeRepository.getById(resumeId, user.id);
 
-      if (error) throw error;
-      if (data) {
-        setResume({
-          ...data,
-          experience: data.experience || [],
-          education: data.education || [],
-          skills: data.skills || {},
-          certifications: data.certifications || [],
-          projects: data.projects || [],
-          custom_sections: data.custom_sections || [],
-        });
-      }
+      if (!data) throw new Error('Resume not found');
+
+      setResume(data);
     } catch (error) {
       console.error('Error loading resume:', error);
       toast.error('Failed to load resume');
@@ -104,23 +93,12 @@ export default function ResumeEditor() {
       };
 
       if (resumeId) {
-        const { error } = await supabase
-          .from('base_resumes')
-          .update(resumeData)
-          .eq('id', resumeId);
-
-        if (error) throw error;
+        await baseResumeRepository.update(resumeId, user.id, resumeData);
         toast.success('Resume updated!');
       } else {
-        const { data, error } = await supabase
-          .from('base_resumes')
-          .insert([resumeData])
-          .select()
-          .single();
-
-        if (error) throw error;
-        toast.success('Resume saved!');
-        router.push(`/editor/${data.id}`);
+        const newResume = await baseResumeRepository.create(resumeData);
+        router.push(`/editor/${newResume.id}`);
+        toast.success('Resume created!');
       }
     } catch (error) {
       console.error('Error saving resume:', error);

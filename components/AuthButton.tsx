@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LogIn, LogOut, User, Settings, LayoutDashboard } from 'lucide-react';
-import { signOut } from '@/lib/supabase/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal } from './AuthModal';
 import toast from 'react-hot-toast';
 
@@ -24,15 +24,13 @@ export function AuthButton({ user }: AuthButtonProps) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const router = useRouter();
 
+  const { signOut } = useAuth();
+  
   const handleSignOut = async () => {
     try {
-      const { error } = await signOut();
-      if (error) {
-        toast.error('Failed to sign out');
-      } else {
-        toast.success('Signed out successfully');
-        router.push('/');
-      }
+      await signOut();
+      toast.success('Signed out successfully');
+      router.push('/');
     } catch (error) {
       toast.error('An error occurred');
       console.error(error);

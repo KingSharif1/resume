@@ -3,87 +3,63 @@ import mammoth from 'mammoth';
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate request
+    if (!request.body) {
+      return NextResponse.json(
+        { error: 'No file provided' },
+        { status: 400 }
+      );
+    }
+    
     const buffer = await request.arrayBuffer();
+    
+    // Basic validation for DOCX format (PK header)
+    const header = new Uint8Array(buffer.slice(0, 4));
+    const isPK = header[0] === 0x50 && header[1] === 0x4B && header[2] === 0x03 && header[3] === 0x04;
+    if (!isPK) {
+      return NextResponse.json(
+        { error: 'Invalid DOCX file format. The file does not appear to be a valid DOCX document.' },
+        { status: 400 }
+      );
+    }
 
-    const result = await mammoth.convertToHtml(
-      { arrayBuffer: buffer },
-      {
-        styleMap: [
-          "p[style-name='Heading 1'] => h1:fresh",
-          "p[style-name='Heading 2'] => h2:fresh",
-          "p[style-name='Heading 3'] => h3:fresh",
-          "p[style-name='Heading 4'] => h4:fresh",
-          "p[style-name='Title'] => h1:fresh",
-          "p[style-name='Subtitle'] => h2:fresh",
-        ]
+    // Try to convert DOCX to HTML
+    try {
+      // Convert ArrayBuffer to Buffer for mammoth
+      const nodeBuffer = Buffer.from(buffer);
+      
+      const result = await mammoth.extractRawText({ buffer: nodeBuffer });
+      
+      // Check for mammoth warnings
+      if (result.messages && result.messages.length > 0) {
+        console.warn('DOCX parsing warnings:', result.messages);
       }
-    );
+      
+      const text = result.value;
 
-    const html = result.value;
-
-    const text = html
-      .replace(/<h1[^>]*>/gi, '\n\n')
-      .replace(/<\/h1>/gi, '\n')
-      .replace(/<h2[^>]*>/gi, '\n\n')
-      .replace(/<\/h2>/gi, '\n')
-      .replace(/<h3[^>]*>/gi, '\n\n')
-      .replace(/<\/h3>/gi, '\n')
-      .replace(/<h4[^>]*>/gi, '\n\n')
-      .replace(/<\/h4>/gi, '\n')
-      .replace(/<h5[^>]*>/gi, '\n\n')
-      .replace(/<\/h5>/gi, '\n')
-      .replace(/<h6[^>]*>/gi, '\n\n')
-      .replace(/<\/h6>/gi, '\n')
-      .replace(/<p[^>]*>/gi, '\n')
-      .replace(/<\/p>/gi, '')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<ul[^>]*>/gi, '\n')
-      .replace(/<\/ul>/gi, '\n')
-      .replace(/<ol[^>]*>/gi, '\n')
-      .replace(/<\/ol>/gi, '\n')
-      .replace(/<li[^>]*>/gi, '• ')
-      .replace(/<\/li>/gi, '\n')
-      .replace(/<strong[^>]*>/gi, '')
-      .replace(/<\/strong>/gi, '')
-      .replace(/<em[^>]*>/gi, '')
-      .replace(/<\/em>/gi, '')
-      .replace(/<b[^>]*>/gi, '')
-      .replace(/<\/b>/gi, '')
-      .replace(/<i[^>]*>/gi, '')
-      .replace(/<\/i>/gi, '')
-      .replace(/<u[^>]*>/gi, '')
-      .replace(/<\/u>/gi, '')
-      .replace(/<span[^>]*>/gi, '')
-      .replace(/<\/span>/gi, '')
-      .replace(/<div[^>]*>/gi, '\n')
-      .replace(/<\/div>/gi, '')
-      .replace(/<table[^>]*>/gi, '\n')
-      .replace(/<\/table>/gi, '\n')
-      .replace(/<tr[^>]*>/gi, '\n')
-      .replace(/<\/tr>/gi, '')
-      .replace(/<td[^>]*>/gi, ' ')
-      .replace(/<\/td>/gi, ' ')
-      .replace(/<th[^>]*>/gi, ' ')
-      .replace(/<\/th>/gi, ' ')
-      .replace(/<[^>]*>/g, '')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/\n\s*\n\s*\n/g, '\n\n')
-      .replace(/[ \t]+/g, ' ')
+    // We're already getting raw text from extractRawText, no need for HTML processing
+    // Just clean up the text a bit
+    const cleanedText = text
+      .replace(/\r\n/g, '\n') // Normalize line endings
+      .replace(/\n{3,}/g, '\n\n') // Remove excessive line breaks
+      .replace(/[ \t]+/g, ' ') // Normalize spaces
       .trim();
 
-    if (!text || text.length === 0) {
+    if (!cleanedText || cleanedText.length === 0) {
       return NextResponse.json(
         { error: 'No text found in document' },
         { status: 400 }
       );
     }
 
-    return NextResponse.json({ text });
+    return NextResponse.json({ text: cleanedText });
+  } catch (mammothError) {
+    console.error('Mammoth conversion error:', mammothError);
+    return NextResponse.json(
+      { error: 'Failed to parse DOCX file: ' + (mammothError instanceof Error ? mammothError.message : 'Unknown error') },
+      { status: 500 }
+    );
+  }
   } catch (error) {
     console.error('DOCX parsing error:', error);
     return NextResponse.json(
