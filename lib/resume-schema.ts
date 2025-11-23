@@ -156,6 +156,7 @@ export interface CustomSection {
 
 // The Complete Resume Profile
 export interface ResumeProfile {
+  id?: string;
   // Required sections
   contact: ContactInfo;
   summary?: Summary;

@@ -6,10 +6,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Save, Eye, Sparkles, Settings, Download, Share, 
-  GripVertical, Plus, ChevronDown, ChevronRight, Upload
+import {
+  Save, Eye, Sparkles, Settings, Download, Share,
+  GripVertical, Plus, ChevronDown, ChevronRight, Upload, Check
 } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FullPageResumePreview } from '@/components/FullPageResumePreview';
 
 // Import form components
 import { ContactForm } from './FormSections/ContactForm';
@@ -32,16 +47,17 @@ interface ReziStyleEditorProps {
   onUploadResume?: () => void;
 }
 
-export function ReziStyleEditor({ 
-  initialProfile, 
-  onSave, 
-  onPreview, 
+export function ReziStyleEditor({
+  initialProfile,
+  onSave,
+  onPreview,
   onAIOptimize,
   onUploadResume
 }: ReziStyleEditorProps) {
   const [profile, setProfile] = useState<ResumeProfile>(initialProfile || createEmptyProfile());
   const [activeSection, setActiveSection] = useState<SectionType>('contact');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [resumeTitle, setResumeTitle] = useState("Untitled Resume");
 
   // Update profile when initialProfile changes (e.g., from parsed resume)
   useEffect(() => {
@@ -50,26 +66,6 @@ export function ReziStyleEditor({
       setHasUnsavedChanges(false);
     }
   }, [initialProfile]);
-  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibility>({
-    contact: true,
-    summary: true,
-    experience: true,
-    education: true,
-    projects: true,
-    skills: true,
-    certifications: false,
-    volunteer: false,
-    awards: false,
-    publications: false,
-    languages: false,
-    references: false,
-    interests: false
-  });
-
-  const updateProfile = (updates: Partial<ResumeProfile>) => {
-    setProfile(prev => ({ ...prev, ...updates }));
-    setHasUnsavedChanges(true);
-  };
 
   const handleSave = () => {
     onSave(profile);
@@ -165,138 +161,165 @@ export function ReziStyleEditor({
   const completionPercentage = Math.round((completedSections.length / visibleSections.length) * 100);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Enhanced Top Navigation */}
-      <div className="bg-white border-b border-slate-200 shadow-sm">
-        {/* Section Toggles Row - Compact like Rezi */}
-        <div className="border-b border-slate-100 px-4 py-2 bg-slate-50/50">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <span className="text-xs font-medium text-slate-600">Resume Sections:</span>
-              <div className="flex items-center gap-2">
-                {/* Show only core sections in compact view */}
-                {SECTION_CONFIGS.slice(0, 6).map((section) => (
-                  <label key={section.key} className="flex items-center space-x-1 cursor-pointer group whitespace-nowrap">
-                    <Checkbox
-                      checked={sectionVisibility[section.key]}
-                      onCheckedChange={() => toggleSectionVisibility(section.key)}
-                      className="border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 h-3 w-3"
-                    />
-                    <span className="text-xs text-slate-600 group-hover:text-slate-800 transition-colors">
-                      {section.label}
-                    </span>
-                    {getSectionStatus(section.key) && (
-                      <span className="text-green-600 text-xs">✓</span>
-                    )}
-                  </label>
-                ))}
-                {/* Show remaining sections in a dropdown or compact way */}
-                {SECTION_CONFIGS.length > 6 && (
-                  <div className="flex items-center gap-1 ml-2 pl-2 border-l border-slate-300">
-                    {SECTION_CONFIGS.slice(6).map((section) => (
-                      <label key={section.key} className="flex items-center space-x-1 cursor-pointer group">
-                        <Checkbox
-                          checked={sectionVisibility[section.key]}
-                          onCheckedChange={() => toggleSectionVisibility(section.key)}
-                          className="border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 h-3 w-3"
-                        />
-                        <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">
-                          {section.label}
-                        </span>
-                        {getSectionStatus(section.key) && (
-                          <span className="text-green-600 text-xs">✓</span>
-                        )}
-                      </label>
-                    ))}
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Header */}
+      <div className="bg-card border-b border-border h-16 flex-none z-30">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex items-center justify-between h-full">
+            {/* Left: Editable Title & Progress */}
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  value={resumeTitle}
+                  onChange={(e) => {
+                    setResumeTitle(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }}
+                  placeholder="Untitled Resume"
+                  className="text-lg font-semibold text-foreground bg-transparent border-b-2 border-transparent hover:border-border focus:border-blue-500 outline-none transition-colors px-1 -mx-1"
+                />
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                  <span>Completion:</span>
+                  <div className="flex items-center gap-1">
+                    <div className="h-1.5 w-24 bg-accent rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all duration-300"
+                        style={{ width: `${completionPercentage}%` }}
+                      />
+                    </div>
+                    <span className="font-medium text-foreground">{completionPercentage}%</span>
                   </div>
-                )}
+                </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-medium text-slate-600">Progress:</span>
-              <Badge className="bg-blue-600 text-white px-2 py-0.5 text-xs font-semibold">
-                {completionPercentage}%
-              </Badge>
-            </div>
-          </div>
-        </div>
 
-        {/* Main Navigation Row */}
-        <div className="px-4 py-3 bg-white">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-1 overflow-x-auto flex-1 mr-4">
-              {/* Only show enabled sections in main nav with scrollable container */}
-              {SECTION_CONFIGS.filter(section => sectionVisibility[section.key]).map((section) => (
-                <button
-                  key={section.key}
-                  onClick={() => setActiveSection(section.key)}
-                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                    activeSection === section.key
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
-                >
-                  {section.label}
-                  {getSectionStatus(section.key) && (
-                    <span className={`ml-1 text-xs ${activeSection === section.key ? 'text-green-200' : 'text-green-600'}`}>✓</span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center space-x-2 flex-shrink-0">
+            {/* Right: Actions */}
+            <div className="flex items-center gap-2">
               {onUploadResume && (
-                <Button 
-                  onClick={onUploadResume} 
-                  variant="outline" 
+                <Button
+                  onClick={onUploadResume}
+                  variant="ghost"
                   size="sm"
-                  className="border-slate-300 text-slate-600 hover:bg-slate-50 font-medium"
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  <Upload className="w-4 h-4 mr-1" />
-                  Upload
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import
                 </Button>
               )}
-              <Button 
-                onClick={handleSave} 
-                size="sm" 
-                disabled={!hasUnsavedChanges}
-                className="bg-green-600 hover:bg-green-700 text-white font-medium"
-              >
-                <Save className="w-4 h-4 mr-1" />
-                Save
-              </Button>
-              <Button 
-                onClick={() => onPreview(profile, sectionVisibility)} 
-                variant="outline" 
+
+              <div className="h-6 w-px bg-border mx-1" />
+
+              <Button
+                onClick={() => onAIOptimize(profile)}
+                variant="outline"
                 size="sm"
-                className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-medium"
+                className="border-purple-200 dark:border-purple-900 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-800 dark:hover:text-purple-300"
               >
-                <Eye className="w-4 h-4 mr-1" />
-                Preview
-              </Button>
-              <Button 
-                onClick={() => onAIOptimize(profile)} 
-                variant="outline" 
-                size="sm"
-                className="border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white font-medium"
-              >
-                <Sparkles className="w-4 h-4 mr-1" />
+                <Sparkles className="w-3.5 h-3.5 mr-2" />
                 AI Optimize
+              </Button>
+
+              <Button
+                onClick={handleSave}
+                size="sm"
+                disabled={!hasUnsavedChanges}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto flex">
-        {/* Main Content Area - Full Width */}
-        <div className="flex-1">
-          {/* Editor Panel */}
-          <div className="max-w-6xl mx-auto p-6">
-            <Card>
-              <CardContent className="p-8">
-                {renderActiveSection()}
-              </CardContent>
-            </Card>
+      {/* Main Split Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel: Editor (Scrollable) */}
+        <div className="w-1/2 border-r border-border bg-card overflow-y-auto">
+          <div className="max-w-3xl mx-auto p-6 space-y-6">
+            <Accordion type="single" collapsible className="w-full space-y-4" value={activeSection} onValueChange={(val) => val && setActiveSection(val as SectionType)}>
+              {SECTION_CONFIGS.filter(section => sectionVisibility[section.key]).map((section) => (
+                <AccordionItem key={section.key} value={section.key} className="border border-border rounded-lg bg-card px-4">
+                  <AccordionTrigger className="hover:no-underline py-4">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-lg font-medium ${activeSection === section.key ? 'text-primary' : 'text-foreground'}`}>
+                        {section.label}
+                      </span>
+                      {getSectionStatus(section.key) && (
+                        <div className="bg-green-100 text-green-700 p-0.5 rounded-full">
+                          <Check className="w-3 h-3" />
+                        </div>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-2 pb-6">
+                    {/* Render the form for this section */}
+                    {(() => {
+                      switch (section.key) {
+                        case 'contact':
+                          return <ContactForm contact={profile.contact} onChange={(contact) => updateProfile({ contact })} />;
+                        case 'summary':
+                          return <SummaryForm summary={profile.summary} onChange={(summary) => updateProfile({ summary })} />;
+                        case 'experience':
+                          return <DraggableExperienceForm experiences={profile.experience} onChange={(experience) => updateProfile({ experience })} />;
+                        case 'education':
+                          return <EducationForm education={profile.education} onChange={(education) => updateProfile({ education })} />;
+                        case 'projects':
+                          return <ProjectsForm projects={profile.projects} onChange={(projects) => updateProfile({ projects })} />;
+                        case 'skills':
+                          return <SkillsForm skills={profile.skills} onChange={(skills) => updateProfile({ skills })} />;
+                        case 'languages':
+                          return <LanguagesForm languages={profile.languages} onChange={(languages) => updateProfile({ languages })} />;
+                        default:
+                          return <div className="text-muted-foreground">Section coming soon...</div>;
+                      }
+                    })()}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+
+            {/* Add Section Button */}
+            <div className="pt-4 border-t border-border">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full border-dashed">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Section
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-56">
+                  <DropdownMenuLabel>Add to Resume</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {SECTION_CONFIGS.filter(section => !sectionVisibility[section.key]).map((section) => (
+                    <DropdownMenuItem
+                      key={section.key}
+                      onClick={() => toggleSectionVisibility(section.key)}
+                    >
+                      {section.label}
+                    </DropdownMenuItem>
+                  ))}
+                  {SECTION_CONFIGS.every(section => sectionVisibility[section.key]) && (
+                    <div className="p-2 text-sm text-muted-foreground text-center">
+                      All sections added
+                    </div>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel: Preview (Sticky/Fixed) */}
+        <div className="w-1/2 bg-slate-100 overflow-y-auto flex items-start justify-center p-8">
+          <div className="origin-top scale-[0.85] shadow-2xl">
+            <FullPageResumePreview
+              profile={profile}
+              sectionVisibility={sectionVisibility}
+              isSplitView={true}
+            />
           </div>
         </div>
       </div>

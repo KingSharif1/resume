@@ -14,7 +14,8 @@ import {
   X,
   Upload,
   BarChart3,
-  Search
+  Search,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -38,21 +39,21 @@ export function Sidebar() {
 
   const SidebarContent = ({ isCollapsed = false }) => (
     <>
-      <div className={`flex items-center gap-3 px-6 py-4 border-b ${isCollapsed ? 'justify-center px-4' : ''}`}>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white font-semibold">
+      <div className={`flex items-center gap-3 px-6 py-5 border-b border-border ${isCollapsed ? 'justify-center px-4' : ''}`}>
+        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20">
           {user.email?.[0].toUpperCase()}
         </div>
         {!isCollapsed && (
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-900 truncate">
+            <p className="text-sm font-medium text-foreground truncate">
               {user.email}
             </p>
-            <p className="text-xs text-slate-500">Resume Builder</p>
+            <p className="text-xs text-muted-foreground">Pro Plan</p>
           </div>
         )}
       </div>
 
-      <nav className="flex-1 px-4 py-6 space-y-1">
+      <nav className="flex-1 px-3 py-6 space-y-1">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -61,28 +62,27 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-700 hover:bg-slate-100'
-              } ${isCollapsed ? 'justify-center' : ''}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                } ${isCollapsed ? 'justify-center' : ''}`}
               title={isCollapsed ? item.name : undefined}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-muted-foreground group-hover:text-foreground'}`} />
               {!isCollapsed && item.name}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-border space-y-2">
         <Button
           onClick={() => {
             signOut();
             setMobileOpen(false);
           }}
           variant="ghost"
-          className={`w-full text-slate-700 hover:bg-slate-100 ${isCollapsed ? 'justify-center px-4' : 'justify-start'}`}
+          className={`w-full text-muted-foreground hover:text-foreground hover:bg-accent ${isCollapsed ? 'justify-center px-2' : 'justify-start'}`}
           title={isCollapsed ? 'Sign Out' : undefined}
         >
           <LogOut className="w-5 h-5" />
@@ -91,14 +91,14 @@ export function Sidebar() {
       </div>
 
       {/* Toggle Button */}
-      <div className={`absolute top-4 hidden lg:block ${collapsed ? '-right-3' : 'right-4'}`}>
+      <div className={`absolute top-5 hidden lg:block ${collapsed ? '-right-3' : 'right-4'}`}>
         <Button
           onClick={() => setCollapsed(!collapsed)}
           variant="ghost"
           size="sm"
-          className={`p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 ${collapsed ? 'bg-white border border-slate-200 shadow-sm' : ''}`}
+          className={`p-1.5 h-auto text-muted-foreground hover:text-foreground hover:bg-accent ${collapsed ? 'bg-card border border-border shadow-sm' : ''}`}
         >
-          {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+          {collapsed ? <Menu className="w-3 h-3" /> : <X className="w-3 h-3" />}
         </Button>
       </div>
     </>
@@ -108,22 +108,22 @@ export function Sidebar() {
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-card text-foreground shadow-lg border border-border"
       >
         {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
-      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 ${collapsed ? 'lg:w-20' : 'lg:w-64'} bg-white border-r border-slate-200 transition-all duration-300 relative`}>
+      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 ${collapsed ? 'lg:w-20' : 'lg:w-64'} bg-card border-r border-border transition-all duration-300 relative z-40`}>
         <SidebarContent isCollapsed={collapsed} />
       </aside>
 
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40 flex">
           <div
-            className="fixed inset-0 bg-slate-900/50"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative flex flex-col w-64 bg-white">
+          <aside className="relative flex flex-col w-64 bg-card border-r border-border">
             <SidebarContent isCollapsed={false} />
           </aside>
         </div>

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mammoth from 'mammoth';
 import { isEmail } from 'validator';
-
-// For now, we'll focus on DOCX parsing and provide a clear message for PDFs
-// This avoids the DOMMatrix issues with pdf-parse in Next.js
+import * as pdfParse from 'pdf-parse';
 
 // Resume Metadata Standard (RMS) compatible structure
 interface RMSResumeData {
@@ -47,59 +45,73 @@ interface RMSResumeData {
   };
 }
 
-// Temporary PDF handling - focus on DOCX for now
+// PDF handling using pdf-parse (better than unpdf for text extraction)
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
-  // For now, we'll ask users to convert PDFs to DOCX to avoid DOMMatrix issues
-  throw new Error('PDF parsing is temporarily unavailable due to technical limitations. Please convert your PDF to DOCX format and upload again. You can use online converters like SmallPDF or Adobe Acrobat.');
-}
-
-// HuggingFace AI Enhancement (Rezi's AI layer)
-async function enhanceWithHuggingFace(text: string, section: string): Promise<any> {
-  const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
-  
-  if (!HF_API_KEY) {
-    console.warn('HuggingFace API key not configured, using pattern-only parsing');
-    return null;
-  }
-
   try {
-    // Rezi-style prompts for different sections
-    const prompts = {
-      contact: `Extract contact information from this resume text. Return JSON with: name (first, last), email, phone, location, linkedin, github, website.\nText: ${text.substring(0, 800)}`,
-      experience: `Parse work experience from this resume. Group bullets under jobs by company/dates. Return JSON array with: company, position, location, startDate, endDate, current (boolean), description, achievements.\nText: ${text.substring(0, 1500)}`,
-      education: `Extract education from this resume. Return JSON array with: institution, degree, fieldOfStudy, location, endDate.\nText: ${text.substring(0, 1000)}`,
-      skills: `Extract and categorize skills from this resume. Return JSON with arrays: technical, tools, soft, certifications.\nText: ${text.substring(0, 1200)}`
-    };
-
-    const prompt = prompts[section as keyof typeof prompts] || text.substring(0, 500);
-
-    // Use HuggingFace text generation (like Rezi's GPT-4o mini approach)
-    const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
-      headers: {
-        Authorization: `Bearer ${HF_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify({ 
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 200,
-          temperature: 0.1, // Low temperature for consistent parsing
-          return_full_text: false
-        }
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HuggingFace API error: ${response.statusText}`);
+    const data = await (pdfParse as any).default(buffer);
+    
+    if (!data.text || data.text.trim().length === 0) {
+      throw new Error('No text found in PDF. The PDF may be image-based or empty.');
     }
 
-    const result = await response.json();
-    return result;
+    // Clean up the extracted text
+    let cleanedText = data.text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
+      .trim();
+
+    // Normalize whitespace but preserve line breaks
+    cleanedText = cleanedText
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0)
+      .join('\n');
+
+    return cleanedText;
   } catch (error) {
-    console.warn(`AI enhancement failed for ${section}:`, error);
-    return null;
+    console.error('PDF extraction error:', error);
+    throw new Error('Failed to extract text from PDF. Please ensure it is a valid text-based PDF.');
   }
+}
+
+// HuggingFace AI Enhancement (Currently disabled - model deprecated)
+// const HF_MODEL = "mistralai/Mixtral-8x7B-Instruct-v0.1"; // 410 Gone
+
+interface AIParseResult {
+  contact?: any;
+  experience?: any[];
+  education?: any[];
+  skills?: any;
+  summary?: string;
+}
+
+async function parseWithAI(text: string): Promise<AIParseResult | null> {
+  // Temporarily disabled - HuggingFace model is deprecated (410 Gone)
+  // TODO: Switch to OpenAI, Anthropic, or local model
+  console.log('[AI Parse] Skipped - using pattern-based parsing only');
+  return null;
+  
+  /* FUTURE: Integrate with OpenAI or Anthropic
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  if (!OPENAI_API_KEY) return null;
+  
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: [{
+        role: 'user',
+        content: `Extract resume data as JSON: ${text.substring(0, 4000)}`
+      }],
+      temperature: 0.1
+    })
+  });
+  */
 }
 
 // Pattern-based extraction class (server-side)
@@ -146,14 +158,25 @@ class PatternExtractor {
       'Project Management', 'Time Management', 'Adaptability', 'Creativity', 'Innovation'
     ];
 
+    const escapeRegExp = (string: string) => {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
+    const createSkillRegex = (skill: string) => {
+      const escaped = escapeRegExp(skill);
+      const startBoundary = /^\w/.test(skill) ? '\\b' : '';
+      const endBoundary = /\w$/.test(skill) ? '\\b' : '';
+      return new RegExp(`${startBoundary}${escaped}${endBoundary}`, 'i');
+    };
+
     const foundTechnical = technicalSkills.filter(skill => 
-      new RegExp(`\\b${skill}\\b`, 'i').test(text)
+      createSkillRegex(skill).test(text)
     );
     const foundTools = tools.filter(tool => 
-      new RegExp(`\\b${tool}\\b`, 'i').test(text)
+      createSkillRegex(tool).test(text)
     );
     const foundSoft = softSkills.filter(skill => 
-      new RegExp(`\\b${skill}\\b`, 'i').test(text)
+      createSkillRegex(skill).test(text)
     );
 
     return {
@@ -188,12 +211,13 @@ async function parseContact(text: string, patternExtractor: PatternExtractor) {
     website: ''
   };
 
-  // Layer 1: Pattern-based extraction (fast, reliable)
+  // Extract emails
   const emails = patternExtractor.extractEmails(text);
   if (emails.length > 0) {
     contact.email = emails[0];
   }
 
+  // Extract phones
   const phones = patternExtractor.extractPhones(text);
   if (phones.length > 0) {
     contact.phone = phones[0];
@@ -202,99 +226,209 @@ async function parseContact(text: string, patternExtractor: PatternExtractor) {
   // Extract URLs
   const linkedinMatch = text.match(/linkedin\.com\/in\/[\w-]+/i);
   if (linkedinMatch) {
-    contact.linkedin = `https://${linkedinMatch[0]}`;
+    contact.linkedin = linkedinMatch[0].startsWith('http') ? linkedinMatch[0] : `https://${linkedinMatch[0]}`;
   }
 
   const githubMatch = text.match(/github\.com\/[\w-]+/i);
   if (githubMatch) {
-    contact.github = `https://${githubMatch[0]}`;
+    contact.github = githubMatch[0].startsWith('http') ? githubMatch[0] : `https://${githubMatch[0]}`;
   }
 
-  // Extract name from first lines (common pattern)
-  const lines = text.split('\n').slice(0, 5);
-  for (const line of lines) {
-    const nameMatch = line.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)$/);
-    if (nameMatch && !contact.firstName) {
-      contact.firstName = nameMatch[1];
-      contact.lastName = nameMatch[2];
+  // Extract website (look for personal domains)
+  const websiteMatches = text.match(/https?:\/\/[\w.-]+\.[\w]{2,}/gi);
+  if (websiteMatches) {
+    for (const url of websiteMatches) {
+      if (!url.includes('linkedin') && !url.includes('github')) {
+        contact.website = url;
+        break;
+      }
+    }
+  }
+
+  // Extract location (City, State format)
+  const locationPatterns = [
+    /(?:Fort Worth|Dallas|Houston|Austin|San Antonio|New York|Los Angeles|Chicago|Seattle|Boston|Atlanta|Miami|Denver|Portland|Phoenix|Philadelphia|San Diego|San Francisco|San Jose),?\s*(?:TX|CA|NY|FL|IL|WA|MA|GA|CO|OR|AZ|PA|Texas|California|New York|Florida|Illinois|Washington|Massachusetts|Georgia|Colorado|Oregon|Arizona|Pennsylvania)/i,
+    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?),\s*([A-Z]{2})\b/
+  ];
+
+  for (const pattern of locationPatterns) {
+    const locMatch = text.match(pattern);
+    if (locMatch) {
+      contact.location = locMatch[0];
       break;
     }
   }
 
-  // Layer 2: AI enhancement (if patterns missed something)
-  try {
-    const aiResult = await enhanceWithHuggingFace(text, 'contact');
-    if (aiResult && aiResult.length > 0) {
-      // AI might provide better name extraction or missing fields
-      // For now, we'll use pattern results as they're more reliable
+  // Extract name - try multiple strategies
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  // Strategy 1: Look for ALL CAPS name at the top (common in resumes)
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    const line = lines[i];
+    
+    // Skip if it's contact info
+    if (line.includes('@') || line.match(/\d{3}[-.\s]?\d{3}/)) continue;
+    
+    // Check for ALL CAPS name (like "SHARIF AHMED")
+    const allCapsMatch = line.match(/^([A-Z]+)\s+([A-Z]+)$/);
+    if (allCapsMatch) {
+      contact.firstName = allCapsMatch[1].charAt(0) + allCapsMatch[1].slice(1).toLowerCase();
+      contact.lastName = allCapsMatch[2].charAt(0) + allCapsMatch[2].slice(1).toLowerCase();
+      break;
     }
-  } catch (error) {
-    console.warn('AI contact enhancement failed:', error);
+    
+    // Check for Title Case name (like "Sharif Ahmed")
+    const titleCaseMatch = line.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)$/);
+    if (titleCaseMatch && line.length < 30) {
+      contact.firstName = titleCaseMatch[1];
+      contact.lastName = titleCaseMatch[2];
+      break;
+    }
+    
+    // Check for name with middle initial (like "Sharif A. Ahmed")
+    const middleInitialMatch = line.match(/^([A-Z][a-z]+)\s+[A-Z]\.\s+([A-Z][a-z]+)$/);
+    if (middleInitialMatch) {
+      contact.firstName = middleInitialMatch[1];
+      contact.lastName = middleInitialMatch[2];
+      break;
+    }
   }
 
-  // Extract website URL
-  const websiteMatch = text.match(/https?:\/\/[\w.-]+\.[a-z]{2,}/i);
-  if (websiteMatch && !websiteMatch[0].includes('linkedin') && !websiteMatch[0].includes('github')) {
-    contact.website = websiteMatch[0];
-  }
-
-  // Extract name (first line that looks like a name)
-  const nameMatch = text.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)/m);
-  if (nameMatch) {
-    contact.firstName = nameMatch[1];
-    contact.lastName = nameMatch[2];
-  }
-
-  // Extract location
-  const locationMatch = text.match(/([A-Z][a-z]+),?\s+([A-Z]{2}|[A-Z][a-z]+)/);
-  if (locationMatch) {
-    contact.location = `${locationMatch[1]}, ${locationMatch[2]}`;
+  // If still no name, try extracting from email
+  if (!contact.firstName && contact.email) {
+    const emailName = contact.email.split('@')[0];
+    const nameParts = emailName.split(/[._-]/);
+    if (nameParts.length >= 2) {
+      contact.firstName = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1);
+      contact.lastName = nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1);
+    }
   }
 
   return contact;
 }
 
-function parseExperience(text: string): any[] {
-  // Basic experience parsing - can be enhanced
-  const experiences: any[] = [];
+function parseSummary(text: string): string {
+  // Try multiple summary section headers
+  const summaryPatterns = [
+    /(?:PROFESSIONAL\s+SUMMARY|SUMMARY|PROFILE|ABOUT\s+ME|OBJECTIVE|CAREER\s+SUMMARY|EXECUTIVE\s+SUMMARY)\s*:?\s*\n([\s\S]*?)(?=\n(?:EXPERIENCE|WORK\s+EXPERIENCE|EMPLOYMENT|EDUCATION|SKILLS|TECHNICAL\s+SKILLS|PROJECTS|CERTIFICATIONS)|$)/i,
+    /(?:SUMMARY|PROFILE)\s*\n([\s\S]{50,500}?)(?=\n[A-Z]{3,})/i
+  ];
   
-  // Look for common experience patterns
-  const experienceSection = text.match(/EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT([\s\S]*?)(?=EDUCATION|SKILLS|$)/i);
-  if (experienceSection && experienceSection[1]) {
-    const expText = experienceSection[1];
-    
-    // Simple parsing - extract company names and positions
-    const companyMatches = expText.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g);
-    if (companyMatches) {
-      companyMatches.forEach((match, index) => {
-        const parts = match.split(',');
-        experiences.push({
-          id: `exp_${index}`,
-          company: parts[0]?.trim() || 'Company Name',
-          position: parts[1]?.trim() || 'Position',
-          location: '',
-          startDate: '2020-01',
-          endDate: '2024-01',
-          current: false,
-          description: 'Experience description extracted from resume',
-          achievements: []
-        });
-      });
+  for (const pattern of summaryPatterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      const summary = match[1].trim();
+      // Filter out if it looks like contact info or section headers
+      if (summary.length > 30 && !summary.match(/^\d{3}[-.\s]?\d{3}/)) {
+        return summary;
+      }
     }
   }
+  
+  return '';
+}
 
-  // If no experiences found, return a placeholder
-  if (experiences.length === 0) {
+function parseExperience(text: string): any[] {
+  const experiences: any[] = [];
+  
+  // Extract experience section with multiple possible headers
+  const experienceMatch = text.match(/(?:PROFESSIONAL\s+EXPERIENCE|WORK\s+EXPERIENCE|EXPERIENCE|EMPLOYMENT\s+HISTORY|CAREER\s+HISTORY)\s*:?\s*\n([\s\S]*?)(?=\n(?:EDUCATION|SKILLS|TECHNICAL\s+SKILLS|PROJECTS|CERTIFICATIONS|AWARDS|VOLUNTEER|$))/i);
+  
+  if (!experienceMatch || !experienceMatch[1]) {
+    return experiences;
+  }
+
+  const content = experienceMatch[1];
+  
+  // Enhanced date pattern to catch more formats
+  const datePattern = /(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+\d{4}|\d{1,2}\/\d{4}|\d{4})\s*[-–—]\s*(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+\d{4}|\d{1,2}\/\d{4}|\d{4}|Present|Current|Now)/gi;
+  
+  // Find all date ranges
+  const dates: Array<{match: string, index: number}> = [];
+  let match;
+  while ((match = datePattern.exec(content)) !== null) {
+    dates.push({ match: match[0], index: match.index });
+  }
+
+  if (dates.length === 0) {
+    return experiences;
+  }
+
+  // Split content by date positions
+  for (let i = 0; i < dates.length; i++) {
+    const startIdx = i === 0 ? 0 : dates[i - 1].index + dates[i - 1].match.length;
+    const endIdx = i < dates.length - 1 ? dates[i + 1].index : content.length;
+    const block = content.substring(startIdx, endIdx);
+    
+    const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length === 0) continue;
+
+    let company = '';
+    let position = '';
+    let location = '';
+    const dateStr = dates[i].match;
+    let description = '';
+    const bullets: string[] = [];
+
+    // Enhanced position keywords
+    const positionKeywords = /(?:Senior|Lead|Principal|Staff|Junior|Associate|Chief|Head|VP|Vice\s+President)?\s*(?:Software|Full[\s-]?Stack|Front[\s-]?End|Back[\s-]?End|Web|Mobile|iOS|Android)?\s*(?:Engineer|Developer|Programmer|Architect|Designer|Manager|Director|Analyst|Consultant|Specialist|Coordinator|Administrator|Intern|Trainee|Scientist|Researcher)/i;
+    
+    // Location pattern
+    const locationPattern = /(?:^|\s)([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?),\s*([A-Z]{2}|[A-Z][a-z]+)(?:\s|$)/;
+
+    // Process lines to extract company, position, location
+    for (let j = 0; j < Math.min(lines.length, 5); j++) {
+      const line = lines[j];
+      
+      // Skip if it's the date line
+      if (line.includes(dateStr)) continue;
+      
+      // Check for location
+      const locMatch = line.match(locationPattern);
+      if (locMatch && !location) {
+        location = `${locMatch[1]}, ${locMatch[2]}`;
+        continue;
+      }
+      
+      // Check for position
+      if (positionKeywords.test(line) && !position) {
+        position = line.replace(/[,|]$/, '').trim();
+        continue;
+      }
+      
+      // Otherwise, it's likely the company
+      if (!company && line.length < 60 && !line.startsWith('•') && !line.startsWith('-')) {
+        company = line.replace(/[,|]$/, '').trim();
+      }
+    }
+
+    // Extract description and bullets
+    const descStartIdx = Math.min(5, lines.length);
+    for (let j = descStartIdx; j < lines.length; j++) {
+      const line = lines[j];
+      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+        bullets.push(line.replace(/^[•\-*]\s*/, ''));
+      } else if (line.length > 20) {
+        description += line + ' ';
+      }
+    }
+
+    // Parse dates
+    const dateParts = dateStr.split(/[-–—]/);
+    const startDate = dateParts[0]?.trim() || '';
+    const endDate = dateParts[1]?.trim() || '';
+    const isCurrent = /present|current|now/i.test(endDate);
+
     experiences.push({
-      id: 'exp_1',
-      company: 'Extracted from Resume',
-      position: 'Position Title',
-      location: '',
-      startDate: '2020-01',
-      endDate: '2024-01',
-      current: false,
-      description: 'Please review and edit the extracted experience information',
-      achievements: []
+      id: `exp_${i}`,
+      company: company || 'Company Name',
+      position: position || 'Position Title',
+      location: location,
+      startDate: startDate,
+      endDate: isCurrent ? 'Present' : endDate,
+      current: isCurrent,
+      description: bullets.length > 0 ? bullets.join('\n• ') : description.trim(),
+      achievements: bullets
     });
   }
 
@@ -304,26 +438,71 @@ function parseExperience(text: string): any[] {
 function parseEducation(text: string): any[] {
   const education: any[] = [];
   
-  // Look for education section
-  const educationSection = text.match(/EDUCATION([\s\S]*?)(?=EXPERIENCE|SKILLS|$)/i);
-  if (educationSection && educationSection[1]) {
-    const eduText = educationSection[1];
-    
-    // Look for university/college names
-    const schoolMatch = eduText.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+University|College|Institute))/i);
-    const degreeMatch = eduText.match(/(Bachelor|Master|PhD|Associate)(?:\s+of\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
-    
-    education.push({
-      id: 'edu_1',
-      institution: schoolMatch ? schoolMatch[0] : 'University Name',
-      degree: degreeMatch ? degreeMatch[0] : 'Bachelor of Science',
-      fieldOfStudy: degreeMatch ? degreeMatch[2] : 'Computer Science',
-      location: '',
-      endDate: '2019-05'
-    });
+  // Extract education section
+  const eduMatch = text.match(/(?:EDUCATION|ACADEMIC\s+BACKGROUND|ACADEMIC\s+QUALIFICATIONS)\s*:?\s*\n([\s\S]*?)(?=\n(?:EXPERIENCE|WORK\s+EXPERIENCE|SKILLS|TECHNICAL\s+SKILLS|PROJECTS|CERTIFICATIONS|$))/i);
+  
+  if (!eduMatch || !eduMatch[1]) {
+    return education;
   }
 
-  return education;
+  const content = eduMatch[1];
+  const lines = content.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  // Degree patterns
+  const degreePattern = /(?:Bachelor|Master|PhD|Ph\.D\.|Doctorate|Associate|B\.S\.|B\.A\.|M\.S\.|M\.A\.|MBA|B\.Tech|M\.Tech)(?:\s+of\s+(?:Science|Arts|Engineering|Business|Technology))?\s+(?:in\s+)?([A-Za-z\s&]+)/i;
+  
+  // University/College pattern
+  const schoolPattern = /(?:University|College|Institute|School|Academy)\s+(?:of\s+)?([A-Za-z\s&]+)|([A-Za-z\s&]+)\s+(?:University|College|Institute)/i;
+  
+  // Date pattern for education
+  const eduDatePattern = /(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+)?\d{4}(?:\s*[-–]\s*(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+)?\d{4})?/i;
+
+  let currentEntry: any = null;
+
+  for (const line of lines) {
+    // Check for degree
+    const degreeMatch = line.match(degreePattern);
+    if (degreeMatch) {
+      if (currentEntry) {
+        education.push(currentEntry);
+      }
+      currentEntry = {
+        id: `edu_${education.length}`,
+        institution: '',
+        degree: degreeMatch[0],
+        fieldOfStudy: degreeMatch[1]?.trim() || '',
+        location: '',
+        endDate: ''
+      };
+      continue;
+    }
+
+    // Check for school
+    const schoolMatch = line.match(schoolPattern);
+    if (schoolMatch && currentEntry) {
+      currentEntry.institution = line;
+      continue;
+    }
+
+    // Check for date
+    const dateMatch = line.match(eduDatePattern);
+    if (dateMatch && currentEntry) {
+      currentEntry.endDate = dateMatch[0];
+    }
+  }
+
+  if (currentEntry) {
+    education.push(currentEntry);
+  }
+
+  return education.length > 0 ? education : [{
+    id: 'edu_1',
+    institution: 'University Name',
+    degree: 'Bachelor of Science',
+    fieldOfStudy: 'Computer Science',
+    location: '',
+    endDate: ''
+  }];
 }
 
 export async function POST(request: NextRequest) {
@@ -343,8 +522,12 @@ export async function POST(request: NextRequest) {
     let text: string;
     if (file.type === 'application/pdf') {
       text = await extractTextFromPDF(buffer);
+      console.log('[Parse] PDF text extracted, length:', text.length);
+      console.log('[Parse] First 200 chars:', text.substring(0, 200));
     } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       text = await extractTextFromDOCX(buffer);
+      console.log('[Parse] DOCX text extracted, length:', text.length);
+      console.log('[Parse] First 200 chars:', text.substring(0, 200));
     } else {
       return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 });
     }
@@ -352,10 +535,61 @@ export async function POST(request: NextRequest) {
     // Parse the extracted text with multi-layer approach
     const patternExtractor = new PatternExtractor();
     
-    const contact = await parseContact(text, patternExtractor);
-    const experience = parseExperience(text);
-    const education = parseEducation(text);
-    const skills = patternExtractor.extractSkills(text);
+    // 1. Try AI Parsing first (Rezi approach)
+    let aiData: AIParseResult | null = null;
+    try {
+      aiData = await parseWithAI(text);
+      console.log('[Parse] AI parsing result:', aiData ? 'Success' : 'Failed');
+    } catch (e) {
+      console.log('[Parse] AI parsing skipped or failed, falling back to patterns');
+    }
+
+    // 2. Run Pattern Extraction as fallback/supplement
+    const patternContact = await parseContact(text, patternExtractor);
+    const patternSummary = parseSummary(text); // Use the new function
+    const patternExperience = parseExperience(text);
+    const patternEducation = parseEducation(text);
+    const patternSkills = patternExtractor.extractSkills(text);
+
+    console.log('[Parse] Pattern extraction complete');
+    console.log('[Parse] - Contact:', patternContact.firstName, patternContact.lastName);
+    console.log('[Parse] - Experience entries:', patternExperience.length);
+    console.log('[Parse] - Education entries:', patternEducation.length);
+    console.log('[Parse] - Skills:', patternSkills.technical.length, 'technical');
+
+    // 3. Merge Results (AI takes precedence if available and valid)
+    const contact = {
+      firstName: aiData?.contact?.firstName || patternContact.firstName,
+      lastName: aiData?.contact?.lastName || patternContact.lastName,
+      email: aiData?.contact?.email || patternContact.email,
+      phone: aiData?.contact?.phone || patternContact.phone,
+      location: aiData?.contact?.location || patternContact.location,
+      linkedin: aiData?.contact?.linkedin || patternContact.linkedin,
+      github: aiData?.contact?.github || patternContact.github,
+      website: aiData?.contact?.website || patternContact.website
+    };
+
+    const summary = aiData?.summary || patternSummary;
+
+    const experience = (aiData?.experience && aiData.experience.length > 0) 
+      ? aiData.experience 
+      : patternExperience;
+
+    const education = (aiData?.education && aiData.education.length > 0)
+      ? aiData.education
+      : patternEducation;
+
+    const skills = {
+      technical: (aiData?.skills?.technical?.length ? aiData.skills.technical : patternSkills.technical),
+      tools: (aiData?.skills?.tools?.length ? aiData.skills.tools : patternSkills.tools),
+      soft: (aiData?.skills?.soft?.length ? aiData.skills.soft : patternSkills.soft)
+    };
+
+    console.log('[Parse] Final merged results:');
+    console.log('[Parse] - Name:', contact.firstName, contact.lastName);
+    console.log('[Parse] - Experience:', experience.length, 'entries');
+    console.log('[Parse] - Education:', education.length, 'entries');
+
 
     // Build RMS-compatible profile structure
     const rmsProfile: RMSResumeData = {
@@ -382,7 +616,7 @@ export async function POST(request: NextRequest) {
         }
       },
       professional: {
-        summary: 'Professional summary extracted from resume. Please review and edit as needed.',
+        summary: summary || 'Professional summary extracted from resume. Please review and edit as needed.',
         experience: experience.map(exp => ({
           company: exp.company,
           position: exp.position,

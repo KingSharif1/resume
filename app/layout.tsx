@@ -6,6 +6,7 @@ import { SidebarProvider } from '@/contexts/SidebarContext';
 import { Toaster } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { LayoutContent } from '@/components/LayoutContent';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,17 +21,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthProvider>
-          <SidebarProvider>
-            <Sidebar />
-            <LayoutContent>
-              {children}
-            </LayoutContent>
-            <Toaster position="top-center" />
-          </SidebarProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <SidebarProvider>
+              <Sidebar />
+              <LayoutContent>
+                {children}
+              </LayoutContent>
+              <Toaster position="top-center" />
+            </SidebarProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

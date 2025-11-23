@@ -4,26 +4,45 @@ import { ResumeProfile } from '@/lib/resume-schema';
 
 const sql = neon(process.env.NEON_DATABASE_URL!);
 
-// GET - List user's base resumes
+// GET - List user's base resumes or get single resume
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const id = searchParams.get('id');
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    const resumes = await sql`
-      SELECT id, title, created_at, updated_at, 
-             contact_info, summary, experience, education, 
-             skills, certifications, projects, custom_sections, is_starred
-      FROM base_resumes 
-      WHERE user_id = ${userId}
-      ORDER BY updated_at DESC
-    `;
+    if (id) {
+      // Fetch single resume
+      const result = await sql`
+        SELECT id, title, created_at, updated_at, 
+               contact_info, summary, experience, education, 
+               skills, certifications, projects, custom_sections, is_starred
+        FROM base_resumes 
+        WHERE id = ${id} AND user_id = ${userId}
+      `;
 
-    return NextResponse.json({ resumes });
+      if (result.length === 0) {
+        return NextResponse.json({ error: 'Resume not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({ resume: result[0] });
+    } else {
+      // List all resumes
+      const resumes = await sql`
+        SELECT id, title, created_at, updated_at, 
+               contact_info, summary, experience, education, 
+               skills, certifications, projects, custom_sections, is_starred
+        FROM base_resumes 
+        WHERE user_id = ${userId}
+        ORDER BY updated_at DESC
+      `;
+
+      return NextResponse.json({ resumes });
+    }
   } catch (error) {
     console.error('Error fetching resumes:', error);
     return NextResponse.json({ error: 'Failed to fetch resumes' }, { status: 500 });
@@ -111,6 +130,45 @@ export async function PUT(request: NextRequest) {
       id: result[0].id,
       title: result[0].title,
       updated_at: result[0].updated_at
+    });
+  } catch (error) {
+    console.error('Error updating resume:', error);
+    return NextResponse.json({ error: 'Failed to update resume' }, { status: 500 });
+  }
+}
+
+// PATCH - Update specific fields (like is_starred or title)
+export async function PATCH(request: NextRequest) {
+  try {
+    const { id, userId, is_starred, title } = await request.json();
+
+    if (!id || !userId) {
+      return NextResponse.json({ error: 'ID and user ID are required' }, { status: 400 });
+    }
+
+    // Build update object dynamically
+    const updates: any = { updated_at: 'NOW()' };
+    if (is_starred !== undefined) updates.is_starred = is_starred;
+    if (title !== undefined) updates.title = title;
+
+    const result = await sql`
+      UPDATE base_resumes 
+      SET 
+        ${is_starred !== undefined ? sql`is_starred = ${is_starred},` : sql``}
+        ${title !== undefined ? sql`title = ${title},` : sql``}
+        updated_at = NOW()
+      WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id, is_starred, title
+    `;
+
+    if (result.length === 0) {
+      return NextResponse.json({ error: 'Resume not found or unauthorized' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      id: result[0].id,
+      is_starred: result[0].is_starred,
+      title: result[0].title
     });
   } catch (error) {
     console.error('Error updating resume:', error);
