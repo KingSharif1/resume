@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mammoth from 'mammoth';
 import { isEmail } from 'validator';
-import * as pdfParse from 'pdf-parse';
 
 // Resume Metadata Standard (RMS) compatible structure
 interface RMSResumeData {
@@ -45,33 +44,67 @@ interface RMSResumeData {
   };
 }
 
-// PDF handling using pdf-parse (better than unpdf for text extraction)
+// PDF handling using pdfjs-dist (more robust standard)
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Configure worker for Node.js environment if needed
+// For Next.js serverless, we might need to point to the build file directly if standard import fails
+// But let's try standard first.
+
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    const data = await (pdfParse as any).default(buffer);
+    console.log('[PDF Extract] Starting extraction with pdfjs-dist...');
     
-    if (!data.text || data.text.trim().length === 0) {
+    // Convert Buffer to Uint8Array
+    const data = new Uint8Array(buffer);
+    
+    // Load the document
+    const loadingTask = pdfjsLib.getDocument({
+      data,
+      useSystemFonts: true,
+      disableFontFace: true,
+    });
+    
+    const doc = await loadingTask.promise;
+    const numPages = doc.numPages;
+    console.log(`[PDF Extract] Document loaded, ${numPages} pages.`);
+    
+    let fullText = '';
+    
+    // Extract text from each page
+    for (let i = 1; i <= numPages; i++) {
+      const page = await doc.getPage(i);
+      const textContent = await page.getTextContent();
+      
+      // Join text items with space, but respect newlines if items are far apart (simplified)
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+        
+      fullText += pageText + '\n\n';
+    }
+    
+    if (!fullText || fullText.trim().length === 0) {
+      console.warn('[PDF Extract] No text found in PDF');
       throw new Error('No text found in PDF. The PDF may be image-based or empty.');
     }
 
+    console.log(`[PDF Extract] Success! Extracted ${fullText.length} characters.`);
+
     // Clean up the extracted text
-    let cleanedText = data.text
+    let cleanedText = fullText
       .replace(/\r\n/g, '\n')
       .replace(/\r/g, '\n')
       .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
       .trim();
 
-    // Normalize whitespace but preserve line breaks
-    cleanedText = cleanedText
-      .split('\n')
-      .map((line: string) => line.trim())
-      .filter((line: string) => line.length > 0)
-      .join('\n');
-
     return cleanedText;
   } catch (error) {
     console.error('PDF extraction error:', error);
-    throw new Error('Failed to extract text from PDF. Please ensure it is a valid text-based PDF.');
+    if (error instanceof Error && error.message.includes('No text found')) {
+      throw error;
+    }
+    throw new Error('Failed to read PDF file. Please ensure it is not password protected or corrupted.');
   }
 }
 

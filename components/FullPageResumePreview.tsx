@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Download, Share, Settings, GripVertical, Star, Target, Zap } from 'lucide-react';
+import { ArrowLeft, Download, Share, Settings, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -77,7 +77,7 @@ export function FullPageResumePreview({ profile, sectionVisibility, onBack, onEd
   const handleEditSection = (sectionKey: string) => {
     if (onEditSection) {
       onEditSection(sectionKey);
-      onBack(); // Go back to editor
+      onBack?.(); // Go back to editor
     }
   };
 
@@ -91,39 +91,6 @@ export function FullPageResumePreview({ profile, sectionVisibility, onBack, onEd
       });
     }
   };
-
-  // Calculate resume score
-  const calculateResumeScore = () => {
-    let score = 0;
-    let maxScore = 100;
-
-    // Contact info (20 points)
-    if (profile.contact.firstName && profile.contact.lastName) score += 5;
-    if (profile.contact.email) score += 5;
-    if (profile.contact.phone) score += 5;
-    if (profile.contact.linkedin || profile.contact.github) score += 5;
-
-    // Summary (15 points)
-    if (profile.summary?.content && profile.summary.content.length > 50) score += 15;
-
-    // Experience (25 points)
-    if (profile.experience.length > 0) score += 10;
-    if (profile.experience.some(exp => exp.achievements.length > 0)) score += 15;
-
-    // Education (15 points)
-    if (profile.education.length > 0) score += 15;
-
-    // Skills (15 points)
-    const totalSkills = Object.values(profile.skills).flat().length;
-    if (totalSkills > 0) score += Math.min(15, totalSkills * 2);
-
-    // Projects (10 points)
-    if (profile.projects.length > 0) score += 10;
-
-    return Math.min(score, maxScore);
-  };
-
-  const resumeScore = calculateResumeScore();
 
   return (
     <div className={`min-h-screen bg-slate-50 ${isSplitView ? 'min-h-0' : ''}`}>
@@ -505,122 +472,6 @@ export function FullPageResumePreview({ profile, sectionVisibility, onBack, onEd
                   ))}
                 </SortableContext>
               </DndContext>
-            </div>
-
-            {/* Resume Score Sidebar */}
-            <div className="w-80 space-y-4">
-              {/* Score Card */}
-              <Card className="p-6">
-                <CardContent className="p-0">
-                  <div className="text-center mb-4">
-                    <div className="flex items-center justify-center mb-2">
-                      {resumeScore >= 80 ? (
-                        <Star className="w-8 h-8 text-green-600" />
-                      ) : resumeScore >= 60 ? (
-                        <Target className="w-8 h-8 text-yellow-600" />
-                      ) : (
-                        <Zap className="w-8 h-8 text-red-600" />
-                      )}
-                    </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-1">Resume Score</h3>
-                    <Badge className={`${resumeScore >= 80 ? 'bg-green-600' :
-                      resumeScore >= 60 ? 'bg-yellow-600' : 'bg-red-600'
-                      } text-white font-bold text-lg px-4 py-2`}>
-                      {resumeScore}/100
-                    </Badge>
-                  </div>
-
-                  {/* Score Breakdown */}
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Contact Info</span>
-                      <span className={`font-medium ${(profile.contact.firstName && profile.contact.lastName && profile.contact.email && profile.contact.phone) ? 'text-green-600' : 'text-slate-400'
-                        }`}>
-                        {(profile.contact.firstName && profile.contact.lastName ? 5 : 0) +
-                          (profile.contact.email ? 5 : 0) +
-                          (profile.contact.phone ? 5 : 0) +
-                          ((profile.contact.linkedin || profile.contact.github) ? 5 : 0)}/20
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Summary</span>
-                      <span className={`font-medium ${(profile.summary?.content && profile.summary.content.length > 50) ? 'text-green-600' : 'text-slate-400'
-                        }`}>
-                        {(profile.summary?.content && profile.summary.content.length > 50) ? 15 : 0}/15
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Experience</span>
-                      <span className={`font-medium ${profile.experience.length > 0 ? 'text-green-600' : 'text-slate-400'
-                        }`}>
-                        {(profile.experience.length > 0 ? 10 : 0) +
-                          (profile.experience.some(exp => exp.achievements.length > 0) ? 15 : 0)}/25
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Education</span>
-                      <span className={`font-medium ${profile.education.length > 0 ? 'text-green-600' : 'text-slate-400'
-                        }`}>
-                        {profile.education.length > 0 ? 15 : 0}/15
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Skills</span>
-                      <span className={`font-medium ${Object.values(profile.skills).flat().length > 0 ? 'text-green-600' : 'text-slate-400'
-                        }`}>
-                        {Math.min(15, Object.values(profile.skills).flat().length * 2)}/15
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600">Projects</span>
-                      <span className={`font-medium ${profile.projects.length > 0 ? 'text-green-600' : 'text-slate-400'
-                        }`}>
-                        {profile.projects.length > 0 ? 10 : 0}/10
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Score Status */}
-                  <div className="mt-4 p-3 rounded-lg bg-slate-50">
-                    <p className="text-sm text-slate-700 font-medium">
-                      {resumeScore >= 80 ? '🎉 Excellent! Your resume is well-optimized.' :
-                        resumeScore >= 60 ? '👍 Good progress! Add more details to improve.' :
-                          '🚀 Keep building! Add more sections and content.'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Tips */}
-              <Card className="p-4">
-                <CardContent className="p-0">
-                  <h4 className="font-semibold text-slate-900 mb-3">Quick Tips</h4>
-                  <div className="space-y-2 text-sm text-slate-600">
-                    {resumeScore < 80 && (
-                      <>
-                        {!profile.summary?.content && (
-                          <p>• Add a professional summary</p>
-                        )}
-                        {profile.experience.length === 0 && (
-                          <p>• Include work experience</p>
-                        )}
-                        {!profile.experience.some(exp => exp.achievements.length > 0) && (
-                          <p>• Add achievements to experience</p>
-                        )}
-                        {Object.values(profile.skills).flat().length < 5 && (
-                          <p>• List more relevant skills</p>
-                        )}
-                        {profile.projects.length === 0 && (
-                          <p>• Showcase your projects</p>
-                        )}
-                      </>
-                    )}
-                    {resumeScore >= 80 && (
-                      <p>• Your resume looks great! Consider customizing the design.</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>

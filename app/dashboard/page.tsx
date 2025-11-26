@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, FileText, Clock, Trash2, Edit, Star, StarOff, Upload, Download, X, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Upload, X, Loader2, Search, FileText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { resumeParser } from '@/lib/services/resume-parser';
+import { ResumeCard } from '@/components/Dashboard/ResumeCard';
 
-interface BaseResume {
+export interface BaseResume {
   id: string;
   title: string;
   contact_info: any;
@@ -36,6 +38,7 @@ export default function Dashboard() {
   const [isDragging, setIsDragging] = useState(false);
   const [parsedProfile, setParsedProfile] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,12 +55,12 @@ export default function Dashboard() {
   const loadResumes = async () => {
     try {
       if (!user?.id) return;
-      
+
       const response = await fetch(`/api/resumes?userId=${user.id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch resumes');
       }
-      
+
       const data = await response.json();
       setBaseResumes(data.resumes || []);
     } catch (error) {
@@ -76,30 +79,16 @@ export default function Dashboard() {
       const response = await fetch(`/api/resumes?id=${id}&userId=${user.id}`, {
         method: 'DELETE'
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete resume');
       }
-      
+
       toast.success('Resume deleted');
       loadResumes();
     } catch (error) {
       console.error('Error deleting resume:', error);
       toast.error('Failed to delete resume');
-    }
-  };
-
-  const toggleStar = async (id: string, currentStarred: boolean) => {
-    if (!user?.id) return;
-
-    try {
-      // For now, we'll skip the star toggle since it requires updating the API
-      // TODO: Implement star toggle in API
-      toast.success(currentStarred ? 'Resume unpinned' : 'Resume pinned');
-      // loadResumes();
-    } catch (error) {
-      console.error('Error updating resume:', error);
-      toast.error('Failed to update resume');
     }
   };
 
@@ -116,7 +105,7 @@ export default function Dashboard() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && (droppedFile.type === 'application/pdf' || droppedFile.name.endsWith('.docx'))) {
       setUploadFile(droppedFile);
@@ -139,7 +128,7 @@ export default function Dashboard() {
     try {
       // Parse the resume
       const parseResult = await resumeParser.parseResume(uploadFile);
-      
+
       if (!parseResult.success || !parseResult.profile) {
         const errorMessage = parseResult.errors?.[0] || 'Failed to parse resume';
         throw new Error(errorMessage);
@@ -151,7 +140,8 @@ export default function Dashboard() {
       toast.success('Resume parsed successfully! Review the details below.');
     } catch (error) {
       console.error('Error parsing resume:', error);
-      toast.error('Failed to parse resume. Please try again.');
+      const message = error instanceof Error ? error.message : 'Failed to parse resume';
+      toast.error(message);
     } finally {
       setIsProcessing(false);
     }
@@ -197,12 +187,16 @@ export default function Dashboard() {
     setParsedProfile(null);
   };
 
+  const filteredResumes = baseResumes.filter(resume =>
+    resume.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading || loadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Loading...</p>
+          <p className="mt-4 text-slate-600">Loading your workspace...</p>
         </div>
       </div>
     );
@@ -211,109 +205,90 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">My Resumes</h1>
-            <p className="text-slate-600">Create, manage, and optimize your resumes</p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+
+        {/* Header Section */}
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">My Resumes</h1>
+              <p className="text-slate-500 mt-1">Manage your base resumes and tailored applications</p>
+            </div>
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search base resumes..."
+                className="pl-10 bg-white border-slate-200"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={() => setShowUpload(true)} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Resume
-            </Button>
-            <Button onClick={() => router.push('/builder')} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create New
-            </Button>
+
+          {/* Base Resumes Shelf */}
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Base Resumes</h2>
+                <p className="text-sm text-slate-500">Master templates targeted to specific roles</p>
+              </div>
+              <div className="flex gap-3">
+                <Button onClick={() => setShowUpload(true)} variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import
+                </Button>
+                <Button onClick={() => router.push('/builder')} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New
+                </Button>
+              </div>
+            </div>
+
+            {filteredResumes.length === 0 ? (
+              <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <FileText className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                <h3 className="text-lg font-medium text-slate-900">No resumes found</h3>
+                <p className="text-slate-500 mb-6">Get started by creating your first resume</p>
+                <Button onClick={() => router.push('/builder')} variant="outline">
+                  Create Resume
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-6 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-hide snap-x">
+                {filteredResumes.map((resume) => (
+                  <ResumeCard
+                    key={resume.id}
+                    resume={resume}
+                    onDelete={deleteResume}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Job Tailored Resumes Shelf (Placeholder for now) */}
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 opacity-60 pointer-events-none grayscale">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Job Tailored Resumes</h2>
+                <p className="text-sm text-slate-500">Resumes customized for specific job descriptions</p>
+              </div>
+              <Button variant="outline" disabled>
+                <Plus className="w-4 h-4 mr-2" />
+                Tailor New
+              </Button>
+            </div>
+            <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <p className="text-slate-500">Tailored resumes will appear here soon</p>
+            </div>
           </div>
         </div>
 
-        {baseResumes.length === 0 ? (
-          <Card className="p-12 text-center">
-            <FileText className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No resumes yet</h3>
-            <p className="text-slate-600 mb-6">Create your first resume or upload an existing one</p>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={() => setShowUpload(true)} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Resume
-              </Button>
-              <Button onClick={() => router.push('/builder')} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Create New
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Sort resumes to show starred ones first */}
-            {baseResumes
-              .sort((a, b) => {
-                // First sort by starred status (starred first)
-                if (a.is_starred && !b.is_starred) return -1;
-                if (!a.is_starred && b.is_starred) return 1;
-                // Then sort by updated date (newest first)
-                return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-              })
-              .map((resume) => (
-              <Card 
-                key={resume.id} 
-                className={`hover:shadow-lg transition-shadow ${resume.is_starred ? 'border-blue-400 bg-blue-50' : ''}`}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg truncate">{resume.title}</CardTitle>
-                        {resume.is_starred && (
-                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Original</span>
-                        )}
-                      </div>
-                      <CardDescription className="flex items-center gap-1 mt-2">
-                        <Clock className="w-3 h-3" />
-                        {new Date(resume.updated_at).toLocaleDateString()}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      onClick={() => toggleStar(resume.id, !!resume.is_starred)}
-                      variant="ghost"
-                      size="sm"
-                      className={`p-1 h-8 w-8 ${resume.is_starred ? 'text-yellow-500' : 'text-gray-400'}`}
-                    >
-                      {resume.is_starred ? <Star className="w-5 h-5" /> : <StarOff className="w-5 h-5" />}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => router.push(`/builder?id=${resume.id}`)}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button
-                      onClick={() => deleteResume(resume.id)}
-                      variant="outline"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
         {/* Upload Modal */}
         {showUpload && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-lg">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+            <Card className="w-full max-w-lg shadow-2xl">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Upload Resume</CardTitle>
@@ -332,11 +307,10 @@ export default function Dashboard() {
               <CardContent>
                 {!uploadFile ? (
                   <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                      isDragging
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-300 hover:border-slate-400'
-                    }`}
+                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-300 hover:border-slate-400'
+                      }`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
@@ -408,8 +382,8 @@ export default function Dashboard() {
 
         {/* Preview Modal */}
         {showPreview && parsedProfile && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Resume Preview</CardTitle>
