@@ -1,198 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { HfInference } from '@huggingface/inference';
 
-const XAI_API_KEY = process.env.XAI_API_KEY;
-const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
-const XAI_ENDPOINT = 'https://api.x.ai/v1/chat/completions';
-const HUGGINGFACE_ENDPOINT = 'https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1';
-
-interface AIChange {
-  section: string;
-  type: 'added' | 'modified' | 'removed';
-  original?: string;
-  modified: string;
-  reason: string;
-}
-
-interface AISuggestion {
-  section: string;
-  type: 'keyword' | 'structure' | 'content';
-  suggestion: string;
-  priority: 'high' | 'medium' | 'low';
-}
-
-interface TailoredResume {
-  summary: string;
-  sections: {
-    title: string;
-    content: string;
-  }[];
-  notes: string;
-  changes?: AIChange[];
-  suggestions?: AISuggestion[];
-}
+const HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.3";
 
 export async function POST(request: NextRequest) {
   try {
-    const useHuggingFace = !XAI_API_KEY && HUGGINGFACE_API_KEY;
+    const { resumeText, jobDescription } = await request.json();
 
-    if (!XAI_API_KEY && !HUGGINGFACE_API_KEY) {
+    if (!resumeText || !jobDescription) {
       return NextResponse.json(
-        { error: 'No AI API key configured. Please set either HUGGINGFACE_API_KEY or XAI_API_KEY' },
-        { status: 500 }
-      );
-    }
-
-    const { baseResume, jobDescription } = await request.json();
-
-    if (!baseResume || !jobDescription) {
-      return NextResponse.json(
-        { error: 'Base resume and job description are required' },
+        { error: 'Missing resume text or job description' },
         { status: 400 }
       );
     }
 
-    const prompt = `You are an expert resume optimizer for ATS and recruiters. Tailor the base resume to match the job description.
+    const apiKey = process.env.HUGGINGFACE_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'HuggingFace API key not configured' },
+        { status: 500 }
+      );
+    }
 
-RULES:
-1. Preserve structure (sections: Experience, Skills, Education, etc.)
-2. Incorporate 5-8 key keywords naturally
-3. Concise bullets (1-2 lines)
-4. Generate/add summary if missing
-5. Track all changes made and explain why
-6. Provide actionable suggestions for improvement
+    const hf = new HfInference(apiKey);
 
-Output ONLY valid JSON with this structure:
+    const prompt = `<s>[INST] You are an expert career coach and resume writer. 
+    
+Task: Tailor the following resume to better match the provided job description.
+Focus on:
+1. Highlighting relevant skills and experience.
+2. Adjusting the professional summary to align with the job goals.
+3. Using keywords from the job description where appropriate.
+
+Return the result as a JSON object with the following structure:
 {
-  "summary": "professional summary",
-  "sections": [{"title": "section name", "content": "markdown bullets"}],
-  "notes": "brief overview",
-  "changes": [
-    {
-      "section": "section name",
-      "type": "added|modified|removed",
-      "original": "original text (if modified/removed)",
-      "modified": "new text",
-      "reason": "why this change was made"
-    }
-  ],
-  "suggestions": [
-    {
-      "section": "section name",
-      "type": "keyword|structure|content",
-      "suggestion": "specific actionable suggestion",
-      "priority": "high|medium|low"
-    }
-  ]
+  "summary": "Updated professional summary...",
+  "skills": {
+    "technical": ["added skill 1", "existing skill"],
+    "soft": ["added soft skill"]
+  },
+  "improvements": ["List of specific changes made..."]
 }
 
-Base Resume: ${baseResume}
-Job Description: ${jobDescription}`;
+Resume:
+${resumeText.substring(0, 3000)}
 
-    let aiResponse: string;
+Job Description:
+${jobDescription.substring(0, 1500)}
+[/INST]`;
 
-    if (useHuggingFace) {
-      const response = await fetch(HUGGINGFACE_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 2000,
-            temperature: 0.7,
-            return_full_text: false,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Hugging Face API error:', errorData);
-        return NextResponse.json(
-          { error: 'Failed to generate tailored resume' },
-          { status: response.status }
-        );
+    const response = await hf.textGeneration({
+      model: HF_MODEL,
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 1024,
+        temperature: 0.2,
+        return_full_text: false
       }
+    });
 
-      const data = await response.json();
-      aiResponse = data[0]?.generated_text || data.generated_text || '';
-    } else {
-      const response = await fetch(XAI_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${XAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'grok-beta',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert resume optimizer. Always respond with valid JSON only.',
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-        }),
-      });
+    let generatedText = response.generated_text.trim();
+    generatedText = generatedText.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('xAI API error:', errorData);
-        return NextResponse.json(
-          { error: 'Failed to generate tailored resume' },
-          { status: response.status }
-        );
-      }
-
-      const data = await response.json();
-      aiResponse = data.choices?.[0]?.message?.content || '';
-    }
-
-    if (!aiResponse) {
-      throw new Error('No response from AI');
-    }
-
-    let tailoredResume: TailoredResume;
     try {
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        tailoredResume = JSON.parse(jsonMatch[0]);
-      } else {
-        tailoredResume = JSON.parse(aiResponse);
-      }
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
+      const tailoredData = JSON.parse(generatedText);
+      return NextResponse.json({ success: true, data: tailoredData });
+    } catch (e) {
+      console.error('Failed to parse tailored resume JSON', e);
       return NextResponse.json(
-        { error: 'Invalid response format from AI' },
+        { error: 'Failed to generate valid JSON response from AI' },
         { status: 500 }
       );
     }
 
-    if (!tailoredResume.summary || !tailoredResume.sections) {
-      return NextResponse.json(
-        { error: 'Incomplete resume data from AI' },
-        { status: 500 }
-      );
-    }
-
-    if (!tailoredResume.changes) {
-      tailoredResume.changes = [];
-    }
-    if (!tailoredResume.suggestions) {
-      tailoredResume.suggestions = [];
-    }
-
-    return NextResponse.json({ tailoredResume });
   } catch (error) {
-    console.error('Resume tailoring error:', error);
+    console.error('Tailoring error:', error);
     return NextResponse.json(
-      { error: 'An unexpected error occurred' },
+      { error: 'Internal server error during tailoring' },
       { status: 500 }
     );
   }

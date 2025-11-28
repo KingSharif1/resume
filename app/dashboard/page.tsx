@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Upload, X, Loader2, Search, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
-import { resumeParser } from '@/lib/services/resume-parser';
 import { ResumeCard } from '@/components/Dashboard/ResumeCard';
+import { ResumeUploadModal } from '@/components/ResumeUploadModal';
 
 export interface BaseResume {
   id: string;
@@ -33,12 +33,10 @@ export default function Dashboard() {
   const [baseResumes, setBaseResumes] = useState<BaseResume[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const [parsedProfile, setParsedProfile] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -92,60 +90,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && (droppedFile.type === 'application/pdf' || droppedFile.name.endsWith('.docx'))) {
-      setUploadFile(droppedFile);
-    } else {
-      toast.error('Please upload a PDF or DOCX file');
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setUploadFile(selectedFile);
-    }
-  };
-
-  const handleUploadResume = async () => {
-    if (!uploadFile || !user?.id) return;
-
-    setIsProcessing(true);
-    try {
-      // Parse the resume
-      const parseResult = await resumeParser.parseResume(uploadFile);
-
-      if (!parseResult.success || !parseResult.profile) {
-        const errorMessage = parseResult.errors?.[0] || 'Failed to parse resume';
-        throw new Error(errorMessage);
-      }
-
-      // Show preview instead of immediately saving
-      setParsedProfile(parseResult.profile);
-      setShowPreview(true);
-      toast.success('Resume parsed successfully! Review the details below.');
-    } catch (error) {
-      console.error('Error parsing resume:', error);
-      const message = error instanceof Error ? error.message : 'Failed to parse resume';
-      toast.error(message);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const handleSaveParsedResume = async () => {
     if (!parsedProfile || !user?.id) return;
@@ -171,7 +115,6 @@ export default function Dashboard() {
       toast.success('Resume saved successfully!');
       setShowUpload(false);
       setShowPreview(false);
-      setUploadFile(null);
       setParsedProfile(null);
       loadResumes();
     } catch (error) {
@@ -285,100 +228,16 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Upload Modal */}
-        {showUpload && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-            <Card className="w-full max-w-lg shadow-2xl">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Upload Resume</CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowUpload(false);
-                      setUploadFile(null);
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {!uploadFile ? (
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-300 hover:border-slate-400'
-                      }`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                  >
-                    <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-lg font-semibold text-slate-900 mb-2">
-                      Drop your resume here
-                    </p>
-                    <p className="text-sm text-slate-600 mb-4">
-                      Supports PDF and DOCX files up to 10MB
-                    </p>
-                    <input
-                      type="file"
-                      accept=".pdf,.docx"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                      id="file-upload"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() => document.getElementById('file-upload')?.click()}
-                    >
-                      Choose File
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-                      <FileText className="w-8 h-8 text-blue-600" />
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">{uploadFile.name}</p>
-                        <p className="text-sm text-slate-600">
-                          {(uploadFile.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setUploadFile(null)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={handleUploadResume}
-                        disabled={isProcessing}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      >
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Upload & Parse
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        {/* Upload Modal - Replaced with shared component */}
+        <ResumeUploadModal
+          isOpen={showUpload}
+          onClose={() => setShowUpload(false)}
+          onUploadComplete={(profile) => {
+            setParsedProfile(profile);
+            setShowPreview(true);
+            setShowUpload(false);
+          }}
+        />
 
         {/* Preview Modal */}
         {showPreview && parsedProfile && (

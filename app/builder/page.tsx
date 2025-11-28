@@ -3,36 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { ReziStyleEditor } from '@/components/BaseResumeBuilder/ReziStyleEditor';
-import { FullPageResumePreview } from '@/components/FullPageResumePreview';
+import { NewResumeBuilder } from '@/components/BaseResumeBuilder/NewResumeBuilder';
 import { ResumeProfile, createEmptyProfile } from '@/lib/resume-schema';
+import { resumeParser } from '@/lib/services/resume-parser';
 import { ResumeUploadModal } from '@/components/ResumeUploadModal';
 import toast from 'react-hot-toast';
-
-interface SectionVisibility {
-  [key: string]: boolean;
-}
-
-const initialProfile: ResumeProfile = createEmptyProfile();
-
-const initialSectionVisibility: SectionVisibility = {
-  contact: true,
-  summary: true,
-  experience: true,
-  education: true,
-  skills: true,
-  projects: true,
-  certifications: false,
-  languages: false
-};
 
 export default function BuilderPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading } = useAuth();
   const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
-  const [sectionVisibility, setSectionVisibility] = useState<any>({});
-  const [showPreview, setShowPreview] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -86,11 +67,17 @@ export default function BuilderPage() {
 
     if (user) {
       loadResume();
+    } else if (!loading) {
+      // If no user but done loading, stop spinner (will redirect anyway)
+      setIsLoading(false);
     }
   }, [searchParams, user, loading, router]);
 
   const handleSave = async (updatedProfile: ResumeProfile) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast.error('You must be logged in to save.');
+      return;
+    }
 
     try {
       const response = await fetch('/api/resumes', {
@@ -120,66 +107,43 @@ export default function BuilderPage() {
   };
 
   const handlePreview = (currentProfile: ResumeProfile, visibility: any) => {
-    console.log('Previewing profile:', currentProfile);
-    setProfile(currentProfile);
-    setSectionVisibility(visibility);
-    setShowPreview(true);
+    // NewResumeBuilder handles preview internally via LayoutStyleEditor or side panel
+    console.log('Preview requested', currentProfile);
   };
 
-  const handleEditSection = (section: string) => {
-    console.log('Editing section:', section);
-    setShowPreview(false);
-    // You might want to pass the active section to ReziStyleEditor
-    // For now, just closing preview returns to editor
+  const handleAIOptimize = (currentProfile: ResumeProfile) => {
+    toast.success('AI optimization feature coming soon!');
   };
 
-  const handleAIOptimize = async (currentProfile: ResumeProfile) => {
-    toast('AI Optimization coming soon!', {
-      icon: '✨',
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-      },
-    });
+  const handleUploadResume = () => {
+    setIsUploadModalOpen(true);
   };
 
   const handleUploadComplete = (uploadedProfile: ResumeProfile) => {
     setProfile(uploadedProfile);
     setIsUploadModalOpen(false);
-    toast.success('Resume imported! Review and edit in the preview panel →');
+    toast.success('Resume imported! Review and edit in the builder.');
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading resume builder...</p>
+          <p className="text-slate-500">Loading resume builder...</p>
         </div>
       </div>
     );
   }
 
-  if (showPreview) {
-    return (
-      <FullPageResumePreview
-        profile={profile}
-        sectionVisibility={sectionVisibility}
-        onBack={() => setShowPreview(false)}
-        onEditSection={handleEditSection}
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <ReziStyleEditor
+    <div className="min-h-screen bg-slate-50">
+      <NewResumeBuilder
         initialProfile={profile}
         onSave={handleSave}
         onPreview={handlePreview}
         onAIOptimize={handleAIOptimize}
-        onUploadResume={() => setIsUploadModalOpen(true)}
+        onUploadResume={handleUploadResume}
       />
 
       <ResumeUploadModal
