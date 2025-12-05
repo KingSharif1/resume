@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Upload, X, Loader2, Search, FileText } from 'lucide-react';
+import { Plus, Upload, X, Loader2, Search, FileText, Trash2, Copy } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { ResumeCard } from '@/components/Dashboard/ResumeCard';
@@ -23,6 +23,8 @@ export interface BaseResume {
   projects: any[];
   custom_sections: any[];
   is_starred: boolean;
+  target_job?: string;
+  settings?: any;
   created_at: string;
   updated_at: string;
 }
@@ -69,24 +71,138 @@ export default function Dashboard() {
     }
   };
 
-  const deleteResume = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this resume?')) return;
+  const toggleStar = async (id: string, currentStatus: boolean) => {
     if (!user?.id) return;
 
+    // Optimistic update
+    const updatedResumes = baseResumes.map(r =>
+      r.id === id ? { ...r, is_starred: !currentStatus } : r
+    );
+
+    // Check limit (max 3 starred)
+    const starredCount = updatedResumes.filter(r => r.is_starred).length;
+    if (starredCount > 3 && !currentStatus) {
+      toast.error('You can only pin up to 3 resumes');
+      return;
+    }
+
+    setBaseResumes(updatedResumes);
+
     try {
-      const response = await fetch(`/api/resumes?id=${id}&userId=${user.id}`, {
-        method: 'DELETE'
+      const response = await fetch('/api/resumes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          userId: user.id,
+          is_starred: !currentStatus
+        })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete resume');
-      }
+      if (!response.ok) throw new Error('Failed to update pin status');
 
-      toast.success('Resume deleted');
+      // Reload to ensure sync/sort
       loadResumes();
     } catch (error) {
-      console.error('Error deleting resume:', error);
-      toast.error('Failed to delete resume');
+      console.error('Error toggling star:', error);
+      toast.error('Failed to update pin status');
+      // Revert on error
+      loadResumes();
+    }
+  };
+
+  const deleteResume = async (id: string) => {
+    const resumeToDelete = baseResumes.find(r => r.id === id);
+    if (!resumeToDelete) return;
+    if (!user?.id) return;
+
+    // Show custom confirmation toast
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Trash2 className="w-5 h-5 text-red-500" />
+          <span className="font-medium">Delete "{resumeToDelete.title}"?</span>
+        </div>
+        <p className="text-sm text-slate-600">This action cannot be undone.</p>
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                const response = await fetch(`/api/resumes?id=${id}&userId=${user.id}`, {
+                  method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                  throw new Error('Failed to delete resume');
+                }
+
+                toast.success(`"${resumeToDelete.title}" has been deleted`, {
+                  icon: '🗑️',
+                });
+                loadResumes();
+              } catch (error) {
+                console.error('Error deleting resume:', error);
+                toast.error('Failed to delete resume');
+              }
+            }}
+            className="px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 rounded-md transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 10000,
+      style: {
+        maxWidth: '400px',
+      },
+    });
+  };
+
+  const duplicateResume = async (id: string) => {
+    const resumeToDuplicate = baseResumes.find(r => r.id === id);
+    if (!resumeToDuplicate || !user?.id) return;
+
+    try {
+      const duplicatedProfile = {
+        contact: resumeToDuplicate.contact_info,
+        summary: { content: resumeToDuplicate.summary },
+        experience: resumeToDuplicate.experience,
+        education: resumeToDuplicate.education,
+        skills: resumeToDuplicate.skills,
+        certifications: resumeToDuplicate.certifications,
+        projects: resumeToDuplicate.projects,
+        customSections: resumeToDuplicate.custom_sections,
+        settings: resumeToDuplicate.settings,
+        targetJob: resumeToDuplicate.target_job,
+        resumeName: `${resumeToDuplicate.title} (Copy)`,
+      };
+
+      const response = await fetch('/api/resumes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile: duplicatedProfile,
+          userId: user.id
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to duplicate resume');
+
+      toast.success(`Created "${resumeToDuplicate.title} (Copy)"`, {
+        icon: '📋',
+      });
+      loadResumes();
+    } catch (error) {
+      console.error('Error duplicating resume:', error);
+      toast.error('Failed to duplicate resume');
     }
   };
 
@@ -204,6 +320,8 @@ export default function Dashboard() {
                     key={resume.id}
                     resume={resume}
                     onDelete={deleteResume}
+                    onDuplicate={duplicateResume}
+                    onToggleStar={toggleStar}
                   />
                 ))}
               </div>

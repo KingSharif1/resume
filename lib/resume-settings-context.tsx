@@ -8,7 +8,10 @@ export type DateFormat = 'MM/YYYY' | 'MMM YYYY' | 'Month YYYY' | 'YYYY';
 export type SectionSpacing = 'compact' | 'normal' | 'spacious';
 
 export interface ResumeSettings {
-    template: string;
+    template: 'Modern' | 'Professional' | 'Creative' | 'basic';
+    theme: {
+        accentColor: string;
+    };
     font: {
         primary: FontFamily;
         secondary: FontFamily;
@@ -40,6 +43,9 @@ export interface ResumeSettings {
 
 const defaultSettings: ResumeSettings = {
     template: 'basic',
+    theme: {
+        accentColor: '#000000',
+    },
     font: {
         primary: 'Inter',
         secondary: 'Inter',
@@ -89,13 +95,21 @@ interface ResumeSettingsContextType {
     updateSettings: (updates: Partial<ResumeSettings> | ((prev: ResumeSettings) => Partial<ResumeSettings>)) => void;
     updateFontSettings: (updates: Partial<ResumeSettings['font']>) => void;
     updateLayoutSettings: (updates: Partial<ResumeSettings['layout']>) => void;
+    updateThemeSettings: (updates: Partial<ResumeSettings['theme']>) => void;
     resetSettings: () => void;
 }
 
 const ResumeSettingsContext = createContext<ResumeSettingsContextType | undefined>(undefined);
 
-export function ResumeSettingsProvider({ children }: { children: ReactNode }) {
-    const [settings, setSettings] = useState<ResumeSettings>(defaultSettings);
+export function ResumeSettingsProvider({ children, initialSettings }: { children: ReactNode; initialSettings?: ResumeSettings }) {
+    const [settings, setSettings] = useState<ResumeSettings>(initialSettings || defaultSettings);
+
+    // Update settings if initialSettings changes (e.g. on load)
+    React.useEffect(() => {
+        if (initialSettings) {
+            setSettings(initialSettings);
+        }
+    }, [initialSettings]);
 
     const updateSettings = (updates: Partial<ResumeSettings> | ((prev: ResumeSettings) => Partial<ResumeSettings>)) => {
         setSettings((prev) => {
@@ -118,6 +132,13 @@ export function ResumeSettingsProvider({ children }: { children: ReactNode }) {
         }));
     };
 
+    const updateThemeSettings = (updates: Partial<ResumeSettings['theme']>) => {
+        setSettings((prev) => ({
+            ...prev,
+            theme: { ...(prev.theme || defaultSettings.theme), ...updates },
+        }));
+    };
+
     const resetSettings = () => {
         setSettings(defaultSettings);
     };
@@ -129,6 +150,7 @@ export function ResumeSettingsProvider({ children }: { children: ReactNode }) {
                 updateSettings,
                 updateFontSettings,
                 updateLayoutSettings,
+                updateThemeSettings,
                 resetSettings,
             }}
         >

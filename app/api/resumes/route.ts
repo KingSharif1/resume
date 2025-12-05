@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
       const result = await sql`
         SELECT id, title, created_at, updated_at, 
                contact_info, summary, experience, education, 
-               skills, certifications, projects, custom_sections, is_starred
+               skills, certifications, projects, custom_sections, 
+               settings, target_job, is_starred
         FROM base_resumes 
         WHERE id = ${id} AND user_id = ${userId}
       `;
@@ -35,10 +36,11 @@ export async function GET(request: NextRequest) {
       const resumes = await sql`
         SELECT id, title, created_at, updated_at, 
                contact_info, summary, experience, education, 
-               skills, certifications, projects, custom_sections, is_starred
+               skills, certifications, projects, custom_sections, 
+               settings, target_job, is_starred
         FROM base_resumes 
         WHERE user_id = ${userId}
-        ORDER BY updated_at DESC
+        ORDER BY is_starred DESC, updated_at DESC
       `;
 
       return NextResponse.json({ resumes });
@@ -58,13 +60,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Profile and user ID are required' }, { status: 400 });
     }
 
-    // Generate title from profile
-    const title = `${profile.contact?.firstName || 'Untitled'} ${profile.contact?.lastName || 'Resume'}`.trim();
+    // Generate title from profile or use provided name
+    const title = profile.resumeName || `${profile.contact?.firstName || 'Untitled'} ${profile.contact?.lastName || 'Resume'}`.trim();
 
     const result = await sql`
       INSERT INTO base_resumes (
         user_id, title, contact_info, summary, experience, 
-        education, skills, certifications, projects, custom_sections
+        education, skills, certifications, projects, custom_sections,
+        settings, target_job
       )
       VALUES (
         ${userId}, 
@@ -76,7 +79,9 @@ export async function POST(request: NextRequest) {
         ${JSON.stringify(profile.skills)},
         ${JSON.stringify(profile.certifications)},
         ${JSON.stringify(profile.projects)},
-        ${JSON.stringify(profile.customSections)}
+        ${JSON.stringify(profile.customSections)},
+        ${JSON.stringify(profile.settings || {})},
+        ${profile.targetJob || null}
       )
       RETURNING id, title, created_at, updated_at
     `;
@@ -102,8 +107,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'ID, profile, and user ID are required' }, { status: 400 });
     }
 
-    // Generate title from profile
-    const title = `${profile.contact?.firstName || 'Untitled'} ${profile.contact?.lastName || 'Resume'}`.trim();
+    // Generate title from profile or use provided name
+    const title = profile.resumeName || `${profile.contact?.firstName || 'Untitled'} ${profile.contact?.lastName || 'Resume'}`.trim();
 
     const result = await sql`
       UPDATE base_resumes 
@@ -117,6 +122,8 @@ export async function PUT(request: NextRequest) {
         certifications = ${JSON.stringify(profile.certifications)},
         projects = ${JSON.stringify(profile.projects)},
         custom_sections = ${JSON.stringify(profile.customSections)},
+        settings = ${JSON.stringify(profile.settings || {})},
+        target_job = ${profile.targetJob || null},
         updated_at = NOW()
       WHERE id = ${id} AND user_id = ${userId}
       RETURNING id, title, updated_at

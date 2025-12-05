@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Eye, EyeOff } from 'lucide-react';
 
 import {
   DndContext,
@@ -72,7 +72,7 @@ function SortableExperienceItem({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className={isDragging ? 'shadow-lg' : ''}>
+      <Card className={`${isDragging ? 'shadow-lg' : ''} ${experience.visible === false ? 'opacity-60 border-dashed' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 flex-1">
@@ -84,9 +84,12 @@ function SortableExperienceItem({
                 <GripVertical className="w-4 h-4 text-slate-400" />
               </div>
               <div className="flex-1">
-                <CardTitle className="text-base">
-                  {experience.position || 'New Position'} 
+                <CardTitle className="text-base flex items-center gap-2">
+                  {experience.position || 'New Position'}
                   {experience.company && ` at ${experience.company}`}
+                  {experience.visible === false && (
+                    <span className="text-xs text-slate-400 font-normal italic">(Hidden)</span>
+                  )}
                 </CardTitle>
                 <p className="text-sm text-slate-600">
                   {experience.startDate && (
@@ -107,6 +110,19 @@ function SortableExperienceItem({
                   <ChevronUp className="w-4 h-4" />
                 ) : (
                   <ChevronDown className="w-4 h-4" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onUpdate({ visible: experience.visible === false ? true : false })}
+                className={experience.visible === false ? 'text-slate-400' : 'text-slate-600'}
+                title={experience.visible === false ? 'Hidden from preview - Click to show' : 'Visible in preview - Click to hide'}
+              >
+                {experience.visible === false ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
                 )}
               </Button>
               <Button
@@ -185,7 +201,7 @@ function SortableExperienceItem({
                     id={`current-${experience.id}`}
                     checked={experience.current}
                     onCheckedChange={(checked) => {
-                      onUpdate({ 
+                      onUpdate({
                         current: checked,
                         endDate: checked ? '' : experience.endDate
                       });
@@ -257,7 +273,7 @@ function SortableExperienceItem({
 
 export function DraggableExperienceForm({ experiences, onChange }: ExperienceFormProps) {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -281,7 +297,7 @@ export function DraggableExperienceForm({ experiences, onChange }: ExperienceFor
 
     const updated = [...experiences, newExperience];
     onChange(updated);
-    
+
     setExpandedItems(prev => {
       const newSet = new Set(prev);
       newSet.add(newExperience.id);
@@ -290,7 +306,7 @@ export function DraggableExperienceForm({ experiences, onChange }: ExperienceFor
   };
 
   const updateExperience = (id: string, updates: Partial<WorkExperience>) => {
-    const updated = experiences.map(exp => 
+    const updated = experiences.map(exp =>
       exp.id === id ? { ...exp, ...updates } : exp
     );
     onChange(updated);
@@ -349,7 +365,7 @@ export function DraggableExperienceForm({ experiences, onChange }: ExperienceFor
     if (active.id !== over.id) {
       const oldIndex = experiences.findIndex(exp => exp.id === active.id);
       const newIndex = experiences.findIndex(exp => exp.id === over.id);
-      
+
       onChange(arrayMove(experiences, oldIndex, newIndex));
     }
   }

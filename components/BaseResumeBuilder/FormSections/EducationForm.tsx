@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 
 interface EducationFormProps {
   education: Education[];
@@ -34,7 +34,7 @@ export function EducationForm({ education, onChange }: EducationFormProps) {
 
     const updated = [...education, newEducation];
     onChange(updated);
-    
+
     // Expand the new item
     setExpandedItems(prev => {
       const newSet = new Set(prev);
@@ -44,7 +44,7 @@ export function EducationForm({ education, onChange }: EducationFormProps) {
   };
 
   const updateEducation = (id: string, updates: Partial<Education>) => {
-    const updated = education.map(edu => 
+    const updated = education.map(edu =>
       edu.id === id ? { ...edu, ...updates } : edu
     );
     onChange(updated);
@@ -102,14 +102,14 @@ export function EducationForm({ education, onChange }: EducationFormProps) {
         <div className="space-y-4">
           {education.map((edu) => {
             const isExpanded = expandedItems.has(edu.id);
-            
+
             return (
               <Card key={edu.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <CardTitle className="text-base">
-                        {edu.degree || 'New Degree'} 
+                        {edu.degree || 'New Degree'}
                         {edu.fieldOfStudy && ` in ${edu.fieldOfStudy}`}
                       </CardTitle>
                       <p className="text-sm text-slate-600">
@@ -127,6 +127,19 @@ export function EducationForm({ education, onChange }: EducationFormProps) {
                           <ChevronUp className="w-4 h-4" />
                         ) : (
                           <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => updateEducation(edu.id, { visible: edu.visible === false ? true : false })}
+                        className={edu.visible === false ? 'text-slate-400' : 'text-slate-600'}
+                        title={edu.visible === false ? 'Hidden from preview - Click to show' : 'Visible in preview - Click to hide'}
+                      >
+                        {edu.visible === false ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
                         )}
                       </Button>
                       <Button

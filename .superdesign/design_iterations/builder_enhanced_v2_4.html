@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder - Minimalist Professional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #fafafa;
+            height: 100vh;
+            overflow: hidden;
+            color: #1a1a1a;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Minimalist Header */
+        .header {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 30;
+        }
+
+        .resume-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0.5rem 0;
+            transition: all 0.2s;
+        }
+
+        .resume-name:focus {
+            color: #000000;
+        }
+
+        .tailor-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tailor-btn:hover {
+            background: #333333;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e5e5e5;
+            background: white;
+            color: #666666;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            border-color: #cccccc;
+            color: #333333;
+        }
+
+        .btn-primary {
+            background: #000000;
+            color: white;
+            border-color: #000000;
+        }
+
+        .btn-primary:hover {
+            background: #333333;
+        }
+
+        .divider {
+            width: 1px;
+            height: 20px;
+            background: #e5e5e5;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #666666;
+            font-size: 0.875rem;
+        }
+
+        .zoom-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 0.125rem;
+            border: 1px solid #e5e5e5;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #666666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zoom-btn:hover {
+            border-color: #cccccc;
+            color: #333333;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            width: 50%;
+            background: white;
+            border-right: 1px solid #e5e5e5;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .left-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .left-panel::-webkit-scrollbar-track {
+            background: #fafafa;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb {
+            background: #e5e5e5;
+            border-radius: 3px;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb:hover {
+            background: #cccccc;
+        }
+
+        /* Minimalist Analysis Card */
+        .analysis-card {
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+        }
+
+        .analysis-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-circle {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .score-circle svg {
+            transform: rotate(-90deg);
+        }
+
+        .score-circle-bg {
+            fill: none;
+            stroke: #e5e5e5;
+            stroke-width: 4;
+        }
+
+        .score-circle-progress {
+            fill: none;
+            stroke: #000000;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 75.36;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .score-max {
+            font-size: 0.625rem;
+            color: #666666;
+        }
+
+        .score-info h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+        }
+
+        .score-info p {
+            font-size: 0.75rem;
+            color: #666666;
+            line-height: 1.5;
+        }
+
+        .improvement-steps {
+            margin-top: 1.5rem;
+        }
+
+        .improvement-steps h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.75rem;
+        }
+
+        .step-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-card:hover {
+            border-color: #cccccc;
+            transform: translateX(2px);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #000000;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-label {
+            font-size: 0.6875rem;
+            color: #666666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .step-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .step-badge {
+            background: #fafafa;
+            color: #666666;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.125rem;
+            font-size: 0.625rem;
+            font-weight: 500;
+            border: 1px solid #e5e5e5;
+        }
+
+        .step-description {
+            font-size: 0.75rem;
+            color: #666666;
+            line-height: 1.4;
+        }
+
+        /* Minimalist Section Cards */
+        .sections-container {
+            margin-top: 1.5rem;
+        }
+
+        .section-card {
+            border-bottom: 1px solid #f5f5f5;
+            padding: 1rem 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .section-header:hover {
+            background: #fafafa;
+        }
+
+        .section-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            color: #cccccc;
+            transition: transform 0.2s;
+        }
+
+        .section-icon.open {
+            transform: rotate(90deg);
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .section-title.active {
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .check-icon {
+            width: 18px;
+            height: 18px;
+            background: #000000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.625rem;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 50%;
+            background: #fafafa;
+            overflow-y: auto;
+            padding: 3rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            position: relative;
+        }
+
+        .preview-container {
+            background: white;
+            width: 595px;
+            height: 842px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.25rem;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            transform: scale(0.7);
+            transform-origin: top center;
+            border: 1px solid #e5e5e5;
+        }
+
+        .preview-content {
+            padding: 3rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #333333;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .preview-name {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .preview-contact {
+            font-size: 0.75rem;
+            color: #666666;
+        }
+
+        .preview-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #f5f5f5;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.8125rem;
+        }
+
+        .preview-item {
+            margin-bottom: 1rem;
+        }
+
+        .preview-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .preview-item-title {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .preview-item-date {
+            color: #666666;
+            font-size: 0.75rem;
+        }
+
+        .preview-item-subtitle {
+            color: #666666;
+            font-size: 0.8125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-item-description {
+            color: #333333;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+        }
+
+        /* Minimalist Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes subtle-pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .subtle-pulse {
+            animation: subtle-pulse 3s ease-in-out infinite;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Minimalist Header -->
+        <header class="header">
+            <div>
+                <input type="text" class="resume-name" value="Senior Software Engineer Resume" />
+            </div>
+
+            <button class="tailor-btn">
+                <svg class="subtle-pulse" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+                Tailor Resume
+            </button>
+
+            <div class="header-controls">
+                <button class="btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6m-6-6h6m6 0h-6"/>
+                    </svg>
+                    Template
+                </button>
+
+                <button class="btn">Layout</button>
+
+                <div class="divider"></div>
+
+                <div class="zoom-controls">
+                    <button class="zoom-btn">−</button>
+                    <span style="font-weight: 500;">70%</span>
+                    <button class="zoom-btn">+</button>
+                </div>
+
+                <div class="divider"></div>
+
+                <button class="btn btn-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Minimalist Analysis Card -->
+                <div class="analysis-card fade-in">
+                    <div class="analysis-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 11 12 14 22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        <h2 class="analysis-title">Resume Analysis</h2>
+                    </div>
+
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <svg width="80" height="80">
+                                <circle class="score-circle-bg" cx="40" cy="40" r="36"/>
+                                <circle class="score-circle-progress" cx="40" cy="40" r="36"/>
+                            </svg>
+                            <div class="score-text">
+                                <div class="score-number">78</div>
+                                <div class="score-max">out of 100</div>
+                            </div>
+                        </div>
+
+                        <div class="score-info">
+                            <h3>Score improved from 62 to 78</h3>
+                            <p>Good progress. Continue optimizing to reach your target score.</p>
+                        </div>
+                    </div>
+
+                    <div class="improvement-steps">
+                        <h4>Improvement Areas</h4>
+
+                        <div class="step-card">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label">Contact</span>
+                                    <span class="step-title">Add LinkedIn Profile</span>
+                                    <span class="step-badge">95/100</span>
+                                </div>
+                                <p class="step-description">Include professional LinkedIn URL for credibility</p>
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cccccc" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label">Experience</span>
+                                    <span class="step-title">Quantify Achievements</span>
+                                    <span class="step-badge">85/100</span>
+                                </div>
+                                <p class="step-description">Add measurable results and impact metrics</p>
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cccccc" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label">Skills</span>
+                                    <span class="step-title">Expand Technical Skills</span>
+                                    <span class="step-badge">90/100</span>
+                                </div>
+                                <p class="step-description">Include additional relevant technologies</p>
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cccccc" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Minimalist Section Cards -->
+                <div class="sections-container">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title active">Contact Information</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">Professional Summary</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">Work Experience</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">Education</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">Skills</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <div class="preview-container">
+                    <div class="preview-content">
+                        <div class="preview-header">
+                            <h1 class="preview-name">JOHN ANDERSON</h1>
+                            <div class="preview-contact">
+                                john.anderson@email.com • (555) 123-4567 • San Francisco, CA
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">Professional Summary</h2>
+                            <p class="preview-item-description">
+                                Senior Software Engineer with 8+ years of experience building scalable web applications. 
+                                Expertise in React, Node.js, and cloud architecture. Proven track record of leading teams 
+                                and delivering high-impact projects.
+                            </p>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">Work Experience</h2>
+                            
+                            <div class="preview-item">
+                                <div class="preview-item-header">
+                                    <span class="preview-item-title">Senior Software Engineer</span>
+                                    <span class="preview-item-date">2020 - Present</span>
+                                </div>
+                                <div class="preview-item-subtitle">Tech Corp • San Francisco, CA</div>
+                                <p class="preview-item-description">
+                                    • Led development of microservices architecture serving 10M+ users<br>
+                                    • Reduced API response time by 40% through optimization<br>
+                                    • Mentored team of 5 junior developers
+                                </p>
+                            </div>
+
+                            <div class="preview-item">
+                                <div class="preview-item-header">
+                                    <span class="preview-item-title">Software Engineer</span>
+                                    <span class="preview-item-date">2018 - 2020</span>
+                                </div>
+                                <div class="preview-item-subtitle">StartupXYZ • San Francisco, CA</div>
+                                <p class="preview-item-description">
+                                    • Built full-stack features using React and Node.js<br>
+                                    • Implemented CI/CD pipeline reducing deployment time by 60%
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">Education</h2>
+                            <div class="preview-item">
+                                <div class="preview-item-header">
+                                    <span class="preview-item-title">Bachelor of Science in Computer Science</span>
+                                    <span class="preview-item-date">2018</span>
+                                </div>
+                                <div class="preview-item-subtitle">University of California, Berkeley</div>
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">Skills</h2>
+                            <p class="preview-item-description">
+                                JavaScript • TypeScript • React • Node.js • Python • AWS • Docker • Kubernetes • PostgreSQL • MongoDB
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

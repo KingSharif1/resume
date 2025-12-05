@@ -8,6 +8,7 @@
 // Contact Information
 export interface ContactInfo {
   firstName: string;
+  middleName?: string;
   lastName: string;
   email: string;
   phone?: string;
@@ -35,6 +36,7 @@ export interface WorkExperience {
   description: string;
   achievements: string[]; // Bullet points
   skills?: string[]; // Skills used in this role
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Education Entry
@@ -46,10 +48,12 @@ export interface Education {
   location?: string;
   startDate?: string;
   endDate?: string;
+  current?: boolean;
   gpa?: string;
   honors?: string[];
   coursework?: string[];
   activities?: string[];
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Project Entry
@@ -60,20 +64,18 @@ export interface Project {
   role?: string;
   startDate?: string;
   endDate?: string;
+  current?: boolean;
   technologies: string[];
   url?: string;
   github?: string;
   achievements: string[];
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Skills organized by category
+// Skills organized by category (dynamic)
 export interface Skills {
-  technical: string[];
-  soft: string[];
-  tools: string[];
-  frameworks: string[];
-  databases: string[];
-  other: string[];
+  [category: string]: string[];
 }
 
 // Certification Entry
@@ -85,6 +87,7 @@ export interface Certification {
   expiryDate?: string;
   credentialId?: string;
   url?: string;
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Volunteer Experience Entry
@@ -98,6 +101,7 @@ export interface VolunteerExperience {
   current: boolean;
   description: string;
   achievements: string[];
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Award/Achievement Entry
@@ -107,6 +111,7 @@ export interface Award {
   issuer: string;
   date?: string;
   description?: string;
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Publication Entry
@@ -118,6 +123,7 @@ export interface Publication {
   url?: string;
   description?: string;
   authors?: string[];
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Language Entry
@@ -126,6 +132,7 @@ export interface Language {
   name: string;
   proficiency: 'Native' | 'Fluent' | 'Advanced' | 'Intermediate' | 'Basic';
   certification?: string;
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Reference Entry
@@ -137,6 +144,7 @@ export interface Reference {
   email?: string;
   phone?: string;
   relationship: string;
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Interest/Hobby Entry
@@ -144,6 +152,7 @@ export interface Interest {
   id: string;
   name: string;
   description?: string;
+  visible?: boolean; // Toggle visibility in preview
 }
 
 // Custom Section Entry (for user-defined sections)
@@ -152,6 +161,37 @@ export interface CustomSection {
   title: string;
   type: 'text' | 'list' | 'structured';
   content: any; // Flexible content based on type
+}
+
+// Resume Settings (Font, Layout, Template)
+export interface ResumeSettings {
+  template: 'Modern' | 'Professional' | 'Creative';
+  font: {
+    primary: string;
+    secondary: string;
+    headingSize: number;
+    bodySize: number;
+    lineSpacing: number;
+  };
+  layout: {
+    format: 'A4' | 'Letter';
+    margins: {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+    };
+    padding: {
+      section: number;
+      title: number;
+      content: number;
+    };
+    headerAlignment: 'left' | 'center' | 'right';
+    dateFormat: 'MMM YYYY' | 'Month YYYY' | 'MM/YYYY' | 'YYYY';
+    sectionOrder: SectionType[];
+    skillsLayout: 'comma' | 'columns';
+    skillsSort: 'none' | 'asc' | 'desc';
+  };
 }
 
 // The Complete Resume Profile
@@ -179,7 +219,14 @@ export interface ResumeProfile {
   // Custom sections
   customSections: CustomSection[];
   
-  // Metadata
+  // Settings & Metadata
+  settings?: ResumeSettings;
+  targetJob?: string; // Job title this resume is tailored for
+  resumeName?: string; // User-friendly name for the resume
+  
+  // AI Suggestions (inline text improvements)
+  suggestions?: string[]; // Array of suggestion IDs (stored separately)
+  
   metadata: {
     createdAt: string;
     updatedAt: string;
@@ -334,14 +381,7 @@ export function createEmptyProfile(): ResumeProfile {
     experience: [],
     education: [],
     projects: [],
-    skills: {
-      technical: [],
-      soft: [],
-      tools: [],
-      frameworks: [],
-      databases: [],
-      other: []
-    },
+    skills: {},
     certifications: [],
     volunteer: [],
     awards: [],

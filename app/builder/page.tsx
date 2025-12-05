@@ -7,6 +7,7 @@ import { NewResumeBuilder } from '@/components/BaseResumeBuilder/NewResumeBuilde
 import { ResumeProfile, createEmptyProfile } from '@/lib/resume-schema';
 import { resumeParser } from '@/lib/services/resume-parser';
 import { ResumeUploadModal } from '@/components/ResumeUploadModal';
+import { ResumeSettingsProvider } from '@/lib/resume-settings-context';
 import toast from 'react-hot-toast';
 
 export default function BuilderPage() {
@@ -38,7 +39,7 @@ export default function BuilderPage() {
                 summary: { content: data.resume.summary },
                 experience: data.resume.experience || [],
                 education: data.resume.education || [],
-                skills: data.resume.skills || { technical: [], soft: [], tools: [] },
+                skills: data.resume.skills || {},
                 languages: [], // TODO: Add to DB schema
                 projects: data.resume.projects || [],
                 certifications: data.resume.certifications || [],
@@ -48,6 +49,9 @@ export default function BuilderPage() {
                 references: [],
                 interests: [],
                 customSections: [],
+                settings: data.resume.settings || undefined,
+                targetJob: data.resume.target_job || '',
+                resumeName: data.resume.title || 'Untitled Resume',
                 metadata: {
                   createdAt: data.resume.created_at,
                   updatedAt: data.resume.updated_at,
@@ -80,12 +84,16 @@ export default function BuilderPage() {
     }
 
     try {
+      const isNew = !updatedProfile.id;
+      const method = isNew ? 'POST' : 'PUT';
+
       const response = await fetch('/api/resumes', {
-        method: 'POST',
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          id: updatedProfile.id, // Required for PUT
           profile: updatedProfile,
           userId: user.id
         }),
@@ -96,9 +104,12 @@ export default function BuilderPage() {
       const data = await response.json();
       toast.success('Resume saved successfully');
 
-      // Update URL with new ID if it was a new resume
-      if (!searchParams.get('id') && data.resume.id) {
-        router.replace(`/builder?id=${data.resume.id}`);
+      // Update profile with returned ID/timestamp
+      if (isNew && data.id) {
+        setProfile(prev => ({ ...prev, id: data.id }));
+        // Update URL without reload
+        const newUrl = `/builder?id=${data.id}`;
+        window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
       }
     } catch (error) {
       console.error('Error saving resume:', error);
@@ -137,14 +148,16 @@ export default function BuilderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <NewResumeBuilder
-        initialProfile={profile}
-        onSave={handleSave}
-        onPreview={handlePreview}
-        onAIOptimize={handleAIOptimize}
-        onUploadResume={handleUploadResume}
-      />
+    <div className=" bg-slate-50">
+      <ResumeSettingsProvider initialSettings={profile.settings as any}>
+        <NewResumeBuilder
+          initialProfile={profile}
+          onSave={handleSave}
+          onPreview={handlePreview}
+          onAIOptimize={handleAIOptimize}
+          onUploadResume={handleUploadResume}
+        />
+      </ResumeSettingsProvider>
 
       <ResumeUploadModal
         isOpen={isUploadModalOpen}

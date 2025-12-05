@@ -57,8 +57,8 @@ function SortableItem(props: { id: string; children: React.ReactNode }) {
 
 export function LayoutStyleEditor({ profile, onBack }: LayoutStyleEditorProps) {
     const { settings, updateFontSettings, updateLayoutSettings, resetSettings } = useResumeSettings();
-    const [activeTab, setActiveTab] = useState('text');
-    const [zoom, setZoom] = useState(80);
+    const [activeTab, setActiveTab] = useState('settings');
+    const [zoom, setZoom] = useState(100);
 
     const sensors = useSensors(
         useSensor(PointerSensor),

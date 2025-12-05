@@ -21,6 +21,7 @@ export function ResumeUploadModal({ isOpen, onClose, onUploadComplete }: ResumeU
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [resumeName, setResumeName] = useState('');
+    const [targetJob, setTargetJob] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -58,10 +59,11 @@ export function ResumeUploadModal({ isOpen, onClose, onUploadComplete }: ResumeU
 
             console.log('[Upload] Parsing successful, profile data received');
 
-            // Add the custom name to the profile if provided
+            // Add the custom name and target job to the profile if provided
             const finalProfile = {
                 ...result.profile,
-                resumeName: resumeName || selectedFile.name.replace(/\.[^/.]+$/, "")
+                resumeName: resumeName || selectedFile.name.replace(/\.[^/.]+$/, ""),
+                targetJob: targetJob || undefined
             };
 
             toast.success('Resume parsed successfully!');
@@ -70,6 +72,7 @@ export function ResumeUploadModal({ isOpen, onClose, onUploadComplete }: ResumeU
             // Reset state
             setSelectedFile(null);
             setResumeName('');
+            setTargetJob('');
             onClose();
         } catch (err) {
             console.error('[Upload] Error caught in handleUpload:', err);
@@ -95,6 +98,7 @@ export function ResumeUploadModal({ isOpen, onClose, onUploadComplete }: ResumeU
         e.stopPropagation();
         setSelectedFile(null);
         setResumeName('');
+        setTargetJob('');
         setError(null);
     };
 
@@ -117,6 +121,18 @@ export function ResumeUploadModal({ isOpen, onClose, onUploadComplete }: ResumeU
                             placeholder="e.g. Software Engineer Resume"
                             value={resumeName}
                             onChange={(e) => setResumeName(e.target.value)}
+                            disabled={isProcessing}
+                        />
+                    </div>
+
+                    {/* Target Job Input */}
+                    <div className="space-y-2">
+                        <Label htmlFor="target-job">Target Job Title (Optional)</Label>
+                        <Input
+                            id="target-job"
+                            placeholder="e.g. Senior Frontend Developer"
+                            value={targetJob}
+                            onChange={(e) => setTargetJob(e.target.value)}
                             disabled={isProcessing}
                         />
                     </div>

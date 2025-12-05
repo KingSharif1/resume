@@ -23,7 +23,7 @@ export function ContactForm({ contact, onChange }: ContactFormProps) {
       {/* Basic Information */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="firstName">First Name *</Label>
               <Input
@@ -31,6 +31,16 @@ export function ContactForm({ contact, onChange }: ContactFormProps) {
                 value={contact.firstName}
                 onChange={(e) => updateField('firstName', e.target.value)}
                 placeholder="John"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="middleName">Middle Name/Initial</Label>
+              <Input
+                id="middleName"
+                value={contact.middleName || ''}
+                onChange={(e) => updateField('middleName', e.target.value)}
+                placeholder="A."
                 className="mt-1"
               />
             </div>

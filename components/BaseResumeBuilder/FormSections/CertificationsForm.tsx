@@ -1,6 +1,12 @@
 'use client';
 
-import { Certification } from '@/lib/resume-schema';
+import { useState } from 'react';
+import { Certification, generateId } from '@/lib/resume-schema';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 
 interface CertificationsFormProps {
   certifications: Certification[];
@@ -8,5 +14,211 @@ interface CertificationsFormProps {
 }
 
 export function CertificationsForm({ certifications, onChange }: CertificationsFormProps) {
-  return <div>Certifications form placeholder</div>;
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const addCertification = () => {
+    const newCertification: Certification = {
+      id: generateId(),
+      name: '',
+      issuer: '',
+      date: '',
+      expiryDate: '',
+      credentialId: '',
+      url: ''
+    };
+
+    const updated = [...certifications, newCertification];
+    onChange(updated);
+
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      newSet.add(newCertification.id);
+      return newSet;
+    });
+  };
+
+  const updateCertification = (id: string, updates: Partial<Certification>) => {
+    const updated = certifications.map(cert =>
+      cert.id === id ? { ...cert, ...updates } : cert
+    );
+    onChange(updated);
+  };
+
+  const removeCertification = (id: string) => {
+    const updated = certifications.filter(cert => cert.id !== id);
+    onChange(updated);
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+  };
+
+  const toggleExpanded = (id: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-medium">Certifications</h3>
+          <p className="text-sm text-slate-600">Add your professional certifications</p>
+        </div>
+        <Button onClick={addCertification} size="sm">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Certification
+        </Button>
+      </div>
+
+      {certifications.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-slate-500 mb-4">No certifications added yet</p>
+          <Button onClick={addCertification} variant="outline">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Your Certification
+          </Button>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {certifications.map((cert) => {
+            const isExpanded = expandedItems.has(cert.id);
+
+            return (
+              <Card key={cert.id}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-base">
+                        {cert.name || 'New Certification'}
+                      </CardTitle>
+                      <p className="text-sm text-slate-600">
+                        {cert.issuer}
+                        {cert.date && ` • ${cert.date}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleExpanded(cert.id)}
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => updateCertification(cert.id, { visible: cert.visible === false ? true : false })}
+                        className={cert.visible === false ? 'text-slate-400' : 'text-slate-600'}
+                        title={cert.visible === false ? 'Hidden from preview - Click to show' : 'Visible in preview - Click to hide'}
+                      >
+                        {cert.visible === false ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCertification(cert.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                {isExpanded && (
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`name-${cert.id}`}>Certification Name *</Label>
+                        <Input
+                          id={`name-${cert.id}`}
+                          value={cert.name}
+                          onChange={(e) => updateCertification(cert.id, { name: e.target.value })}
+                          placeholder="AWS Certified Solutions Architect"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`issuer-${cert.id}`}>Issuing Organization *</Label>
+                        <Input
+                          id={`issuer-${cert.id}`}
+                          value={cert.issuer}
+                          onChange={(e) => updateCertification(cert.id, { issuer: e.target.value })}
+                          placeholder="Amazon Web Services"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`date-${cert.id}`}>Issue Date</Label>
+                        <Input
+                          id={`date-${cert.id}`}
+                          type="month"
+                          value={cert.date || ''}
+                          onChange={(e) => updateCertification(cert.id, { date: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`expiryDate-${cert.id}`}>Expiration Date</Label>
+                        <Input
+                          id={`expiryDate-${cert.id}`}
+                          type="month"
+                          value={cert.expiryDate || ''}
+                          onChange={(e) => updateCertification(cert.id, { expiryDate: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`credentialId-${cert.id}`}>Credential ID</Label>
+                        <Input
+                          id={`credentialId-${cert.id}`}
+                          value={cert.credentialId || ''}
+                          onChange={(e) => updateCertification(cert.id, { credentialId: e.target.value })}
+                          placeholder="ABC-123-XYZ"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`url-${cert.id}`}>Credential URL</Label>
+                        <Input
+                          id={`url-${cert.id}`}
+                          value={cert.url || ''}
+                          onChange={(e) => updateCertification(cert.id, { url: e.target.value })}
+                          placeholder="https://..."
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }

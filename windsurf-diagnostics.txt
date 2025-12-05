@@ -1,0 +1,1984 @@
+{
+  "systemInfo": {
+    "operatingSystem": "win32",
+    "windsurfVersion": "1.12.36",
+    "ideName": "windsurf",
+    "userName": "King Sharif",
+    "userEmail": "zamzamabdalla19@gmail.com",
+    "teamsTier": 2,
+    "timestamp": "2025-12-02T07:21:43.569Z",
+    "installationId": "cde52027-2eec-4f3e-baaf-2c9ba77fa6e8"
+  },
+  "userSettings": {
+    "openMostRecentChatConversation": true,
+    "lastSelectedModel": "MODEL_UNSPECIFIED",
+    "themePreference": "THEME_PREFERENCE_UNSPECIFIED",
+    "extensionPanelTab": "EXTENSION_PANEL_TAB_UNSPECIFIED",
+    "fontSize": "FONT_SIZE_DEFAULT",
+    "autocompleteSpeed": "AUTOCOMPLETE_SPEED_UNSPECIFIED",
+    "rememberLastModelSelection": "REMEMBER_LAST_MODEL_SELECTION_ENABLED",
+    "lastSelectedModelName": "",
+    "lastSelectedCascadeModel": "MODEL_GOOGLE_GEMINI_3_0_PRO_HIGH",
+    "cascadeNuxStates": [
+      {
+        "event": "CASCADE_NUX_EVENT_DIFF_OVERVIEW"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_WEB_SEARCH"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_UNSPECIFIED"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_TOOL_CALL"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_MODEL_SELECTOR_NUX"
+      },
+      {
+        "event": "CASCADE_NUX_EVENT_PLAN_MODE"
+      }
+    ],
+    "cascadePlannerMode": "CONVERSATIONAL_PLANNER_MODE_DEFAULT",
+    "cascadeAllowedCommands": [],
+    "cascadeDeniedCommands": [],
+    "userNuxStates": [],
+    "cascadeWebSearchDisabled": false,
+    "disableAutocomplete": false,
+    "disableSupercomplete": false,
+    "disableSelectionPopup": false,
+    "disableExplainProblemInlayHint": false,
+    "disableInlayHintShortcuts": false,
+    "disableOpenCascadeOnReload": false,
+    "disableAutoOpenEditedFiles": false,
+    "disableTabToJump": false,
+    "cascadeAutoExecutionPolicy": "CASCADE_COMMANDS_AUTO_EXECUTION_UNSPECIFIED",
+    "lastSelectedCascadeId": "0c5755a4-c038-47b7-aa70-88dfd600362b",
+    "explainAndFixInCurrentConversation": true,
+    "allowCascadeAccessGitignoreFiles": true,
+    "disableCascadeAutoFixLints": false,
+    "disableCascadeBrowserPreviews": false,
+    "detectProxy": false,
+    "disableTabToImport": false,
+    "useClipboardForCompletions": true,
+    "disableHighlightAfterAccept": false,
+    "lastSelectedNewConvoTab": "web",
+    "disableAutoGenerateMemories": false,
+    "enableSoundsForSpecialEvents": true,
+    "enableTabSounds": false,
+    "allowCascadeInBackground": false,
+    "tabToJump": "TAB_TO_JUMP_UNSPECIFIED",
+    "cascadeWebSearch": "CASCADE_WEB_SEARCH_TOOL_UNSPECIFIED",
+    "enableTerminalCompletion": false,
+    "lastModelOverride": "MODEL_GOOGLE_GEMINI_2_5_PRO",
+    "featureUsageData": {
+      "CASCADE_REVERT_TO_STEP": {
+        "hasUsed": true
+      },
+      "CASCADE_BROWSER": {
+        "hasUsed": true
+      },
+      "CASCADE_CLICK_MODEL_SELECTOR": {
+        "hasUsed": true
+      }
+    },
+    "disableCascadeInBackground": false,
+    "enableCommandCascadeMode": false,
+    "customWorkspace": [],
+    "conversationBrainConfigs": {
+      "77e096be-fe83-4af7-a2d8-294c6235cd7d": {
+        "planMode": "PLAN_MODE_OFF"
+      }
+    },
+    "cachedCascadeModelConfigs": [
+      {
+        "label": "Claude Opus 4.5",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_5_OPUS"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Opus 4.5 (Thinking)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_5_OPUS_THINKING"
+        },
+        "creditMultiplier": 3,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "GPT-5.1 (low reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_13"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1 (low, priority)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_21"
+        },
+        "creditMultiplier": 0.5,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1-Codex Low",
+        "modelOrAlias": {
+          "model": "MODEL_GPT_5_1_CODEX_LOW"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 400000
+      },
+      {
+        "label": "GPT-5.1-Codex-Mini Low",
+        "modelOrAlias": {
+          "model": "MODEL_GPT_5_1_CODEX_MINI_LOW"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 400000
+      },
+      {
+        "label": "SWE-1.5 (Promo)",
+        "modelOrAlias": {
+          "model": "MODEL_SWE_1_5"
+        },
+        "creditMultiplier": 0.5,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_WINDSURF",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 128000
+      },
+      {
+        "label": "Claude Haiku 4.5",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_11"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Sonnet 4.5",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_2"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Sonnet 4.5 (1M)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_25"
+        },
+        "creditMultiplier": 10,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 1000000
+      },
+      {
+        "label": "Claude Sonnet 4.5 Thinking",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_3"
+        },
+        "creditMultiplier": 3,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "GPT-5 (low reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_6"
+        },
+        "creditMultiplier": 0.5,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-4.1",
+        "modelOrAlias": {
+          "model": "MODEL_CHAT_GPT_4_1_2025_04_14"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 1047576
+      },
+      {
+        "label": "SWE-1",
+        "modelOrAlias": {
+          "alias": "MODEL_ALIAS_SWE_1"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": false,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_WINDSURF",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 0
+      },
+      {
+        "label": "Gemini 2.5 Pro",
+        "modelOrAlias": {
+          "model": "MODEL_GOOGLE_GEMINI_2_5_PRO"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_GOOGLE",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 1048576
+      },
+      {
+        "label": "Claude 3.7 Sonnet",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_3_7_SONNET_20250219"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude 3.7 Sonnet (Thinking)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_3_7_SONNET_20250219_THINKING"
+        },
+        "creditMultiplier": 3,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude 3.5 Sonnet",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_3_5_SONNET_20241022"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Sonnet 4 (BYOK)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_SONNET_BYOK"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_BYOK",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Sonnet 4",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_SONNET"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Sonnet 4 (Thinking, BYOK)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_SONNET_THINKING_BYOK"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_BYOK",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Sonnet 4 (Thinking)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_SONNET_THINKING"
+        },
+        "creditMultiplier": 3,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Opus 4.1",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_1_OPUS"
+        },
+        "creditMultiplier": 20,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Opus 4.1 (Thinking)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_1_OPUS_THINKING"
+        },
+        "creditMultiplier": 20,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Opus 4 (BYOK)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_OPUS_BYOK"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "Register your Anthropic API key in Windsurf settings.",
+        "isBeta": true,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_BYOK",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Claude Opus 4 (Thinking, BYOK)",
+        "modelOrAlias": {
+          "model": "MODEL_CLAUDE_4_OPUS_THINKING_BYOK"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "Register your Anthropic API key in Windsurf settings.",
+        "isBeta": true,
+        "provider": "MODEL_PROVIDER_ANTHROPIC",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_BYOK",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "o3",
+        "modelOrAlias": {
+          "model": "MODEL_CHAT_O3"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "o3 (high reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_CHAT_O3_HIGH"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 200000
+      },
+      {
+        "label": "Grok Code Fast 1",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_4"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_XAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 256000
+      },
+      {
+        "label": "GPT-5-Codex",
+        "modelOrAlias": {
+          "model": "MODEL_CHAT_GPT_5_CODEX"
+        },
+        "creditMultiplier": 0.5,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 400000
+      },
+      {
+        "label": "GPT-5 (medium reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_7"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5 (high reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_8"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1 (no reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_12"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1 (medium reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_14"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1 (high reasoning)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_15"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1 (no reasoning, priority)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_20"
+        },
+        "creditMultiplier": 0.5,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1 (medium, priority)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_22"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1 (high, priority)",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_23"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 384000
+      },
+      {
+        "label": "GPT-5.1-Codex",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_9"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 400000
+      },
+      {
+        "label": "GPT-5.1-Codex-Mini",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_19"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 400000
+      },
+      {
+        "label": "GPT-4o",
+        "modelOrAlias": {
+          "model": "MODEL_CHAT_GPT_4O_2024_08_06"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 128000
+      },
+      {
+        "label": "DeepSeek V3 (0324)",
+        "modelOrAlias": {
+          "model": "MODEL_DEEPSEEK_V3"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_DEEPSEEK",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 128000
+      },
+      {
+        "label": "Kimi K2",
+        "modelOrAlias": {
+          "model": "MODEL_KIMI_K2"
+        },
+        "creditMultiplier": 0.5,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_MOONSHOT",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 128000
+      },
+      {
+        "label": "Penguin Alpha",
+        "modelOrAlias": {
+          "model": "MODEL_PRIVATE_10"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": false,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_UNSPECIFIED",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 128000
+      },
+      {
+        "label": "Qwen3-Coder",
+        "modelOrAlias": {
+          "model": "MODEL_QWEN_3_CODER_480B_INSTRUCT"
+        },
+        "creditMultiplier": 0.5,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_QWEN",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 256000
+      },
+      {
+        "label": "GPT-OSS 120B (Medium)",
+        "modelOrAlias": {
+          "model": "MODEL_GPT_OSS_120B"
+        },
+        "creditMultiplier": 0.25,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_OPENAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 128000
+      },
+      {
+        "label": "DeepSeek R1 (0528)",
+        "modelOrAlias": {
+          "model": "MODEL_DEEPSEEK_R1"
+        },
+        "creditMultiplier": 0,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_DEEPSEEK",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 164000
+      },
+      {
+        "label": "xAI Grok-3",
+        "modelOrAlias": {
+          "model": "MODEL_XAI_GROK_3"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_XAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 131072
+      },
+      {
+        "label": "xAI Grok-3 mini (Thinking)",
+        "modelOrAlias": {
+          "model": "MODEL_XAI_GROK_3_MINI_REASONING"
+        },
+        "creditMultiplier": 0.125,
+        "disabled": false,
+        "supportsImages": false,
+        "supportsLegacy": true,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_XAI",
+        "isRecommended": false,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": false,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 131072
+      },
+      {
+        "label": "Gemini 3 Pro (low)",
+        "modelOrAlias": {
+          "model": "MODEL_GOOGLE_GEMINI_3_0_PRO_LOW"
+        },
+        "creditMultiplier": 1,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_GOOGLE",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 1048576
+      },
+      {
+        "label": "Gemini 3 Pro (high)",
+        "modelOrAlias": {
+          "model": "MODEL_GOOGLE_GEMINI_3_0_PRO_HIGH"
+        },
+        "creditMultiplier": 2,
+        "disabled": false,
+        "supportsImages": true,
+        "supportsLegacy": false,
+        "isPremium": true,
+        "betaWarningMessage": "",
+        "isBeta": false,
+        "provider": "MODEL_PROVIDER_GOOGLE",
+        "isRecommended": true,
+        "allowedTiers": [],
+        "pricingType": "MODEL_PRICING_TYPE_STATIC_CREDIT",
+        "apiProvider": "API_PROVIDER_UNSPECIFIED",
+        "isNew": true,
+        "partialRollout": false,
+        "rolloutFraction": 0,
+        "maxTokens": 1048576
+      }
+    ],
+    "cachedCascadeModelSorts": [
+      {
+        "name": "Recommended",
+        "groups": [
+          {
+            "groupName": "",
+            "modelLabels": [
+              "Claude Opus 4.5",
+              "Claude Opus 4.5 (Thinking)",
+              "GPT-5.1 (low reasoning)",
+              "GPT-5.1 (low, priority)",
+              "GPT-5.1-Codex Low",
+              "GPT-5.1-Codex-Mini Low",
+              "SWE-1.5 (Promo)",
+              "Claude Sonnet 4.5",
+              "Claude Sonnet 4.5 Thinking",
+              "Claude Sonnet 4",
+              "GPT-5.1 (no reasoning)",
+              "GPT-5.1 (no reasoning, priority)",
+              "Penguin Alpha",
+              "Gemini 3 Pro (low)",
+              "Gemini 3 Pro (high)"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Provider",
+        "groups": [
+          {
+            "groupName": "Windsurf",
+            "modelLabels": [
+              "SWE-1.5 (Promo)",
+              "SWE-1"
+            ]
+          },
+          {
+            "groupName": "OpenAI",
+            "modelLabels": [
+              "GPT-5.1 (low reasoning)",
+              "GPT-5.1 (low, priority)",
+              "GPT-5.1-Codex Low",
+              "GPT-5.1-Codex-Mini Low",
+              "GPT-5 (low reasoning)",
+              "GPT-4.1",
+              "o3",
+              "o3 (high reasoning)",
+              "GPT-5-Codex",
+              "GPT-5 (medium reasoning)",
+              "GPT-5 (high reasoning)",
+              "GPT-5.1 (no reasoning)",
+              "GPT-5.1 (medium reasoning)",
+              "GPT-5.1 (high reasoning)",
+              "GPT-5.1 (no reasoning, priority)",
+              "GPT-5.1 (medium, priority)",
+              "GPT-5.1 (high, priority)",
+              "GPT-5.1-Codex",
+              "GPT-5.1-Codex-Mini",
+              "GPT-4o",
+              "GPT-OSS 120B (Medium)"
+            ]
+          },
+          {
+            "groupName": "Anthropic",
+            "modelLabels": [
+              "Claude Opus 4.5",
+              "Claude Opus 4.5 (Thinking)",
+              "Claude Haiku 4.5",
+              "Claude Sonnet 4.5",
+              "Claude Sonnet 4.5 (1M)",
+              "Claude Sonnet 4.5 Thinking",
+              "Claude 3.7 Sonnet",
+              "Claude 3.7 Sonnet (Thinking)",
+              "Claude 3.5 Sonnet",
+              "Claude Sonnet 4 (BYOK)",
+              "Claude Sonnet 4",
+              "Claude Sonnet 4 (Thinking, BYOK)",
+              "Claude Sonnet 4 (Thinking)",
+              "Claude Opus 4.1",
+              "Claude Opus 4.1 (Thinking)",
+              "Claude Opus 4 (BYOK)",
+              "Claude Opus 4 (Thinking, BYOK)"
+            ]
+          },
+          {
+            "groupName": "Google",
+            "modelLabels": [
+              "Gemini 2.5 Pro",
+              "Gemini 3 Pro (low)",
+              "Gemini 3 Pro (high)"
+            ]
+          },
+          {
+            "groupName": "xAI",
+            "modelLabels": [
+              "Grok Code Fast 1",
+              "xAI Grok-3",
+              "xAI Grok-3 mini (Thinking)"
+            ]
+          },
+          {
+            "groupName": "DeepSeek",
+            "modelLabels": [
+              "DeepSeek V3 (0324)",
+              "DeepSeek R1 (0528)"
+            ]
+          },
+          {
+            "groupName": "Other",
+            "modelLabels": [
+              "Kimi K2",
+              "Penguin Alpha",
+              "Qwen3-Coder"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Cost",
+        "groups": [
+          {
+            "groupName": "Premium",
+            "modelLabels": [
+              "Claude Opus 4.5",
+              "Claude Opus 4.5 (Thinking)",
+              "Claude Haiku 4.5",
+              "Claude Sonnet 4.5",
+              "Claude Sonnet 4.5 (1M)",
+              "Claude Sonnet 4.5 Thinking",
+              "GPT-4.1",
+              "Gemini 2.5 Pro",
+              "Claude 3.7 Sonnet",
+              "Claude 3.7 Sonnet (Thinking)",
+              "Claude 3.5 Sonnet",
+              "Claude Sonnet 4",
+              "Claude Sonnet 4 (Thinking)",
+              "Claude Opus 4.1",
+              "Claude Opus 4.1 (Thinking)",
+              "o3",
+              "o3 (high reasoning)",
+              "GPT-5 (medium reasoning)",
+              "GPT-5 (high reasoning)",
+              "GPT-5.1 (medium, priority)",
+              "GPT-5.1 (high, priority)",
+              "GPT-4o",
+              "xAI Grok-3",
+              "Gemini 3 Pro (low)",
+              "Gemini 3 Pro (high)"
+            ]
+          },
+          {
+            "groupName": "Value",
+            "modelLabels": [
+              "GPT-5.1 (low, priority)",
+              "SWE-1.5 (Promo)",
+              "GPT-5 (low reasoning)",
+              "GPT-5-Codex",
+              "GPT-5.1 (no reasoning, priority)",
+              "Kimi K2",
+              "Qwen3-Coder",
+              "GPT-OSS 120B (Medium)",
+              "xAI Grok-3 mini (Thinking)"
+            ]
+          },
+          {
+            "groupName": "BYOK",
+            "modelLabels": [
+              "Claude Sonnet 4 (BYOK)",
+              "Claude Sonnet 4 (Thinking, BYOK)",
+              "Claude Opus 4 (BYOK)",
+              "Claude Opus 4 (Thinking, BYOK)"
+            ]
+          },
+          {
+            "groupName": "Free",
+            "modelLabels": [
+              "GPT-5.1 (low reasoning)",
+              "GPT-5.1-Codex Low",
+              "GPT-5.1-Codex-Mini Low",
+              "SWE-1",
+              "Grok Code Fast 1",
+              "GPT-5.1 (no reasoning)",
+              "GPT-5.1 (medium reasoning)",
+              "GPT-5.1 (high reasoning)",
+              "GPT-5.1-Codex",
+              "GPT-5.1-Codex-Mini",
+              "DeepSeek V3 (0324)",
+              "Penguin Alpha",
+              "DeepSeek R1 (0528)"
+            ]
+          }
+        ]
+      }
+    ],
+    "globalPlanModePreference": "PLAN_MODE_ON",
+    "isSnoozed": false,
+    "cascadeRunExtensionCode": "CASCADE_RUN_EXTENSION_CODE_UNSPECIFIED",
+    "cascadeRunExtensionCodeAutoRun": "CASCADE_RUN_EXTENSION_CODE_AUTO_RUN_UNSPECIFIED",
+    "lastModelDefaultOverrideVersionId": "gpt-5.1-low-1113",
+    "autoContinueOnMaxGeneratorInvocations": "AUTO_CONTINUE_ON_MAX_GENERATOR_INVOCATIONS_UNSPECIFIED",
+    "seenNuxUids": {
+      "1": true,
+      "8": true
+    },
+    "recentlyUsedCascadeModels": [
+      "379",
+      "391",
+      "281"
+    ],
+    "cascadeDismissedSuggestionWorkspaces": [],
+    "annotationsConfig": "ANNOTATIONS_CONFIG_UNSPECIFIED",
+    "enableAutomaticScreenshot": false,
+    "browserExperimentalFeaturesConfig": "BROWSER_EXPERIMENTAL_FEATURES_CONFIG_UNSPECIFIED",
+    "commandPopupAutocomplete": "COMMAND_POPUP_AUTOCOMPLETE_UNSPECIFIED",
+    "claudeCodeCliPath": "",
+    "claudeCodeSystemPrompt": "",
+    "claudeCodeMaxTurns": 0,
+    "claudeCodeMcpConfig": "",
+    "claudeCodeDirectories": [],
+    "claudeCodeSystemPromptAppend": "",
+    "claudeCodeModel": "",
+    "enableInstantContextAgent": false,
+    "disableInstantContextAgent": false
+  },
+  "extensionLogs": [
+    "2025-12-01 10:25:20.865 [info] 2025/12/01 10:25:20 maxprocs: Leaving GOMAXPROCS=8: CPU quota undefined",
+    "2025-12-01 10:25:22.195 [info] I1201 10:25:22.195059 13852 main.go:623] Setting GOMAXPROCS to 4",
+    "2025-12-01 10:25:23.191 [info] I1201 10:25:23.163595 13852 main.go:839] Starting language server process with pid 13852",
+    "2025-12-01 10:25:23.197 [info] I1201 10:25:23.196604 13852 server.go:355] Language server will attempt to listen on host 127.0.0.1",
+    "2025-12-01 10:25:23.214 [info] I1201 10:25:23.213985 13852 server.go:362] Language server listening on random port at 51252",
+    "2025-12-01 10:25:23.430 [info] I1201 10:25:23.430000 13852 server.go:495] Created extension server client at port 51247",
+    "2025-12-01 10:25:23.784 [info] (Windsurf) 2025-12-01 10:25:23.777 [INFO]: Language server started",
+    "2025-12-01 10:25:31.541 [info] (Windsurf) 2025-12-01 10:25:31.530 [INFO]: Shutting down all 0 managed language servers",
+    "2025-12-01 10:25:31.543 [info] (Windsurf) 2025-12-01 10:25:31.542 [ERROR]: LS lspClient stop error: Client is not running and can't be stopped. It's current state is: starting",
+    "2025-12-01 10:25:37.484 [info] 2025/12/01 10:25:37 maxprocs: Leaving GOMAXPROCS=8: CPU quota undefined",
+    "2025-12-01 10:25:38.334 [info] I1201 10:25:38.334053  2900 main.go:623] Setting GOMAXPROCS to 4",
+    "2025-12-01 10:25:38.335 [info] I1201 10:25:38.334053  2900 main.go:839] Starting language server process with pid 2900",
+    "2025-12-01 10:25:38.335 [info] I1201 10:25:38.335051  2900 server.go:355] Language server will attempt to listen on host 127.0.0.1",
+    "2025-12-01 10:25:38.337 [info] I1201 10:25:38.336050  2900 server.go:362] Language server listening on random port at 51290",
+    "2025-12-01 10:25:38.573 [info] I1201 10:25:38.572629  2900 server.go:495] Created extension server client at port 51281",
+    "2025-12-01 10:25:38.909 [info] (Windsurf) 2025-12-01 10:25:38.903 [INFO]: Language server started",
+    "2025-12-01 10:25:52.170 [info] (Windsurf) 2025-12-01 10:25:52.170 [INFO]: LS lspClient started successfully",
+    "2025-12-01 10:26:13.395 [info] I1201 10:26:13.394733  2900 mcp_server_client_instance.go:160] [MCP] Client initialization completed successfully",
+    "2025-12-01 10:26:13.395 [info] I1201 10:26:13.394733  2900 mcp_server_client_instance.go:433] [MCP] Server 'Neon' initialized successfully: mcp-server-neon v0.6.4",
+    "2025-12-01 10:31:28.223 [info] I1201 10:31:28.219957  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 10:31:51.941 [info] I1201 10:31:51.939849  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 10:32:10.788 [info] I1201 10:32:10.788296  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/builder/page.tsx has unsaved changes",
+    "2025-12-01 10:34:36.946 [info] I1201 10:34:36.945464  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 10:36:36.965 [info] I1201 10:36:36.964753  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/lib/resume-score.ts has unsaved changes",
+    "2025-12-01 10:42:35.647 [info] I1201 10:42:35.646323  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/Dashboard/ResumeCard.tsx has unsaved changes",
+    "2025-12-01 10:48:56.088 [info] E1201 10:48:56.087888  2900 interceptor.go:74] /exa.language_server_pb.LanguageServerService/AcknowledgeCascadeCodeEdit (unknown): no unacknowledged steps for file file:///c:/Users/kings/WorkSpace/resume/lib/resume-score.ts",
+    "2025-12-01 10:50:29.954 [info] I1201 10:50:29.954288  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/Dashboard/ResumeCard.tsx has unsaved changes",
+    "2025-12-01 10:53:41.665 [info] I1201 10:53:41.665201  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes",
+    "2025-12-01 10:53:44.950 [info] I1201 10:53:44.948190  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes",
+    "2025-12-01 10:55:37.633 [info] I1201 10:55:37.633150  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes",
+    "2025-12-01 10:55:57.580 [info] I1201 10:55:57.580024  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes",
+    "2025-12-01 10:57:04.916 [info] I1201 10:57:04.915554  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/Dashboard/ResumeCard.tsx has unsaved changes",
+    "2025-12-01 11:08:08.916 [info] I1201 11:08:08.916026  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 11:08:19.894 [info] I1201 11:08:19.893798  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 11:08:33.442 [info] I1201 11:08:33.441870  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 11:08:33.695 [info] I1201 11:08:33.688063  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 11:09:55.055 [info] I1201 11:09:55.055178  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 11:10:05.045 [info] I1201 11:10:05.044679  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 11:10:16.149 [info] I1201 11:10:16.148952  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes",
+    "2025-12-01 11:10:25.426 [info] I1201 11:10:25.425909  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:10:51.994 [info] I1201 11:10:51.993774  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/lib/resume-settings-context.tsx has unsaved changes",
+    "2025-12-01 11:11:03.396 [info] I1201 11:11:03.395914  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/lib/resume-schema.ts has unsaved changes",
+    "2025-12-01 11:25:20.403 [info] I1201 11:25:20.402313  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AIChatPanel.tsx has unsaved changes",
+    "2025-12-01 11:25:29.951 [info] I1201 11:25:29.951171  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:26:07.241 [info] I1201 11:26:07.240673  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:26:34.106 [info] I1201 11:26:34.100530  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes",
+    "2025-12-01 11:26:48.277 [info] I1201 11:26:48.275929  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/history/route.ts has unsaved changes",
+    "2025-12-01 11:37:10.545 [info] I1201 11:37:10.545070  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AIChatWidget.tsx has unsaved changes",
+    "2025-12-01 11:37:42.884 [info] I1201 11:37:42.884418  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AISuggestions.tsx has unsaved changes",
+    "2025-12-01 11:37:52.962 [info] I1201 11:37:52.962181  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:38:03.625 [info] I1201 11:38:03.622811  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:38:08.046 [info] 2025/12/01 11:38:08 http: proxy error: context canceled",
+    "2025-12-01 11:38:16.031 [info] I1201 11:38:16.030843  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:38:37.649 [info] I1201 11:38:37.648756  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:38:50.265 [info] I1201 11:38:50.264126  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:41:51.981 [info] I1201 11:41:51.981422  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts has unsaved changes",
+    "2025-12-01 11:42:30.940 [info] I1201 11:42:30.939489  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AISuggestions.tsx has unsaved changes",
+    "2025-12-01 11:42:40.792 [info] I1201 11:42:40.791520  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes",
+    "2025-12-01 11:44:42.045 [info] E1201 11:44:42.010686  2900 interceptor.go:74] /exa.language_server_pb.LanguageServerService/AcknowledgeCascadeCodeEdit (unknown): no unacknowledged steps for file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts",
+    "2025-12-01 11:46:07.164 [info] I1201 11:46:07.163617  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes",
+    "2025-12-01 11:46:42.339 [info] I1201 11:46:42.338966  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts has unsaved changes",
+    "2025-12-01 11:53:30.667 [info] I1201 11:53:30.666124  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes",
+    "2025-12-01 11:53:42.913 [info] I1201 11:53:42.912091  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes",
+    "2025-12-01 11:59:36.677 [info] I1201 11:59:36.676630  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AIChatWidget.tsx has unsaved changes",
+    "2025-12-01 11:59:52.777 [info] I1201 11:59:52.777582  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes",
+    "2025-12-01 12:00:31.391 [info] E1201 12:00:31.390877  2900 interceptor.go:74] /exa.language_server_pb.LanguageServerService/AcknowledgeCascadeCodeEdit (unknown): no unacknowledged steps for file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts",
+    "2025-12-01 12:06:50.487 [info] I1201 12:06:50.486934  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes",
+    "2025-12-01 12:07:05.157 [info] I1201 12:07:05.157415  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts has unsaved changes"
+  ],
+  "languageServerDiagnostics": {
+    "logs": [
+      "I1201 10:25:38.334053  2900 main.go:623] Setting GOMAXPROCS to 4\n",
+      "I1201 10:25:38.334053  2900 main.go:839] Starting language server process with pid 2900\n",
+      "I1201 10:25:38.335051  2900 server.go:355] Language server will attempt to listen on host 127.0.0.1\n",
+      "I1201 10:25:38.336050  2900 server.go:362] Language server listening on random port at 51290\n",
+      "I1201 10:25:38.572629  2900 server.go:495] Created extension server client at port 51281\n",
+      "I1201 10:26:13.394733  2900 mcp_server_client_instance.go:160] [MCP] Client initialization completed successfully\n",
+      "I1201 10:26:13.394733  2900 mcp_server_client_instance.go:433] [MCP] Server 'Neon' initialized successfully: mcp-server-neon v0.6.4\n",
+      "I1201 10:31:28.219957  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 10:31:51.939849  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 10:32:10.788296  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/builder/page.tsx has unsaved changes\n",
+      "I1201 10:34:36.945464  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 10:36:36.964753  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/lib/resume-score.ts has unsaved changes\n",
+      "I1201 10:42:35.646323  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/Dashboard/ResumeCard.tsx has unsaved changes\n",
+      "E1201 10:48:56.087888  2900 interceptor.go:74] /exa.language_server_pb.LanguageServerService/AcknowledgeCascadeCodeEdit (unknown): no unacknowledged steps for file file:///c:/Users/kings/WorkSpace/resume/lib/resume-score.ts\n",
+      "I1201 10:50:29.954288  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/Dashboard/ResumeCard.tsx has unsaved changes\n",
+      "I1201 10:53:41.665201  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes\n",
+      "I1201 10:53:44.948190  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes\n",
+      "I1201 10:55:37.633150  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes\n",
+      "I1201 10:55:57.580024  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/dashboard/page.tsx has unsaved changes\n",
+      "I1201 10:57:04.915554  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/Dashboard/ResumeCard.tsx has unsaved changes\n",
+      "I1201 11:08:08.916026  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 11:08:19.893798  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 11:08:33.441870  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 11:08:33.688063  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 11:09:55.055178  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 11:10:05.044679  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 11:10:16.148952  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/FullPageResumePreview.tsx has unsaved changes\n",
+      "I1201 11:10:25.425909  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:10:51.993774  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/lib/resume-settings-context.tsx has unsaved changes\n",
+      "I1201 11:11:03.395914  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/lib/resume-schema.ts has unsaved changes\n",
+      "I1201 11:25:20.402313  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AIChatPanel.tsx has unsaved changes\n",
+      "I1201 11:25:29.951171  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:26:07.240673  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:26:34.100530  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes\n",
+      "I1201 11:26:48.275929  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/history/route.ts has unsaved changes\n",
+      "I1201 11:37:10.545070  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AIChatWidget.tsx has unsaved changes\n",
+      "I1201 11:37:42.884418  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AISuggestions.tsx has unsaved changes\n",
+      "I1201 11:37:52.962181  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:38:03.622811  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:38:16.030843  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:38:37.648756  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:38:50.264126  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "I1201 11:41:51.981422  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts has unsaved changes\n",
+      "I1201 11:42:30.939489  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AISuggestions.tsx has unsaved changes\n",
+      "I1201 11:42:40.791520  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/NewResumeBuilder.tsx has unsaved changes\n",
+      "E1201 11:44:42.010686  2900 interceptor.go:74] /exa.language_server_pb.LanguageServerService/AcknowledgeCascadeCodeEdit (unknown): no unacknowledged steps for file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts\n",
+      "I1201 11:46:07.163617  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes\n",
+      "I1201 11:46:42.338966  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts has unsaved changes\n",
+      "I1201 11:53:30.666124  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes\n",
+      "I1201 11:53:42.912091  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes\n",
+      "I1201 11:59:36.676630  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/components/BaseResumeBuilder/AIChatWidget.tsx has unsaved changes\n",
+      "I1201 11:59:52.777582  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes\n",
+      "E1201 12:00:31.390877  2900 interceptor.go:74] /exa.language_server_pb.LanguageServerService/AcknowledgeCascadeCodeEdit (unknown): no unacknowledged steps for file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts\n",
+      "I1201 12:06:50.486934  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/chat/route.ts has unsaved changes\n",
+      "I1201 12:07:05.157415  2900 handler_utils.go:338] Checking if file file:///c:/Users/kings/WorkSpace/resume/app/api/ai/suggestions/route.ts has unsaved changes\n"
+    ]
+  },
+  "recentTrajectories": [
+    {
+      "cascadeId": "e8e5ff93-af8a-4b62-ba0e-34b00dca28c6",
+      "trajectoryId": "1bbeeccd-7c52-4807-baae-ca11519beb45",
+      "summary": "Enhance Resume Dashboard",
+      "lastStepIndex": 235,
+      "lastModifiedTime": "2025-12-01T18:07:21.632Z"
+    },
+    {
+      "cascadeId": "7c953350-77b1-4cb9-a3aa-7703eef38c48",
+      "trajectoryId": "a279be34-bbb9-40eb-ade3-f24791d09f9e",
+      "summary": "Debug Content Not Showing",
+      "lastStepIndex": 70,
+      "lastModifiedTime": "2025-11-28T07:43:45.166Z"
+    },
+    {
+      "cascadeId": "9ea77e52-6d39-428d-872b-4c868a219696",
+      "trajectoryId": "733ce149-da89-46ff-9e5d-e7bce8d9f17d",
+      "summary": "Fix Resume Parsing API",
+      "lastStepIndex": 1343,
+      "lastModifiedTime": "2025-11-21T10:41:58.008Z"
+    },
+    {
+      "cascadeId": "9fc9b2b0-b01a-4189-8f4c-5b9340f7bb4a",
+      "trajectoryId": "e0031c1a-3f16-4e9c-a349-482374c1c3e9",
+      "summary": "Fixing DB Init Scripts",
+      "lastStepIndex": 363,
+      "lastModifiedTime": "2025-11-14T18:43:58.041Z"
+    },
+    {
+      "cascadeId": "d2a75aa4-9635-4c0f-acd6-494cf16c68c7",
+      "trajectoryId": "9ab617f8-04ae-4875-9ef7-16fdb98b8b3a",
+      "summary": "Update Project READMEs",
+      "lastStepIndex": 25,
+      "lastModifiedTime": "2025-11-13T23:00:25.325Z"
+    },
+    {
+      "cascadeId": "01001497-7cae-495f-96b1-bd83d30204c6",
+      "trajectoryId": "8250df81-f5c7-494e-9654-0a3223394553",
+      "summary": "Understanding Kudusi Project",
+      "lastStepIndex": 31,
+      "lastModifiedTime": "2025-11-13T22:17:57.510Z"
+    },
+    {
+      "cascadeId": "3650d4a7-9cd6-46d1-88d7-8703cb9a3a45",
+      "trajectoryId": "210814c3-f96e-454e-8ed4-e0f467073d8f",
+      "summary": "Fixing Editor Image and Layout",
+      "lastStepIndex": 1151,
+      "lastModifiedTime": "2025-11-12T01:50:42.588Z"
+    },
+    {
+      "cascadeId": "2b015cf9-08b7-441d-8e91-626b4c745177",
+      "trajectoryId": "5aa3f5f5-d801-47da-80d8-7eb978dfed68",
+      "summary": "Project Structure and Setup",
+      "lastStepIndex": 25,
+      "lastModifiedTime": "2025-11-09T07:04:29.479Z"
+    },
+    {
+      "cascadeId": "0d8d5663-d265-45f4-8ac5-8a113d926924",
+      "trajectoryId": "07916fa4-10bb-4e1a-a84e-4f15ae0560c6",
+      "summary": "Shadcn Dashboard Refinement",
+      "lastStepIndex": 729,
+      "lastModifiedTime": "2025-11-07T10:28:56.399Z"
+    },
+    {
+      "cascadeId": "978fc3db-847f-4806-a2bb-d1c4c67d392c",
+      "trajectoryId": "6bebc16a-9114-4561-8218-519b378494bd",
+      "summary": "Fixing Date Off-by-One Error",
+      "lastStepIndex": 89,
+      "lastModifiedTime": "2025-11-05T02:39:56.366Z"
+    }
+  ],
+  "installedExtensions": [
+    {
+      "id": "ms-vscode.js-debug",
+      "version": "1.105.0",
+      "isActive": true,
+      "name": "JavaScript Debugger"
+    },
+    {
+      "id": "ms-vscode.js-debug-companion",
+      "version": "1.1.3",
+      "isActive": false,
+      "name": "JavaScript Debugger Companion Extension"
+    },
+    {
+      "id": "ms-vscode.vscode-js-profile-table",
+      "version": "1.0.10",
+      "isActive": false,
+      "name": "Table Visualizer for JavaScript Profiles"
+    },
+    {
+      "id": "miguelsolorio.symbols",
+      "version": "0.0.21",
+      "isActive": false,
+      "name": "Symbols"
+    },
+    {
+      "id": "RobbOwen.synthwave-vscode",
+      "version": "0.1.17",
+      "isActive": false,
+      "name": "SynthWave '84"
+    },
+    {
+      "id": "enkia.tokyo-night",
+      "version": "1.0.9",
+      "isActive": false,
+      "name": "Tokyo Night"
+    },
+    {
+      "id": "codeium.windsurf",
+      "version": "0.2.0",
+      "isActive": true,
+      "name": "Windsurf"
+    },
+    {
+      "id": "codeium.windsurf-code-executor",
+      "version": "0.0.1",
+      "isActive": false,
+      "name": "Windsurf Code Executor"
+    },
+    {
+      "id": "Codeium.windsurf-dev-containers",
+      "version": "0.0.1",
+      "isActive": true,
+      "name": "Windsurf Remote - Dev Containers"
+    },
+    {
+      "id": "codeium.windsurf-remote-openssh",
+      "version": "0.0.1",
+      "isActive": false,
+      "name": "Windsurf Remote - SSH"
+    },
+    {
+      "id": "codeium.windsurf-remote-wsl",
+      "version": "0.0.1",
+      "isActive": false,
+      "name": "Windsurf Remote - WSL"
+    },
+    {
+      "id": "anseki.vscode-color",
+      "version": "0.4.5",
+      "isActive": false,
+      "name": "Color Picker"
+    },
+    {
+      "id": "bierner.color-info",
+      "version": "0.7.2",
+      "isActive": true,
+      "name": "Color Info"
+    },
+    {
+      "id": "bourhaouta.tailwindshades",
+      "version": "0.0.5",
+      "isActive": false,
+      "name": "Tailwind Shades"
+    },
+    {
+      "id": "bradlc.vscode-tailwindcss",
+      "version": "0.14.26",
+      "isActive": true,
+      "name": "Tailwind CSS IntelliSense"
+    },
+    {
+      "id": "bruceyuhb.hsl-preview",
+      "version": "0.0.6",
+      "isActive": true,
+      "name": "HSL Color Preview"
+    },
+    {
+      "id": "esbenp.prettier-vscode",
+      "version": "11.0.0",
+      "isActive": true,
+      "name": "Prettier - Code formatter"
+    },
+    {
+      "id": "expo.vscode-expo-tools",
+      "version": "1.6.0",
+      "isActive": true,
+      "name": "Expo Tools"
+    },
+    {
+      "id": "golang.go",
+      "version": "0.46.1",
+      "isActive": false,
+      "name": "Go"
+    },
+    {
+      "id": "imgildev.vscode-tailwindcss-snippets",
+      "version": "1.0.0",
+      "isActive": false,
+      "name": "Tailwind CSS snippets"
+    },
+    {
+      "id": "lihui.vs-color-picker",
+      "version": "1.0.0",
+      "isActive": true,
+      "name": "VS Color Picker"
+    },
+    {
+      "id": "naumovs.color-highlight",
+      "version": "2.8.0",
+      "isActive": true,
+      "name": "Color Highlight"
+    },
+    {
+      "id": "redhat.vscode-yaml",
+      "version": "1.17.0",
+      "isActive": true,
+      "name": "YAML"
+    },
+    {
+      "id": "RooVeterinaryInc.roo-cline",
+      "version": "3.13.2",
+      "isActive": true,
+      "name": "Roo Code (prev. Roo Cline)"
+    },
+    {
+      "id": "SuperdesignDev.superdesign-official",
+      "version": "0.0.14",
+      "isActive": false,
+      "name": "Superdesign Dev"
+    },
+    {
+      "id": "WallabyJs.console-ninja",
+      "version": "1.0.430",
+      "isActive": true,
+      "name": "Console Ninja"
+    },
+    {
+      "id": "WallabyJs.quokka-vscode",
+      "version": "1.0.711",
+      "isActive": true,
+      "name": "Quokka.js"
+    },
+    {
+      "id": "WallabyJs.wallaby-vscode",
+      "version": "1.0.437",
+      "isActive": true,
+      "name": "Wallaby.js"
+    }
+  ],
+  "fields": {
+    "cascadeId": "e8e5ff93-af8a-4b62-ba0e-34b00dca28c6",
+    "currentLatestStepIndex": 235,
+    "trajectoryId": "1bbeeccd-7c52-4807-baae-ca11519beb45",
+    "consoleLogs": [
+      "[LOG] 2025-12-1 10:25:55.919 Sentry initialized",
+      "[ERROR] 2025-12-1 11:3:2.925 Error fetching model statuses: ConnectError: [unavailable] unavailable: read tcp 192.168.1.132:51295->34.49.14.144:443: wsarecv: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.",
+      "[ERROR] 2025-12-1 11:3:5.285 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:3:5.285 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:3:15.903 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:3:20.820 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: An established connection was aborted by the software in your host machine.",
+      "[ERROR] 2025-12-1 11:3:27.500 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:3:50.457 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp: lookup server.self-serve.windsurf.com: no such host",
+      "[ERROR] 2025-12-1 11:3:55.752 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:3:57.500 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:4:19.300 ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:4:19.314 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:4:22.619 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:4:29.546 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:4:52.525 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:4:57.814 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:4:58.186 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[WARN] 2025-12-1 11:4:58.764 Failed to check user message rate limit: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:5:7.544 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:5:25.292 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:5:29.577 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:5:52.515 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:5:57.790 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:5:58.162 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:6:4.285 ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[WARN] 2025-12-1 11:6:5.430 Failed to check user message rate limit: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:6:7.481 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:6:7.654 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:6:29.547 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:6:37.658 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp 192.168.1.153:443: connectex: No connection could be made because the target machine actively refused it.",
+      "[ERROR] 2025-12-1 11:6:57.806 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:6:58.69 Unleash: unable to send feature metrics TypeError: Failed to fetch",
+      "[ERROR] 2025-12-1 11:7:7.465 Unleash: unable to fetch feature toggles TypeError: Failed to fetch",
+      "[WARN] 2025-12-1 11:7:13.266 Failed to check user message rate limit: ConnectError: [unavailable] unavailable: dial tcp: lookup server.self-serve.windsurf.com: no such host",
+      "[ERROR] 2025-12-1 11:7:13.319 Error fetching model statuses: ConnectError: [unavailable] unavailable: dial tcp: lookup server.self-serve.windsurf.com: no such host",
+      "[ERROR] 2025-12-1 11:7:13.320 ConnectError: [unavailable] unavailable: dial tcp: lookup server.self-serve.windsurf.com: no such host",
+      "[ERROR] 2025-12-1 11:7:13.320 ConnectError: [unavailable] unavailable: dial tcp: lookup server.self-serve.windsurf.com: no such host",
+      "[ERROR] 2025-12-1 11:7:13.321 ConnectError: [unavailable] unavailable: dial tcp: lookup server.self-serve.windsurf.com: no such host",
+      "[WARN] 2025-12-1 11:39:18.482 Failed to copy text using Clipboard API:  NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Write permission denied."
+    ]
+  }
+}

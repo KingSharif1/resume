@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, X, Eye, EyeOff } from 'lucide-react';
 
 interface ProjectsFormProps {
   projects: Project[];
@@ -34,7 +34,7 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
 
     const updated = [...projects, newProject];
     onChange(updated);
-    
+
     setExpandedItems(prev => {
       const newSet = new Set(prev);
       newSet.add(newProject.id);
@@ -43,7 +43,7 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
   };
 
   const updateProject = (id: string, updates: Partial<Project>) => {
-    const updated = projects.map(project => 
+    const updated = projects.map(project =>
       project.id === id ? { ...project, ...updates } : project
     );
     onChange(updated);
@@ -75,8 +75,8 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
     if (!tech.trim()) return;
     const project = projects.find(p => p.id === projectId);
     if (project && !project.technologies.includes(tech.trim())) {
-      updateProject(projectId, { 
-        technologies: [...project.technologies, tech.trim()] 
+      updateProject(projectId, {
+        technologies: [...project.technologies, tech.trim()]
       });
     }
   };
@@ -101,8 +101,8 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
   const addAchievement = (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     if (project) {
-      updateProject(projectId, { 
-        achievements: [...project.achievements, ''] 
+      updateProject(projectId, {
+        achievements: [...project.achievements, '']
       });
     }
   };
@@ -140,7 +140,7 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
         <div className="space-y-4">
           {projects.map((project) => {
             const isExpanded = expandedItems.has(project.id);
-            
+
             return (
               <Card key={project.id}>
                 <CardHeader className="pb-3">
@@ -164,6 +164,19 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
                           <ChevronUp className="w-4 h-4" />
                         ) : (
                           <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => updateProject(project.id, { visible: project.visible === false ? true : false })}
+                        className={project.visible === false ? 'text-slate-400' : 'text-slate-600'}
+                        title={project.visible === false ? 'Hidden from preview - Click to show' : 'Visible in preview - Click to hide'}
+                      >
+                        {project.visible === false ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
                         )}
                       </Button>
                       <Button

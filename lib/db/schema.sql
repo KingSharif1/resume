@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS base_resumes (
   certifications JSONB,
   projects JSONB,
   custom_sections JSONB,
+  settings JSONB,
+  target_job TEXT,
+  is_starred BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

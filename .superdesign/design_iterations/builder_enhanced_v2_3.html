@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder - Creative Colorful</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 25%, #fbbf24 50%, #f59e0b 75%, #d97706 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Creative Header */
+        .header {
+            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+            border-bottom: 2px solid #f59e0b;
+            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2), 0 2px 4px -1px rgba(245, 158, 11, 0.1);
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 30;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ec4899, #f59e0b, #10b981, #3b82f6, #8b5cf6);
+            opacity: 0.8;
+        }
+
+        .resume-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #92400e;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .resume-name:hover, .resume-name:focus {
+            background: #fef3c7;
+        }
+
+        .tailor-btn {
+            background: linear-gradient(135deg, #ec4899 0%, #f59e0b 50%, #10b981 100%);
+            color: white;
+            border: none;
+            padding: 0.625rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.3), 0 2px 4px -1px rgba(236, 72, 153, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tailor-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .tailor-btn:hover::before {
+            left: 100%;
+        }
+
+        .tailor-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.4), 0 4px 6px -2px rgba(236, 72, 153, 0.3);
+        }
+
+        .tailor-btn:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #fbbf24;
+            background: white;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+            color: white;
+            border-color: #8b5cf6;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .divider {
+            width: 2px;
+            height: 24px;
+            background: linear-gradient(180deg, #ec4899, #f59e0b);
+            border-radius: 1px;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #92400e;
+            font-size: 0.875rem;
+        }
+
+        .zoom-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #fbbf24;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: #92400e;
+        }
+
+        .zoom-btn:hover {
+            background: #fef3c7;
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            width: 50%;
+            background: linear-gradient(135deg, #ffffff 0%, #fef9e7 100%);
+            border-right: 2px solid #fbbf24;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .left-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-panel::-webkit-scrollbar-track {
+            background: #fef3c7;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #f59e0b, #d97706);
+            border-radius: 4px;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #d97706, #b45309);
+        }
+
+        /* Creative Analysis Card */
+        .analysis-card {
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%);
+            border: 2px solid #ec4899;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px -5px rgba(236, 72, 153, 0.3), 0 4px 6px -2px rgba(236, 72, 153, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analysis-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ec4899, #f59e0b, #10b981, #3b82f6, #8b5cf6);
+        }
+
+        .analysis-card::after {
+            content: '✨';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            animation: sparkleRotate 3s ease-in-out infinite;
+        }
+
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+        }
+
+        .analysis-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #be185d;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-circle {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .score-circle svg {
+            transform: rotate(-90deg);
+        }
+
+        .score-circle-bg {
+            fill: none;
+            stroke: #fbcfe8;
+            stroke-width: 6;
+        }
+
+        .score-circle-progress {
+            fill: none;
+            stroke: url(#scoreGradient);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 75.36;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #be185d;
+        }
+
+        .score-max {
+            font-size: 0.625rem;
+            color: #92400e;
+        }
+
+        .score-info h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #be185d;
+            margin-bottom: 0.25rem;
+        }
+
+        .score-info p {
+            font-size: 0.75rem;
+            color: #92400e;
+            line-height: 1.5;
+        }
+
+        .improvement-steps {
+            margin-top: 1.5rem;
+        }
+
+        .improvement-steps h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #be185d;
+            margin-bottom: 0.75rem;
+        }
+
+        .step-card {
+            background: white;
+            border: 2px solid #f9a8d4;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .step-card:hover::before {
+            left: 100%;
+        }
+
+        .step-card:hover {
+            transform: translateX(8px) translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(236, 72, 153, 0.3);
+            border-color: #ec4899;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #f59e0b);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            color: #ec4899;
+            font-weight: 600;
+        }
+
+        .step-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #be185d;
+        }
+
+        .step-badge {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.625rem;
+            font-weight: 600;
+            border: 1px solid #fbbf24;
+        }
+
+        .step-description {
+            font-size: 0.75rem;
+            color: #92400e;
+            line-height: 1.4;
+        }
+
+        /* Creative Section Cards */
+        .sections-container {
+            margin-top: 1.5rem;
+        }
+
+        .section-card {
+            border-bottom: 2px solid #fde68a;
+            padding: 1rem 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            transition: all 0.2s;
+        }
+
+        .section-header:hover {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            transform: translateX(4px);
+        }
+
+        .section-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            color: #f59e0b;
+            transition: transform 0.2s;
+        }
+
+        .section-icon.open {
+            transform: rotate(90deg);
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .section-title.active {
+            color: #ec4899;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 4px -1px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 50%;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+            overflow-y: auto;
+            padding: 3rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            position: relative;
+        }
+
+        .right-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, #f59e0b 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .preview-container {
+            background: white;
+            width: 595px;
+            height: 842px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            transform: scale(0.7);
+            transform-origin: top center;
+            border: 3px solid #fbbf24;
+        }
+
+        .preview-content {
+            padding: 3rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 3px solid #f59e0b;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            margin: -3rem -3rem 2rem -3rem;
+            padding: 2rem 3rem 1.5rem 3rem;
+        }
+
+        .preview-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-contact {
+            font-size: 0.75rem;
+            color: #b45309;
+        }
+
+        .preview-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #be185d;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f9a8d4;
+        }
+
+        .preview-item {
+            margin-bottom: 1rem;
+        }
+
+        .preview-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .preview-item-title {
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .preview-item-date {
+            color: #b45309;
+            font-size: 0.75rem;
+        }
+
+        .preview-item-subtitle {
+            color: #b45309;
+            font-size: 0.8125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-item-description {
+            color: #475569;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+        }
+
+        /* Creative Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes sparkleRotate {
+            0%, 100% {
+                transform: rotate(0deg) scale(1);
+            }
+            25% {
+                transform: rotate(90deg) scale(1.2);
+            }
+            50% {
+                transform: rotate(180deg) scale(1);
+            }
+            75% {
+                transform: rotate(270deg) scale(1.2);
+            }
+        }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        .rainbow {
+            animation: rainbow 3s linear infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0, -8px, 0);
+            }
+            70% {
+                transform: translate3d(0, -4px, 0);
+            }
+            90% {
+                transform: translate3d(0, -2px, 0);
+            }
+        }
+
+        .bounce {
+            animation: bounce 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Creative Header -->
+        <header class="header">
+            <div>
+                <input type="text" class="resume-name" value="Creative Resume Builder ✨" />
+            </div>
+
+            <button class="tailor-btn">
+                <svg class="rainbow bounce" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+                ✨ Magic Tailor ✨
+            </button>
+
+            <div class="header-controls">
+                <button class="btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6m-6-6h6m6 0h-6"/>
+                    </svg>
+                    🎨 Templates
+                </button>
+
+                <button class="btn">🎭 Style & Layout</button>
+
+                <div class="divider"></div>
+
+                <div class="zoom-controls">
+                    <button class="zoom-btn">−</button>
+                    <span style="font-weight: 600;">70%</span>
+                    <button class="zoom-btn">+</button>
+                </div>
+
+                <div class="divider"></div>
+
+                <button class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    📄 Download PDF
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Creative Analysis Card -->
+                <div class="analysis-card fade-in">
+                    <div class="analysis-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 11 12 14 22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        <h2 class="analysis-title">🎯 Resume Analysis</h2>
+                    </div>
+
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <svg width="80" height="80">
+                                <defs>
+                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="score-circle-bg" cx="40" cy="40" r="36"/>
+                                <circle class="score-circle-progress" cx="40" cy="40" r="36"/>
+                            </svg>
+                            <div class="score-text">
+                                <div class="score-number">78</div>
+                                <div class="score-max">out of 100</div>
+                            </div>
+                        </div>
+
+                        <div class="score-info">
+                            <h3>🚀 Amazing progress! 62 → 78</h3>
+                            <p>You're on fire! Just a few more tweaks and you'll have a stellar resume! 🌟</p>
+                        </div>
+                    </div>
+
+                    <div class="improvement-steps">
+                        <h4>🎯 Next power moves</h4>
+
+                        <div class="step-card">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label">📞 Contact</span>
+                                    <span class="step-title">Add LinkedIn magic</span>
+                                    <span class="step-badge">95/100</span>
+                                </div>
+                                <p class="step-description">✨ Boost your credibility with a professional LinkedIn URL</p>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label">💼 Experience</span>
+                                    <span class="step-title">Show your impact</span>
+                                    <span class="step-badge">85/100</span>
+                                </div>
+                                <p class="step-description">📊 Add 2-3 quantifiable achievements with impressive metrics</p>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <span class="step-label">🛠️ Skills</span>
+                                    <span class="step-title">Tech superpowers</span>
+                                    <span class="step-badge">90/100</span>
+                                </div>
+                                <p class="step-description">🚀 Add more relevant technical skills to showcase your expertise</p>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Creative Section Cards -->
+                <div class="sections-container">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title active">📞 Contact Information</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">✨ Professional Summary</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">💼 Work Experience</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">🎓 Education</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-left">
+                                <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span class="section-title">🛠️ Skills</span>
+                                <div class="check-icon">✓</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <div class="preview-container">
+                    <div class="preview-content">
+                        <div class="preview-header">
+                            <h1 class="preview-name">JOHN ANDERSON</h1>
+                            <div class="preview-contact">
+                                john.anderson@email.com • (555) 123-4567 • San Francisco, CA
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">PROFESSIONAL SUMMARY</h2>
+                            <p class="preview-item-description">
+                                Senior Software Engineer with 8+ years of experience building scalable web applications. 
+                                Expertise in React, Node.js, and cloud architecture. Proven track record of leading teams 
+                                and delivering high-impact projects.
+                            </p>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">WORK EXPERIENCE</h2>
+                            
+                            <div class="preview-item">
+                                <div class="preview-item-header">
+                                    <span class="preview-item-title">Senior Software Engineer</span>
+                                    <span class="preview-item-date">2020 - Present</span>
+                                </div>
+                                <div class="preview-item-subtitle">Tech Corp • San Francisco, CA</div>
+                                <p class="preview-item-description">
+                                    • Led development of microservices architecture serving 10M+ users<br>
+                                    • Reduced API response time by 40% through optimization<br>
+                                    • Mentored team of 5 junior developers
+                                </p>
+                            </div>
+
+                            <div class="preview-item">
+                                <div class="preview-item-header">
+                                    <span class="preview-item-title">Software Engineer</span>
+                                    <span class="preview-item-date">2018 - 2020</span>
+                                </div>
+                                <div class="preview-item-subtitle">StartupXYZ • San Francisco, CA</div>
+                                <p class="preview-item-description">
+                                    • Built full-stack features using React and Node.js<br>
+                                    • Implemented CI/CD pipeline reducing deployment time by 60%
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">EDUCATION</h2>
+                            <div class="preview-item">
+                                <div class="preview-item-header">
+                                    <span class="preview-item-title">Bachelor of Science in Computer Science</span>
+                                    <span class="preview-item-date">2018</span>
+                                </div>
+                                <div class="preview-item-subtitle">University of California, Berkeley</div>
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h2 class="preview-section-title">SKILLS</h2>
+                            <p class="preview-item-description">
+                                JavaScript • TypeScript • React • Node.js • Python • AWS • Docker • Kubernetes • PostgreSQL • MongoDB
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
