@@ -88,10 +88,24 @@ export function SuggestionCard({
                         </Badge>
                     </div>
                     <div className="text-xs text-slate-600 space-y-1">
-                        <div className="flex items-center gap-1">
-                            <span className="line-through text-slate-400">{suggestion.originalText}</span>
-                            <span className="text-slate-400">→</span>
-                            <span className="font-medium text-slate-900">{suggestion.suggestedText}</span>
+                        <div className="flex flex-col gap-1">
+                            <span className="line-through text-slate-400 text-[10px]">{suggestion.originalText}</span>
+                            <div className="flex items-center gap-1.5 text-slate-900">
+                                <span className="text-slate-400 text-[10px]">→</span>
+                                <span className="font-medium">
+                                    {/* Simple diff highlighting */}
+                                    {suggestion.suggestedText.split(' ').map((word, i) => {
+                                        // heuristic: if word (normalized) is not in originalText, bold it
+                                        // This is a naive diff, but works for "new part" highlighting
+                                        const isNew = !suggestion.originalText.toLowerCase().includes(word.toLowerCase().replace(/[.,!?;:]/g, ''));
+                                        return (
+                                            <span key={i} className={isNew ? "font-bold text-blue-700 bg-blue-50 px-0.5 rounded" : ""}>
+                                                {word}{' '}
+                                            </span>
+                                        );
+                                    })}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

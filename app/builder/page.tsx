@@ -10,6 +10,8 @@ import { ResumeUploadModal } from '@/components/ResumeUploadModal';
 import { ResumeSettingsProvider } from '@/lib/resume-settings-context';
 import toast from 'react-hot-toast';
 
+import { SuggestionHoverProvider } from '@/lib/suggestion-hover-context';
+
 export default function BuilderPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -150,13 +152,15 @@ export default function BuilderPage() {
   return (
     <div className=" bg-slate-50">
       <ResumeSettingsProvider initialSettings={profile.settings as any}>
-        <NewResumeBuilder
-          initialProfile={profile}
-          onSave={handleSave}
-          onPreview={handlePreview}
-          onAIOptimize={handleAIOptimize}
-          onUploadResume={handleUploadResume}
-        />
+        <SuggestionHoverProvider>
+          <NewResumeBuilder
+            initialProfile={profile}
+            onSave={handleSave}
+            onPreview={handlePreview}
+            onAIOptimize={handleAIOptimize}
+            onUploadResume={handleUploadResume}
+          />
+        </SuggestionHoverProvider>
       </ResumeSettingsProvider>
 
       <ResumeUploadModal
@@ -167,3 +171,5 @@ export default function BuilderPage() {
     </div>
   );
 }
+
+

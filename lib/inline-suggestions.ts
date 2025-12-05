@@ -205,3 +205,74 @@ export function sortSuggestionsByPriority(
     getSuggestionPriority(b) - getSuggestionPriority(a)
   );
 }
+/**
+ * Apply a suggestion to the resume profile
+ */
+export function applySuggestionToProfile(
+  profile: any, // Using any to avoid circular dependency with ResumeProfile if it's not imported
+  suggestion: InlineSuggestion
+): any {
+  const newProfile = JSON.parse(JSON.stringify(profile));
+  
+  // Helper to get nested property
+  const getNested = (obj: any, path: string) => {
+    return path.split('.').reduce((o, p) => (o ? o[p] : undefined), obj);
+  };
+
+  // Helper to set nested property
+  const setNested = (obj: any, path: string, value: any) => {
+    const parts = path.split('.');
+    const last = parts.pop()!;
+    const target = parts.reduce((o, p) => o[p], obj);
+    if (target) {
+      target[last] = value;
+    }
+  };
+
+  let targetText = '';
+  let updatePath = '';
+
+  // Determine target based on section
+  if (suggestion.targetSection === 'summary') {
+    targetText = newProfile.summary.content;
+    updatePath = 'summary.content';
+  } else if (suggestion.targetSection === 'experience') {
+    const expIndex = newProfile.experience.findIndex((e: any) => e.id === suggestion.targetItemId);
+    if (expIndex !== -1) {
+      if (suggestion.targetField === 'description') {
+        targetText = newProfile.experience[expIndex].description;
+        updatePath = `experience.${expIndex}.description`;
+      } else if (suggestion.targetField?.startsWith('achievements[')) {
+        // Extract index from achievements[0]
+        const match = suggestion.targetField.match(/achievements\[(\d+)\]/);
+        if (match) {
+          const achieveIndex = parseInt(match[1]);
+          targetText = newProfile.experience[expIndex].achievements[achieveIndex];
+          updatePath = `experience.${expIndex}.achievements.${achieveIndex}`;
+        }
+      }
+    }
+  } else if (suggestion.targetSection === 'projects') {
+    const projIndex = newProfile.projects.findIndex((p: any) => p.id === suggestion.targetItemId);
+    if (projIndex !== -1) {
+      if (suggestion.targetField === 'description') {
+        targetText = newProfile.projects[projIndex].description;
+        updatePath = `projects.${projIndex}.description`;
+      } else if (suggestion.targetField?.startsWith('achievements[')) {
+        const match = suggestion.targetField.match(/achievements\[(\d+)\]/);
+        if (match) {
+          const achieveIndex = parseInt(match[1]);
+          targetText = newProfile.projects[projIndex].achievements[achieveIndex];
+          updatePath = `projects.${projIndex}.achievements.${achieveIndex}`;
+        }
+      }
+    }
+  }
+
+  if (targetText && updatePath) {
+    const newText = applySuggestion(targetText, suggestion);
+    setNested(newProfile, updatePath, newText);
+  }
+
+  return newProfile;
+}

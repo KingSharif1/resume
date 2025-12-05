@@ -15,12 +15,16 @@ import {
 import { Github, Linkedin, Mail, MapPin, Phone, Globe, Sparkles, Layout } from 'lucide-react';
 import { useResumeSettings } from '@/lib/resume-settings-context';
 
+import { HighlightedText } from '@/components/HighlightedText';
+import { InlineSuggestion } from '@/lib/inline-suggestions';
+
 interface FullPageResumePreviewProps {
   profile: ResumeProfile;
   sectionVisibility?: { [key: string]: boolean };
   isSplitView?: boolean;
   onTemplateChange?: () => void;
   onLayoutChange?: () => void;
+  inlineSuggestions?: InlineSuggestion[];
 }
 
 export function FullPageResumePreview({
@@ -42,7 +46,8 @@ export function FullPageResumePreview({
   },
   isSplitView = false,
   onTemplateChange,
-  onLayoutChange
+  onLayoutChange,
+  inlineSuggestions = []
 }: FullPageResumePreviewProps) {
   const { settings, updateFontSettings, updateThemeSettings } = useResumeSettings();
   const { font, layout, template, theme } = settings;
@@ -88,6 +93,28 @@ export function FullPageResumePreview({
     marginBottom: `${layout.padding.section}px`,
   };
 
+  // Helper to render text with highlights
+  const renderWithHighlights = (text: string, section: SectionType, itemId?: string, field?: string) => {
+    if (!text) return null;
+
+    // Filter suggestions for this specific field
+    const relevantSuggestions = inlineSuggestions.filter(s =>
+      s.targetSection === section &&
+      s.targetItemId === itemId &&
+      s.targetField === field
+    );
+
+    if (relevantSuggestions.length === 0) return text;
+
+    return (
+      <HighlightedText
+        text={text}
+        suggestions={relevantSuggestions}
+        className=""
+      />
+    );
+  };
+
   // Helper to render sections
   const renderSection = (key: SectionType) => {
     switch (key) {
@@ -97,9 +124,9 @@ export function FullPageResumePreview({
             <h2 className="font-bold uppercase tracking-wider mb-2" style={subHeadingStyle}>
               Summary
             </h2>
-            <p className="text-slate-700 leading-relaxed" style={bodyStyle}>
-              {profile.summary.content}
-            </p>
+            <div className="text-slate-700 leading-relaxed" style={bodyStyle}>
+              {renderWithHighlights(profile.summary.content, 'summary', undefined, 'content')}
+            </div>
           </div>
         );
 
@@ -124,12 +151,16 @@ export function FullPageResumePreview({
                     <span className="text-slate-600" style={bodyStyle}>{exp.location}</span>
                   </div>
                   {exp.description && (
-                    <p className="text-slate-700 mb-2" style={bodyStyle}>{exp.description}</p>
+                    <div className="text-slate-700 mb-2" style={bodyStyle}>
+                      {renderWithHighlights(exp.description, 'experience', exp.id, 'description')}
+                    </div>
                   )}
                   {exp.achievements && exp.achievements.length > 0 && (
                     <ul className="list-disc list-inside text-slate-700 space-y-1 ml-2">
                       {exp.achievements.map((achievement, i) => (
-                        <li key={i} style={bodyStyle}>{achievement}</li>
+                        <li key={i} style={bodyStyle}>
+                          {renderWithHighlights(achievement, 'experience', exp.id, `achievements[${i}]`)}
+                        </li>
                       ))}
                     </ul>
                   )}
@@ -188,11 +219,15 @@ export function FullPageResumePreview({
                       {project.startDate} – {project.current ? 'Present' : project.endDate}
                     </span>
                   </div>
-                  <p className="text-slate-700 mb-2" style={bodyStyle}>{project.description}</p>
+                  <div className="text-slate-700 mb-2" style={bodyStyle}>
+                    {renderWithHighlights(project.description, 'projects', project.id, 'description')}
+                  </div>
                   {project.achievements && project.achievements.length > 0 && (
                     <ul className="list-disc list-inside text-slate-700 space-y-1 ml-2">
                       {project.achievements.map((highlight, i) => (
-                        <li key={i} style={bodyStyle}>{highlight}</li>
+                        <li key={i} style={bodyStyle}>
+                          {renderWithHighlights(highlight, 'projects', project.id, `achievements[${i}]`)}
+                        </li>
                       ))}
                     </ul>
                   )}
