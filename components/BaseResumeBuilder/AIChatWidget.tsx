@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, X, User, Loader2, Briefcase } from 'lucide-react';
+import { Bot, Send, X, User, Loader2, Briefcase, Sparkles, MessageSquarePlus, History, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ResumeProfile } from '@/lib/resume-schema';
@@ -16,6 +16,7 @@ interface Message {
         isFallback?: boolean;
         fallbackReason?: string;
     };
+    suggestion?: ChatSuggestion;
 }
 
 interface AIChatWidgetProps {
@@ -25,6 +26,17 @@ interface AIChatWidgetProps {
     onClose: () => void;
     initialMessage?: string;
     onMessageSent?: () => void;
+    onApplySuggestion?: (suggestion: ChatSuggestion) => void;
+    onPreviewSuggestion?: (suggestion: ChatSuggestion | null) => void;
+    onAddInlineSuggestion?: (suggestion: ChatSuggestion) => void;
+}
+
+export interface ChatSuggestion {
+    targetSection: string;
+    targetId?: string;
+    originalText?: string;
+    suggestedText: string;
+    reasoning: string;
 }
 
 // Professional Avatar Component for Myles
@@ -42,12 +54,14 @@ const MylesAvatar = ({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 'lg
     );
 };
 
-export function AIChatWidget({ resumeId, profile, isOpen, onClose, initialMessage, onMessageSent }: AIChatWidgetProps) {
+export function AIChatWidget({ resumeId, profile, isOpen, onClose, initialMessage, onMessageSent, onApplySuggestion, onPreviewSuggestion, onAddInlineSuggestion }: AIChatWidgetProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const hasSentInitialMessage = useRef(false);
+
+    const [sessionId, setSessionId] = useState<string>(Date.now().toString());
 
     // Handle initial message
     useEffect(() => {
@@ -56,10 +70,21 @@ export function AIChatWidget({ resumeId, profile, isOpen, onClose, initialMessag
             hasSentInitialMessage.current = true;
             onMessageSent?.();
         }
-        if (!isOpen) {
-            hasSentInitialMessage.current = false;
-        }
     }, [isOpen, initialMessage]);
+
+    const handleNewChat = () => {
+        setMessages([]);
+        setSessionId(Date.now().toString());
+        setInput('');
+        hasSentInitialMessage.current = false;
+        toast.success("Started a new chat session");
+    };
+
+    const handleDiscussSuggestion = (suggestion: ChatSuggestion) => {
+        const prompt = `I have a question about this suggestion for my ${suggestion.targetSection}: "${suggestion.suggestedText}". \n\nOriginal text was: "${suggestion.originalText || 'N/A'}". \n\nMy question is: `;
+        setInput(prompt);
+        // Auto-focus input?
+    };
 
     // Suggested questions based on resume content
     const suggestions = [
@@ -112,10 +137,17 @@ export function AIChatWidget({ resumeId, profile, isOpen, onClose, initialMessag
                 role: 'assistant',
                 content: data.message,
                 id: (Date.now() + 1).toString(),
-                metadata: data.metadata
+                metadata: data.metadata,
+                suggestion: data.suggestion
             };
 
             setMessages(prev => [...prev, aiMessage]);
+
+            // If there's a suggestion, auto-add it to the analysis panel via callback
+            if (data.suggestion && onAddInlineSuggestion) {
+                onAddInlineSuggestion(data.suggestion);
+            }
+
         } catch (error) {
             console.error('[AIChatWidget] Chat error:', error);
             toast.error('Failed to get AI response');
@@ -170,9 +202,20 @@ export function AIChatWidget({ resumeId, profile, isOpen, onClose, initialMessag
                         </p>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-white/70" onClick={onClose}>
-                    <X className="w-4 h-4 text-slate-500" />
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full hover:bg-white/50 text-slate-600"
+                        onClick={handleNewChat}
+                        title="New Chat"
+                    >
+                        <MessageSquarePlus className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-white/70" onClick={onClose}>
+                        <X className="w-4 h-4 text-slate-500" />
+                    </Button>
+                </div>
             </div>
 
             {/* Chat Content */}
@@ -221,6 +264,48 @@ export function AIChatWidget({ resumeId, profile, isOpen, onClose, initialMessag
                                         <span className="text-[10px] text-slate-500">
                                             {msg.metadata.model === 'mock' ? 'Demo Mode' : msg.metadata.model}
                                         </span>
+                                    </div>
+                                )}
+                                {msg.suggestion && onApplySuggestion && (
+                                    <div
+                                        className="mx-1 mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg group hover:border-blue-300 transition-all cursor-pointer shadow-sm"
+                                        onMouseEnter={() => onPreviewSuggestion?.(msg.suggestion!)}
+                                        onMouseLeave={() => onPreviewSuggestion?.(null)}
+                                    >
+                                        <div className="flex items-start gap-2 mb-2">
+                                            <div className="p-1 bg-white rounded shadow-sm text-blue-600">
+                                                <Sparkles className="w-3 h-3" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">
+                                                    Suggestion: {msg.suggestion.targetSection}
+                                                </p>
+                                                <p className="text-xs text-slate-600 italic border-l-2 border-blue-200 pl-2 py-1 mb-2 bg-white/50 rounded-r">
+                                                    "{msg.suggestion.suggestedText}"
+                                                </p>
+                                                <p className="text-[10px] text-slate-500 line-clamp-2">
+                                                    {msg.suggestion.reasoning}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                onClick={() => onApplySuggestion(msg.suggestion!)}
+                                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-7 text-xs shadow-sm"
+                                            >
+                                                Apply Update
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleDiscussSuggestion(msg.suggestion!)}
+                                                className="bg-white hover:bg-blue-50 text-blue-600 border-blue-200 h-7 text-xs shadow-sm"
+                                            >
+                                                <MessageCircle className="w-3 h-3 mr-1" />
+                                                Discuss
+                                            </Button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -282,6 +367,6 @@ export function AIChatWidget({ resumeId, profile, isOpen, onClose, initialMessag
                     </form>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

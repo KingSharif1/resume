@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ResumeProfile, SectionType, SECTION_CONFIGS, createEmptyProfile } from '@/lib/resume-schema';
 import { calculateResumeScore } from '@/lib/resume-score';
+import { InlineSuggestion, applySuggestionToProfile, createInlineSuggestion, SuggestionType, SuggestionSeverity, TargetSection } from '@/lib/inline-suggestions';
+import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,13 +37,10 @@ import { PublicationsForm } from './FormSections/PublicationsForm';
 import { ReferencesForm } from './FormSections/ReferencesForm';
 import { InterestsForm } from './FormSections/InterestsForm';
 import { LayoutStyleEditor } from './LayoutStyleEditor';
-import { AIChatWidget } from './AIChatWidget';
+import { AIChatWidget, ChatSuggestion } from './AIChatWidget';
 import { UnifiedAnalysisPanel } from './UnifiedAnalysisPanel';
-import { EnhancedAISuggestions } from './EnhancedAISuggestions';
 import { TemplateModal } from './TemplateModal';
 import { useResumeSettings } from '@/lib/resume-settings-context';
-import { FloatingChatButton } from '@/components/FloatingChatButton';
-import { InlineSuggestion, applySuggestionToProfile } from '@/lib/inline-suggestions';
 import { SuggestionHoverProvider } from '@/lib/suggestion-hover-context';
 
 interface SectionVisibility {
@@ -73,9 +72,209 @@ export function NewResumeBuilder({
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
     const [isDesktop, setIsDesktop] = useState(true);
+
+    // AI Analysis State
     const [inlineSuggestions, setInlineSuggestions] = useState<InlineSuggestion[]>([]);
     const [isScanning, setIsScanning] = useState(false);
-    const [chatInitialMessage, setChatInitialMessage] = useState<string | undefined>(undefined);
+
+    // Preview State for Chat Suggestions
+    const [previewProfile, setPreviewProfile] = useState<ResumeProfile | null>(null);
+    const [previewSuggestion, setPreviewSuggestion] = useState<InlineSuggestion | null>(null);
+
+    const applyChatSuggestionToProfile = (currentProfile: ResumeProfile, suggestion: ChatSuggestion): ResumeProfile => {
+        const newProfile = JSON.parse(JSON.stringify(currentProfile));
+
+        if (suggestion.targetSection === 'summary') {
+            newProfile.summary = { ...newProfile.summary, content: suggestion.suggestedText };
+        } else if (suggestion.targetSection === 'experience') {
+            // If targetId is provided, find that specific experience
+            if (suggestion.targetId) {
+                const index = newProfile.experience.findIndex((e: any) => e.id === suggestion.targetId);
+                if (index !== -1) {
+                    newProfile.experience[index].description = suggestion.suggestedText;
+                }
+            } else if (newProfile.experience.length > 0) {
+                // Default to first experience if no ID provided (fallback)
+                newProfile.experience[0].description = suggestion.suggestedText;
+            }
+        } else if (suggestion.targetSection === 'skills') {
+            // For skills, we might need more complex parsing, but for now let's assume it suggests a category or general list
+            // This is a simplification. Real implementation might parse "Category: Skill, Skill"
+            newProfile.skills['General'] = suggestion.suggestedText.split(',').map((s: string) => s.trim());
+        }
+
+        return newProfile;
+    };
+
+    const handleChatApplySuggestion = (suggestion: ChatSuggestion) => {
+        const newProfile = applyChatSuggestionToProfile(profile, suggestion);
+        setProfile(newProfile);
+        setPreviewProfile(null);
+        setPreviewSuggestion(null);
+
+        // Also add to Unified Analysis Panel as a "Completed" or "Applied" suggestion for reference
+        // Or simply remove it if it was already there.
+        // For now, let's just clear the preview.
+
+        // Open the section to show the change
+        if (['summary', 'experience', 'education', 'skills', 'contact'].includes(suggestion.targetSection)) {
+            setOpenSections(prev => new Set(prev).add(suggestion.targetSection as SectionType));
+        }
+    };
+
+    // New Callback to sync Chat suggestions to Analysis Panel
+    const handleAddInlineSuggestion = (suggestion: ChatSuggestion) => {
+        const newSuggestion: InlineSuggestion = createInlineSuggestion({
+            type: 'wording',
+            severity: 'suggestion',
+            targetSection: suggestion.targetSection as TargetSection,
+            targetItemId: suggestion.targetId,
+            targetField: suggestion.targetSection === 'summary' ? 'content' : 'description',
+            originalText: suggestion.originalText || '',
+            suggestedText: suggestion.suggestedText,
+            reason: suggestion.reasoning, // Reasoning from chat
+            status: 'pending'
+        });
+
+        // Avoid duplicates
+        setInlineSuggestions(prev => {
+            const exists = prev.some(s => s.suggestedText === newSuggestion.suggestedText);
+            if (exists) return prev;
+            toast.success("Suggestion saved to Analysis Panel");
+            return [...prev, newSuggestion];
+        });
+    };
+
+    const handleChatPreviewSuggestion = (suggestion: ChatSuggestion | null) => {
+        if (!suggestion) {
+            setPreviewProfile(null);
+            setPreviewSuggestion(null);
+            return;
+        }
+        const newProfile = applyChatSuggestionToProfile(profile, suggestion);
+        setPreviewProfile(newProfile);
+
+        // Create a temporary InlineSuggestion to trigger the visual highlight
+        const tempSuggestion: InlineSuggestion = createInlineSuggestion({
+            type: 'wording',
+            severity: 'suggestion',
+            targetSection: suggestion.targetSection as TargetSection,
+            targetItemId: suggestion.targetId,
+            targetField: suggestion.targetSection === 'summary' ? 'content' : 'description', // heuristic
+            originalText: suggestion.originalText || '',
+            suggestedText: suggestion.suggestedText,
+            reason: suggestion.reasoning,
+            startOffset: 0,
+            endOffset: suggestion.suggestedText.length
+        });
+        setPreviewSuggestion(tempSuggestion);
+    };
+
+    const handleScan = async () => {
+        setIsScanning(true);
+        try {
+            const response = await fetch('/api/ai/suggestions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ profile })
+            });
+
+            if (!response.ok) throw new Error('Scan failed');
+
+            const data = await response.json();
+            const apiSuggestions = data.suggestions || [];
+
+            if (apiSuggestions.length === 0) {
+                toast.success('Scan complete: Great job! No obvious issues found.');
+                setInlineSuggestions([]);
+                return;
+            }
+
+            // Map API suggestions to InlineSuggestion format
+            const newSuggestions: InlineSuggestion[] = apiSuggestions.map((s: any) => {
+                let mapped: Partial<InlineSuggestion> = {
+                    reason: s.description,
+                    severity: 'suggestion' as SuggestionSeverity,
+                    type: 'wording' as SuggestionType,
+                    status: 'pending',
+                };
+
+                if (s.action === 'update_summary') {
+                    mapped = {
+                        ...mapped,
+                        targetSection: 'summary' as TargetSection,
+                        targetField: 'content',
+                        originalText: profile.summary?.content || '',
+                        suggestedText: s.data.content,
+                        startOffset: 0,
+                        endOffset: (profile.summary?.content || '').length
+                    };
+                } else if (s.action === 'add_skill') {
+                    mapped = {
+                        ...mapped,
+                        targetSection: 'skills' as TargetSection,
+                        originalText: '',
+                        suggestedText: s.data.skill,
+                        startOffset: 0,
+                        endOffset: 0,
+                        type: 'metric' // Using 'metric' as proxy for 'missing item'
+                    };
+                } else if (s.action === 'update_experience') {
+                    // Find the experience item
+                    const exp = profile.experience.find(e => e.id === s.data.id);
+                    if (exp) {
+                        mapped = {
+                            ...mapped,
+                            targetSection: 'experience' as TargetSection,
+                            targetItemId: s.data.id,
+                            targetField: 'description',
+                            originalText: exp.description,
+                            suggestedText: s.data.description,
+                            startOffset: 0,
+                            endOffset: exp.description.length
+                        };
+                    }
+                } else {
+                    // Generic fallback
+                    mapped = {
+                        ...mapped,
+                        targetSection: 'summary' as TargetSection, // Default to summary if unknown
+                        originalText: '',
+                        suggestedText: '',
+                        startOffset: 0,
+                        endOffset: 0
+                    };
+                }
+
+                return createInlineSuggestion(mapped as any);
+            });
+
+            setInlineSuggestions(newSuggestions);
+            toast.success(`Scan complete: Found ${newSuggestions.length} suggestions.`);
+
+        } catch (error) {
+            console.error('Scan error:', error);
+            toast.error('Failed to complete scan. Please try again.');
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
+    const handleAskAI = (question: string) => {
+        console.log("Asking AI:", question);
+        // TODO: Implement Chat AI
+    };
+
+    const handleApplySuggestion = (suggestion: InlineSuggestion) => {
+        const updatedProfile = applySuggestionToProfile(profile, suggestion);
+        setProfile(updatedProfile);
+        // Remove applied suggestion
+        setInlineSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
+    };
+
+    const handleDenySuggestion = (suggestionId: string) => {
+        setInlineSuggestions(prev => prev.filter(s => s.id !== suggestionId));
+    };
 
     useEffect(() => {
         const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
@@ -211,121 +410,6 @@ export function NewResumeBuilder({
         onSave(profileWithSettings);
     };
 
-    const handleScan = async () => {
-        setIsScanning(true);
-        let allSuggestions: InlineSuggestion[] = [];
-
-        try {
-            // 1. Scan Summary
-            if (profile.summary?.content) {
-                const res = await fetch('/api/ai/suggestions/inline', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text: profile.summary.content,
-                        section: 'summary',
-                        field: 'content',
-                        profile
-                    })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    allSuggestions = [...allSuggestions, ...data.suggestions];
-                }
-            }
-
-            // 2. Scan Experience
-            for (const exp of profile.experience) {
-                if (exp.description) {
-                    const res = await fetch('/api/ai/suggestions/inline', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            text: exp.description,
-                            section: 'experience',
-                            itemId: exp.id,
-                            field: 'description',
-                            profile
-                        })
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        allSuggestions = [...allSuggestions, ...data.suggestions];
-                    }
-                }
-
-                // Scan achievements
-                if (exp.achievements) {
-                    for (let i = 0; i < exp.achievements.length; i++) {
-                        const achievement = exp.achievements[i];
-                        const res = await fetch('/api/ai/suggestions/inline', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                text: achievement,
-                                section: 'experience',
-                                itemId: exp.id,
-                                field: `achievements[${i}]`,
-                                profile
-                            })
-                        });
-                        if (res.ok) {
-                            const data = await res.json();
-                            allSuggestions = [...allSuggestions, ...data.suggestions];
-                        }
-                    }
-                }
-            }
-
-            // 3. Scan Projects
-            for (const proj of profile.projects) {
-                if (proj.description) {
-                    const res = await fetch('/api/ai/suggestions/inline', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            text: proj.description,
-                            section: 'projects',
-                            itemId: proj.id,
-                            field: 'description',
-                            profile
-                        })
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        allSuggestions = [...allSuggestions, ...data.suggestions];
-                    }
-                }
-            }
-
-            setInlineSuggestions(allSuggestions);
-        } catch (error) {
-            console.error('Error scanning resume:', error);
-        } finally {
-            setIsScanning(false);
-        }
-    };
-
-    const handleAskAI = (question: string) => {
-        setChatInitialMessage(question);
-        setIsChatOpen(true);
-    };
-
-    const handleApplySuggestion = (suggestion: InlineSuggestion) => {
-        const newProfile = applySuggestionToProfile(profile, suggestion);
-        setProfile(newProfile);
-        // Remove suggestion from list
-        setInlineSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
-
-        // Optional: Trigger a re-scan or just wait for next manual scan
-        // For better UX, we might want to re-scan the specific field, but that's complex.
-        // For now, just removing it is fine.
-    };
-
-    const handleDenySuggestion = (suggestionId: string) => {
-        setInlineSuggestions(prev => prev.filter(s => s.id !== suggestionId));
-    };
-
     if (isLayoutStyleEditorOpen) {
         return (
             <LayoutStyleEditor
@@ -410,12 +494,12 @@ export function NewResumeBuilder({
                     {/* Left Panel */}
                     <div
                         className={`
-                            border-r border-slate-200 
-                            bg-white 
-                            overflow-y-auto 
-                            h-full
-                            ${mobileTab === 'preview' ? 'hidden lg:block' : 'block'}
-                        `}
+                        border-r border-slate-200 
+                        bg-white 
+                        overflow-y-auto 
+                        h-full
+                        ${mobileTab === 'preview' ? 'hidden lg:block' : 'block'}
+                    `}
                         style={{ width: isDesktop ? `${leftPanelWidth}%` : '100%' }}
                     >
                         <div className="max-w-3xl mx-auto py-6 px-6">
@@ -533,11 +617,11 @@ export function NewResumeBuilder({
                     {/* Right Panel: Enhanced Preview */}
                     <div
                         className={`
-                            bg-slate-50 
-                            flex flex-col 
-                            h-full
-                            ${mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'}
-                        `}
+                        bg-slate-50 
+                        flex flex-col 
+                        h-full
+                        ${mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'}
+                    `}
                         style={{ width: isDesktop ? `${100 - leftPanelWidth}%` : '100%' }}
                     >
                         {/* Preview Area */}
@@ -550,12 +634,12 @@ export function NewResumeBuilder({
 
                             <div className="relative z-10 w-full flex justify-center">
                                 <FullPageResumePreview
-                                    profile={profile}
+                                    profile={previewProfile || profile}
                                     sectionVisibility={sectionVisibility}
                                     isSplitView={true}
                                     onTemplateChange={() => setIsTemplateModalOpen(true)}
                                     onLayoutChange={() => setIsLayoutStyleEditorOpen(true)}
-                                    inlineSuggestions={inlineSuggestions}
+                                    inlineSuggestions={previewSuggestion ? [...inlineSuggestions, previewSuggestion] : inlineSuggestions}
                                 />
                             </div>
                         </div>
@@ -575,17 +659,21 @@ export function NewResumeBuilder({
                     profile={profile}
                     isOpen={isChatOpen}
                     onClose={() => setIsChatOpen(false)}
-                    initialMessage={chatInitialMessage}
-                    onMessageSent={() => setChatInitialMessage(undefined)}
-                />
-
-                {/* Floating Chat Button */}
-                <FloatingChatButton
-                    isOpen={isChatOpen}
-                    onClick={() => setIsChatOpen(!isChatOpen)}
+                    onApplySuggestion={handleChatApplySuggestion}
+                    onPreviewSuggestion={handleChatPreviewSuggestion}
+                    onAddInlineSuggestion={handleAddInlineSuggestion}
                 />
             </div>
+            {/* Floating Chat Launcher - Always visible when chat is closed */}
+            {!isChatOpen && (
+                <Button
+                    onClick={() => setIsChatOpen(true)}
+                    className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl z-50 flex items-center justify-center transition-transform hover:scale-105"
+                >
+                    <Sparkles className="w-6 h-6" />
+                </Button>
+            )}
+
         </SuggestionHoverProvider>
     );
 }
-

@@ -11,6 +11,15 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true 
 });
 
+// Define Suggestion Structure
+interface AISuggestion {
+  targetSection: string; // e.g., 'summary', 'experience', 'skills'
+  targetId?: string; // id of the item to update (e.g., specific experience entry)
+  originalText?: string;
+  suggestedText: string;
+  reasoning: string;
+}
+
 export async function POST(request: NextRequest) {
     console.log('[API] Chat request received');
     try {
@@ -74,33 +83,48 @@ Here's what I notice:
             // Simulate delay
             await new Promise(resolve => setTimeout(resolve, 1000));
         } else {
-            try {
+                try {
                 // Construct system prompt with resume context
                 const safeHistory = Array.isArray(history) ? history : [];
                 const model = "gpt-3.5-turbo";
                 
-                const systemPrompt = `You are a no-nonsense, high-stakes Career Counselor and Senior Recruiter. 
-                Your ONLY goal is to get the user HIRED. You do not care about being nice; you care about results.
+                const systemPrompt = `You are "Myles", a smart, supportive "Study Buddy" and Career Peer. 
+                Your goal is to help the user craft a great resume by acting like a knowledgeable friend who wants them to succeed.
                 
-                Current Resume Context:
-                - Name: ${profile?.contact?.firstName || ''} ${profile?.contact?.lastName || ''}
-                - Target Job: ${profile?.targetJob || 'Not specified'}
-                - Summary: ${profile?.summary?.content || 'None'}
-                - Experience: ${profile?.experience?.map((e: any) => `${e.position} at ${e.company}`).join(', ') || 'None'}
-                - Skills: ${profile?.skills ? Object.entries(profile.skills).map(([cat, skills]) => `${cat}: ${(skills as string[]).join(', ')}`).join('; ') : 'None'}
-                - Active Suggestions: ${body.suggestions?.length || 0} inline text improvements pending
-                - Resume Score: ${body.scoreData ? `${body.scoreData.totalScore}/${body.scoreData.maxTotalScore} (${body.scoreData.percentage}%)` : 'Not calculated'}
-                - ATS Compatibility: ${body.scoreData?.atsCompatibility || 'Unknown'}%
+                **Your Persona:**
+                - **Tone:** Casual but professional, supportive, motivating, and straight to the point. Avoid stiff corporate speak.
+                - **Role:** Like a TA or a senior student helping a junior. You know the rules but you explain them simply.
+                - **Helper:** If a user is stuck, give examples. If something is bad, say it nicely but clearly: "This is a bit weak because..."
+                - **Context-Aware:** ALWAYS analyze the entire resume context (below).
+                - **Action-Oriented:** Propose concrete changes.
                 
-                Your Guidelines:
-                1. BE DIRECT AND CRITICAL. Do not sugarcoat your feedback. If a section is weak, say it is weak and explain why it won't get them hired.
-                2. ESTIMATE HIRING PROBABILITY. In your first response, provide a brutally honest "Hiring Probability" score (0-100%) for their target job based strictly on this resume.
-                3. FOCUS ON IMPACT. Demand metrics (%, $, time saved). If they are missing, tell them their resume looks "generic" and "ignorable".
-                4. BE ACTION-ORIENTED. Tell them exactly what to rewrite. Give examples of strong bullet points.
-                5. REFERENCE ACTIVE SUGGESTIONS. If there are pending suggestions, mention them and encourage the user to review them.
-                6. USE SCORE DATA. Reference the ATS compatibility and overall score when giving feedback.
+                **Resume Context:**
+                - **Name:** ${profile?.contact?.firstName || ''} ${profile?.contact?.lastName || ''}
+                - **Target Job:** ${profile?.targetJob || 'Not specified'} (Use this to tailor ALL feedback)
+                - **Summary:** ${profile?.summary?.content || 'None'}
+                - **Experience:** ${profile?.experience?.map((e: any) => `[ID: ${e.id}] ${e.position} at ${e.company} (${e.startDate || '?'} - ${e.endDate || 'Present'}): ${e.description} (Achievements: ${e.achievements?.join('; ')})`).join('\n') || 'None'}
+                - **Education:** ${profile?.education?.map((e: any) => `${e.degree} from ${e.institution}`).join(', ') || 'None'}
+                - **Skills:** ${profile?.skills ? Object.entries(profile.skills).map(([cat, skills]) => `${cat}: ${(skills as string[]).join(', ')}`).join('; ') : 'None'}
                 
-                Tone: Professional, authoritative, slightly strict, but ultimately helpful. Like a tough coach who wants them to win.`;
+                **Response Format:**
+                You must output your response in valid JSON format.
+                Structure:
+                {
+                    "message": "Your conversational response here. Be helpful and direct.",
+                    "suggestion": { // OPTIONAL: Include ONLY if you are proposing a specific text change
+                        "targetSection": "summary" | "experience" | "education" | "skills",
+                        "targetId": "id-of-item-if-experience-or-education",
+                        "originalText": "The text you are replacing (if applicable)",
+                        "suggestedText": "The new optimized text",
+                        "reasoning": "Brief explanation of why this is better"
+                    }
+                }
+                
+                **Rules for Suggestions:**
+                1. If the user asks to "rewrite" or "fix" something, YOU MUST provide a "suggestion" object.
+                2. If the user just asks a question, omit the "suggestion" object.
+                3. Ensure "suggestedText" is complete and ready to be inserted.
+                `;
 
                 const completion = await openai.chat.completions.create({
                     messages: [
@@ -109,11 +133,32 @@ Here's what I notice:
                         { role: "user", content: message }
                     ],
                     model,
+                    response_format: { type: "json_object" }, // Force JSON output
                 });
 
-                aiResponseContent = completion.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
+                const rawContent = completion.choices[0].message.content;
+                let parsedContent;
+                try {
+                    parsedContent = JSON.parse(rawContent || "{}");
+                } catch (e) {
+                    // Fallback if AI fails JSON format
+                    parsedContent = { message: rawContent || "I'm sorry, I couldn't process that request." };
+                }
+
+                aiResponseContent = parsedContent.message;
+                const aiSuggestion = parsedContent.suggestion;
                 modelUsed = model;
                 isFallback = false;
+
+                // Return structured response
+                return NextResponse.json({ 
+                    message: aiResponseContent,
+                    suggestion: aiSuggestion,
+                    metadata: {
+                        model: modelUsed,
+                        isFallback,
+                    }
+                });
             } catch (openaiError: any) {
                 console.error('OpenAI API Error:', openaiError);
                 

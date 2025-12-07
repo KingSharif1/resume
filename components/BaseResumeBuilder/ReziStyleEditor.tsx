@@ -59,6 +59,15 @@ export function ReziStyleEditor({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [resumeTitle, setResumeTitle] = useState("Untitled Resume");
 
+  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibility>(
+    SECTION_CONFIGS.reduce((acc, section) => ({ ...acc, [section.key]: true }), {})
+  );
+
+  const updateProfile = (updates: Partial<ResumeProfile>) => {
+    setProfile(prev => ({ ...prev, ...updates }));
+    setHasUnsavedChanges(true);
+  };
+
   // Update profile when initialProfile changes (e.g., from parsed resume)
   useEffect(() => {
     if (initialProfile) {
