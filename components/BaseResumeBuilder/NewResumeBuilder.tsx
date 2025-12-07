@@ -133,7 +133,8 @@ export function NewResumeBuilder({
             originalText: suggestion.originalText || '',
             suggestedText: suggestion.suggestedText,
             reason: suggestion.reasoning, // Reasoning from chat
-            status: 'pending'
+            startOffset: 0,
+            endOffset: (suggestion.originalText || '').length
         });
 
         // Avoid duplicates
