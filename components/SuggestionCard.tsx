@@ -1,34 +1,47 @@
 /**
- * Suggestion Card Component
+ * SuggestionCard Component - Redesigned
  * 
- * Displays an inline suggestion with hover effects and actions
+ * Features:
+ * - Beautiful diff display with strikethrough and arrow
+ * - Inline reply textarea (local, not Myles)
+ * - Reply with AI button (opens Myles chat)
+ * - Framer Motion animations
  */
 
 'use client';
 
+import { useState } from 'react';
 import { InlineSuggestion, getSuggestionColor, getSuggestionTypeLabel } from '@/lib/inline-suggestions';
 import { useSuggestionHover } from '@/lib/suggestion-hover-context';
 import { scrollToSuggestionHighlight } from '@/lib/scroll-utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Edit3 } from 'lucide-react';
+import { Check, X, Lightbulb, ArrowRight, MessageCircle, Send, Sparkles, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SuggestionCardProps {
     suggestion: InlineSuggestion;
     onApprove: (suggestion: InlineSuggestion) => void;
     onDeny: (suggestionId: string) => void;
     onCustomize?: (suggestion: InlineSuggestion) => void;
+    onReply?: (suggestion: InlineSuggestion) => void;
+    onInlineReply?: (suggestionId: string, message: string) => void;
 }
 
 export function SuggestionCard({
     suggestion,
     onApprove,
     onDeny,
-    onCustomize
+    onCustomize,
+    onReply,
+    onInlineReply
 }: SuggestionCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyText, setReplyText] = useState('');
+
     const {
         hoveredSuggestionId,
         hoveredHighlightId,
@@ -42,8 +55,6 @@ export function SuggestionCard({
 
     const isActive = activeSuggestionId === suggestion.id;
 
-    const colors = getSuggestionColor(suggestion.severity);
-
     // Scroll highlight into view when this card is hovered
     useEffect(() => {
         if (hoveredSuggestionId === suggestion.id) {
@@ -51,108 +62,175 @@ export function SuggestionCard({
         }
     }, [hoveredSuggestionId, suggestion.id]);
 
+    const getBadgeColor = (severity: string) => {
+        switch (severity) {
+            case 'error': return 'bg-red-100 text-red-700 border-red-200';
+            case 'warning': return 'bg-amber-100 text-amber-700 border-amber-200';
+            case 'suggestion': return 'bg-blue-100 text-blue-700 border-blue-200';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+    };
+
+    const handleInlineReplySubmit = () => {
+        if (replyText.trim() && onInlineReply) {
+            onInlineReply(suggestion.id, replyText);
+            setIsReplying(false);
+            setReplyText('');
+        }
+    };
+
     return (
-        <div
+        <motion.div
             ref={cardRef}
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             data-suggestion-card={suggestion.id}
             className={cn(
-                'group relative border rounded-lg p-3 transition-all duration-200',
-                'hover:shadow-sm',
-                isHovered && 'ring-2 ring-offset-1',
-                isActive && 'ring-2 ring-offset-2',
-                // Border colors based on severity
-                suggestion.severity === 'error' && 'border-red-200 hover:border-red-300',
-                suggestion.severity === 'warning' && 'border-yellow-200 hover:border-yellow-300',
-                suggestion.severity === 'suggestion' && 'border-blue-200 hover:border-blue-300',
-                // Ring colors
-                isHovered && suggestion.severity === 'error' && 'ring-red-200',
-                isHovered && suggestion.severity === 'warning' && 'ring-yellow-200',
-                isHovered && suggestion.severity === 'suggestion' && 'ring-blue-200',
+                'bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-200',
+                'hover:shadow-md hover:border-gray-300',
+                isHovered && 'ring-2 ring-blue-200 ring-offset-1',
+                isActive && 'ring-2 ring-blue-300 ring-offset-2',
             )}
             onMouseEnter={() => setHoveredSuggestion(suggestion.id)}
             onMouseLeave={() => setHoveredSuggestion(null)}
         >
-            {/* Header */}
-            <div className="flex items-start gap-2 mb-2">
-                <div className={cn('p-1.5 rounded shrink-0', colors.bg)}>
-                    <div className={cn('w-3 h-3', colors.text)}>
-                        {suggestion.severity === 'error' && '❌'}
-                        {suggestion.severity === 'warning' && '⚠️'}
-                        {suggestion.severity === 'suggestion' && '💡'}
-                    </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
+            <div className="p-4">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-md bg-yellow-50 flex items-center justify-center text-yellow-600 border border-yellow-100 shrink-0">
+                            <Lightbulb size={14} />
+                        </div>
+                        <span className={cn(
+                            "text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wide",
+                            getBadgeColor(suggestion.severity)
+                        )}>
                             {getSuggestionTypeLabel(suggestion.type)}
-                        </Badge>
+                        </span>
                     </div>
-                    <div className="text-xs text-slate-600 space-y-1">
-                        <div className="flex flex-col gap-1">
-                            <span className="line-through text-slate-400 text-[10px]">{suggestion.originalText}</span>
-                            <div className="flex items-center gap-1.5 text-slate-900">
-                                <span className="text-slate-400 text-[10px]">→</span>
-                                <span className="font-medium">
-                                    {/* Simple diff highlighting */}
-                                    {suggestion.suggestedText.split(' ').map((word, i) => {
-                                        // heuristic: if word (normalized) is not in originalText, bold it
-                                        // This is a naive diff, but works for "new part" highlighting
-                                        const isNew = !suggestion.originalText.toLowerCase().includes(word.toLowerCase().replace(/[.,!?;:]/g, ''));
-                                        return (
-                                            <span key={i} className={isNew ? "font-bold text-blue-700 bg-blue-50 px-0.5 rounded" : ""}>
-                                                {word}{' '}
-                                            </span>
-                                        );
-                                    })}
-                                </span>
-                            </div>
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+                        <MoreHorizontal size={14} />
+                    </button>
+                </div>
+
+                {/* Content Diff */}
+                <div className="mb-4 space-y-3">
+                    {/* Original Text - Strikethrough */}
+                    {suggestion.originalText && (
+                        <div className="text-gray-400 line-through text-xs leading-relaxed pl-3 border-l-2 border-red-200 bg-red-50/30 p-2 rounded-r-md">
+                            {suggestion.originalText}
+                        </div>
+                    )}
+
+                    {/* Improved Text */}
+                    <div className="flex items-start gap-2">
+                        <ArrowRight className="text-blue-500 shrink-0 mt-1" size={14} />
+                        <div className="text-gray-900 font-medium text-xs leading-relaxed bg-blue-50/50 p-2.5 rounded-lg border border-blue-100 w-full">
+                            {suggestion.suggestedText}
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Reason */}
-            <div className="pl-8 mb-3">
-                <p className="text-xs text-slate-600 leading-relaxed">
-                    <span className="font-medium text-slate-700">Why: </span>
+                {/* Reason */}
+                <div className="mb-4 text-xs text-gray-600 italic bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                    <span className="font-semibold text-gray-800 not-italic">Why: </span>
                     {suggestion.reason}
-                </p>
+                </div>
                 {suggestion.impact && (
-                    <p className="text-xs text-green-600 mt-1">
-                        ✓ {suggestion.impact}
+                    <p className="text-xs text-green-600 mb-4 flex items-center gap-1">
+                        <Check size={12} />
+                        {suggestion.impact}
                     </p>
                 )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+                    <button
+                        onClick={() => onDeny(suggestion.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <X size={14} />
+                        Deny
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                        {/* Inline Reply Button (local discussion) */}
+                        <button
+                            onClick={() => setIsReplying(!isReplying)}
+                            className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all border",
+                                isReplying
+                                    ? "bg-gray-100 text-gray-700 border-gray-300"
+                                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                            )}
+                        >
+                            <MessageCircle size={14} />
+                            Comment
+                        </button>
+
+                        {/* Reply with AI (opens Myles chat) */}
+                        {onReply && (
+                            <button
+                                onClick={() => onReply(suggestion)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 rounded-lg transition-all"
+                            >
+                                <Sparkles size={14} />
+                                Ask AI
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => onApprove(suggestion)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm hover:shadow transition-all active:scale-95"
+                        >
+                            <Check size={14} />
+                            Approve
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2 pl-8">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDeny(suggestion.id)}
-                    className="h-6 text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 px-2"
-                >
-                    <X className="w-3 h-3 mr-1" /> Deny
-                </Button>
-                <div className="flex-1" />
-                {onCustomize && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onCustomize(suggestion)}
-                        className="h-6 text-xs px-2"
+            {/* Inline Reply Area */}
+            <AnimatePresence>
+                {isReplying && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-blue-100 bg-blue-50/30 overflow-hidden"
                     >
-                        <Edit3 className="w-3 h-3 mr-1" /> Edit
-                    </Button>
+                        <div className="p-4 flex gap-3">
+                            <div className="flex-1 relative">
+                                <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder="Add a comment or request changes..."
+                                    className="w-full min-h-[70px] p-3 rounded-lg border border-blue-200 bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none text-xs resize-none"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleInlineReplySubmit();
+                                        }
+                                    }}
+                                />
+                                <div className="absolute bottom-2 right-2 text-[10px] text-gray-400">
+                                    Enter to send
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleInlineReplySubmit}
+                                disabled={!replyText.trim()}
+                                className="self-end p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                            >
+                                <Send size={14} />
+                            </button>
+                        </div>
+                    </motion.div>
                 )}
-                <Button
-                    size="sm"
-                    onClick={() => onApprove(suggestion)}
-                    className="h-6 text-xs bg-slate-900 hover:bg-slate-800 px-2"
-                >
-                    <Check className="w-3 h-3 mr-1" /> Approve
-                </Button>
-            </div>
-        </div>
+            </AnimatePresence>
+        </motion.div>
     );
 }

@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     console.log('[API] Chat request received');
     try {
         const body = await request.json();
-        const { resumeId, message, profile, history } = body;
+        const { resumeId, message, profile, history, attachedContext } = body;
 
         console.log('[API] Request body:', { resumeId, messageLen: message?.length, hasProfile: !!profile });
 
@@ -126,9 +126,26 @@ Here's what I notice:
                 3. Ensure "suggestedText" is complete and ready to be inserted.
                 `;
 
+                // If there's attached context, add it to the system prompt
+                let contextAddition = '';
+                if (attachedContext) {
+                    contextAddition = `
+                    
+                    **IMPORTANT - User is replying to a previous suggestion:**
+                    - Section: ${attachedContext.targetSection}
+                    - Original Text: "${attachedContext.originalText || 'N/A'}"
+                    - Suggested Text: "${attachedContext.suggestedText}"
+                    - Reasoning: "${attachedContext.reasoning || 'N/A'}"
+                    
+                    The user has questions or feedback about THIS specific suggestion. Address their concerns about this suggestion directly.
+                    `;
+                }
+
+                const finalSystemPrompt = systemPrompt + contextAddition;
+
                 const completion = await openai.chat.completions.create({
                     messages: [
-                        { role: "system", content: systemPrompt },
+                        { role: 'system', content: finalSystemPrompt },
                         ...safeHistory,
                         { role: "user", content: message }
                     ],

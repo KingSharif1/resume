@@ -43,6 +43,9 @@ export interface InlineSuggestion {
   reason: string; // Why this change is better
   impact?: string; // Optional: What this improves (e.g., "Increases ATS score by 5%")
   
+  // Source tracking
+  source?: 'scan' | 'chat' | 'manual'; // Where the suggestion came from
+  
   // State
   status: SuggestionStatus;
   createdAt: Date;

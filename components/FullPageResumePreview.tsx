@@ -97,12 +97,29 @@ export function FullPageResumePreview({
   const renderWithHighlights = (text: string, section: SectionType, itemId?: string, field?: string) => {
     if (!text) return null;
 
-    // Filter suggestions for this specific field
-    const relevantSuggestions = inlineSuggestions.filter(s =>
-      s.targetSection === section &&
-      s.targetItemId === itemId &&
-      s.targetField === field
-    );
+    // Filter suggestions for this specific field - be flexible with matching
+    const relevantSuggestions = inlineSuggestions.filter(s => {
+      // Must match section
+      if (s.targetSection !== section) return false;
+
+      // If suggestion specifies itemId, it must match (or itemId can be undefined for general section suggestions)
+      if (s.targetItemId && itemId && s.targetItemId !== itemId) {
+        // console.log(`Mismatch ID: ${s.targetItemId} vs ${itemId}`);
+        return false;
+      }
+
+      // If suggestion specifies field, it must match (or field can be undefined)
+      if (s.targetField && field && s.targetField !== field) {
+        // console.log(`Mismatch Field: ${s.targetField} vs ${field}`);
+        return false;
+      }
+
+      return true;
+    });
+
+    if (relevantSuggestions.length > 0) {
+      console.log(`[Highlight] Found ${relevantSuggestions.length} match for ${section}/${field}`, relevantSuggestions);
+    }
 
     if (relevantSuggestions.length === 0) return text;
 

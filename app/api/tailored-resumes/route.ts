@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Get all tailored resumes for the user
     const result = await query(
-      'SELECT * FROM resumes WHERE user_id = $1 ORDER BY created_at DESC',
+      'SELECT * FROM tailored_resumes WHERE user_id = $1 ORDER BY created_at DESC',
       [user.id]
     );
 
@@ -41,11 +41,9 @@ export async function POST(request: NextRequest) {
 
     // Create the tailored resume
     const result = await query(
-      `INSERT INTO resumes (
-        user_id, base_resume_id, title, original_content, job_description, 
-        tailored_content, score, score_breakdown
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-      RETURNING *`,
+      `INSERT INTO tailored_resumes (user_id, base_resume_id, title, job_description) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING *`,
       [
         data.user_id,
         data.base_resume_id || null,

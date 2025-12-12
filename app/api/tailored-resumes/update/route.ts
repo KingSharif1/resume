@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest) {
     values.push(user.id);
 
     const result = await query(
-      `UPDATE resumes SET ${updates.join(', ')} 
+      `UPDATE tailored_resumes SET ${updates.join(', ')} 
        WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}
        RETURNING *`,
       values

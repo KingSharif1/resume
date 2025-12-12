@@ -5,11 +5,15 @@ import { ResumeProfile, SectionType, SECTION_CONFIGS, createEmptyProfile } from 
 import { calculateResumeScore } from '@/lib/resume-score';
 import { InlineSuggestion, applySuggestionToProfile, createInlineSuggestion, SuggestionType, SuggestionSeverity, TargetSection } from '@/lib/inline-suggestions';
 import { toast } from 'react-hot-toast';
+import { pdf } from '@react-pdf/renderer'; // Add this import
+import { saveAs } from 'file-saver'; // Add this import
+import { ResumePDFDocument } from '@/components/pdf/ResumePDFDocument'; // Add this import
+import { exportToDocx } from '@/lib/docx-export-profile'; // Add this import
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-    Sparkles, Settings, Download, ChevronDown, ChevronRight, Check, Upload, Briefcase, FileText, GripVertical
+    Sparkles, Settings, Download, ChevronDown, ChevronRight, Check, Upload, Briefcase, FileText, GripVertical, FileDown
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +32,7 @@ import { SummaryForm } from './FormSections/SummaryForm';
 import { DraggableExperienceForm } from './FormSections/DraggableExperienceForm';
 import { EducationForm } from './FormSections/EducationForm';
 import { ProjectsForm } from './FormSections/ProjectsForm';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'; // Add this import
 import { SkillsForm } from './FormSections/SkillsForm';
 import { LanguagesForm } from './FormSections/LanguagesForm';
 import { CertificationsForm } from './FormSections/CertificationsForm';
@@ -42,6 +47,7 @@ import { UnifiedAnalysisPanel } from './UnifiedAnalysisPanel';
 import { TemplateModal } from './TemplateModal';
 import { useResumeSettings } from '@/lib/resume-settings-context';
 import { SuggestionHoverProvider } from '@/lib/suggestion-hover-context';
+import { suggestionsRepository } from '@/lib/db/repositories/suggestions-repository';
 
 interface SectionVisibility {
     [key: string]: boolean;
@@ -80,6 +86,44 @@ export function NewResumeBuilder({
     // Preview State for Chat Suggestions
     const [previewProfile, setPreviewProfile] = useState<ResumeProfile | null>(null);
     const [previewSuggestion, setPreviewSuggestion] = useState<InlineSuggestion | null>(null);
+    // Chat context attachment - when user wants to discuss a suggestion
+    const [attachedChatContext, setAttachedChatContext] = useState<ChatSuggestion | null>(null);
+
+    // Load suggestions from database on mount
+    useEffect(() => {
+        const loadFromDB = async () => {
+            if (!profile.id) return; // Don't load for new resumes without ID
+            try {
+                const savedSuggestions = await suggestionsRepository.getByResumeId(profile.id);
+                if (savedSuggestions.length > 0) {
+                    setInlineSuggestions(savedSuggestions);
+                }
+            } catch (error) {
+                console.error('[NewResumeBuilder] Failed to load suggestions:', error);
+            }
+        };
+        loadFromDB();
+    }, [profile.id]);
+
+    // Save suggestions to database whenever they change (debounced)
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    useEffect(() => {
+        if (!profile.id || inlineSuggestions.length === 0) return;
+
+        // Debounce saves to avoid excessive API calls
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = setTimeout(async () => {
+            try {
+                await suggestionsRepository.saveForResume(profile.id!, inlineSuggestions);
+            } catch (error) {
+                console.error('[NewResumeBuilder] Failed to save suggestions:', error);
+            }
+        }, 1000); // Save after 1 second of inactivity
+
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        };
+    }, [inlineSuggestions, profile.id]);
 
     const applyChatSuggestionToProfile = (currentProfile: ResumeProfile, suggestion: ChatSuggestion): ResumeProfile => {
         const newProfile = JSON.parse(JSON.stringify(currentProfile));
@@ -146,6 +190,20 @@ export function NewResumeBuilder({
         });
     };
 
+    // Handler for replying to a suggestion - opens chat with context
+    const handleReplySuggestion = (suggestion: InlineSuggestion) => {
+        // Convert InlineSuggestion to ChatSuggestion format
+        const chatContext: ChatSuggestion = {
+            targetSection: suggestion.targetSection,
+            targetId: suggestion.targetItemId,
+            originalText: suggestion.originalText,
+            suggestedText: suggestion.suggestedText,
+            reasoning: suggestion.reason || ''
+        };
+        setAttachedChatContext(chatContext);
+        setIsChatOpen(true);
+    };
+
     const handleChatPreviewSuggestion = (suggestion: ChatSuggestion | null) => {
         if (!suggestion) {
             setPreviewProfile(null);
@@ -193,61 +251,85 @@ export function NewResumeBuilder({
 
             // Map API suggestions to InlineSuggestion format
             const newSuggestions: InlineSuggestion[] = apiSuggestions.map((s: any) => {
-                let mapped: Partial<InlineSuggestion> = {
-                    reason: s.description,
-                    severity: 'suggestion' as SuggestionSeverity,
-                    type: 'wording' as SuggestionType,
-                    status: 'pending',
-                };
-
-                if (s.action === 'update_summary') {
-                    mapped = {
-                        ...mapped,
-                        targetSection: 'summary' as TargetSection,
-                        targetField: 'content',
-                        originalText: profile.summary?.content || '',
-                        suggestedText: s.data.content,
-                        startOffset: 0,
-                        endOffset: (profile.summary?.content || '').length
-                    };
-                } else if (s.action === 'add_skill') {
-                    mapped = {
-                        ...mapped,
-                        targetSection: 'skills' as TargetSection,
-                        originalText: '',
-                        suggestedText: s.data.skill,
-                        startOffset: 0,
-                        endOffset: 0,
-                        type: 'metric' // Using 'metric' as proxy for 'missing item'
-                    };
-                } else if (s.action === 'update_experience') {
-                    // Find the experience item
-                    const exp = profile.experience.find(e => e.id === s.data.id);
-                    if (exp) {
-                        mapped = {
-                            ...mapped,
-                            targetSection: 'experience' as TargetSection,
-                            targetItemId: s.data.id,
-                            targetField: 'description',
-                            originalText: exp.description,
-                            suggestedText: s.data.description,
-                            startOffset: 0,
-                            endOffset: exp.description.length
-                        };
-                    }
-                } else {
-                    // Generic fallback
-                    mapped = {
-                        ...mapped,
-                        targetSection: 'summary' as TargetSection, // Default to summary if unknown
-                        originalText: '',
-                        suggestedText: '',
-                        startOffset: 0,
-                        endOffset: 0
-                    };
+                // Determine target field based on section if not provided
+                let field = s.targetField;
+                if (!field) {
+                    if (s.targetSection === 'summary') field = 'content';
+                    else if (['experience', 'projects', 'education'].includes(s.targetSection)) field = 'description';
+                    else field = 'description';
                 }
 
-                return createInlineSuggestion(mapped as any);
+                // Default values
+                let startOffset = 0;
+                let endOffset = 0;
+
+                // Try to find the text offset in the profile
+                if (s.originalText) {
+                    let content = '';
+                    if (s.targetSection === 'summary') {
+                        content = profile.summary?.content || '';
+                    } else if (s.targetSection === 'experience' && s.targetItemId) {
+                        const item = profile.experience.find(e => e.id === s.targetItemId);
+                        if (item) {
+                            if (field === 'description') content = item.description || '';
+                        }
+                    } else if (s.targetSection === 'projects' && s.targetItemId) {
+                        const item = profile.projects.find(p => p.id === s.targetItemId);
+                        if (item) {
+                            if (field === 'description') content = item.description || '';
+                        }
+                    }
+
+                    // Find offset with robust matching
+
+                    // Simple exact match
+                    let index = content.indexOf(s.originalText);
+
+                    // If not found, try normalized match (ignore extra whitespace)
+                    if (index === -1) {
+                        const normalize = (str: string) => str.replace(/\s+/g, ' ').trim();
+                        const normContent = normalize(content);
+                        const normOriginal = normalize(s.originalText);
+                        const normIndex = normContent.indexOf(normOriginal);
+
+                        if (normIndex !== -1) {
+                            // Map back to original indices is complex, so we'll try a fuzzy approach
+                            // Look for the first few words
+                            const words = s.originalText.trim().split(/\s+/);
+                            if (words.length > 0) {
+                                const firstChunk = words.slice(0, Math.min(3, words.length)).join(' ');
+                                const chunkIndex = content.indexOf(firstChunk);
+                                if (chunkIndex !== -1) {
+                                    index = chunkIndex;
+                                    // Approximate end
+                                    endOffset = index + s.originalText.length;
+                                }
+                            }
+                        }
+                    }
+
+                    if (index !== -1) {
+                        startOffset = index;
+                        // Use the length of the original text, but clamp to content length
+                        endOffset = Math.min(index + s.originalText.length, content.length);
+
+                        // Refine end offset if we did a fuzzy match
+                        // (Optional: could look for distinct ending of the substring)
+                    }
+                }
+
+                return createInlineSuggestion({
+                    targetSection: s.targetSection as TargetSection,
+                    targetItemId: s.targetItemId,
+                    targetField: field,
+                    originalText: s.originalText || '',
+                    suggestedText: s.suggestedText || '',
+                    reason: s.reason || 'Suggestion from AI',
+                    type: (s.type as SuggestionType) || 'wording',
+                    severity: (s.severity as SuggestionSeverity) || 'suggestion',
+                    startOffset,
+                    endOffset
+                });
             });
 
             setInlineSuggestions(newSuggestions);
@@ -346,12 +428,7 @@ export function NewResumeBuilder({
 
     useEffect(() => {
         if (initialProfile) {
-            console.log('[NewResumeBuilder] Received new initialProfile:', {
-                contact: initialProfile.contact,
-                education: initialProfile.education?.length,
-                experience: initialProfile.experience?.length,
-                certifications: initialProfile.certifications?.length
-            });
+
             setProfile(initialProfile);
             if (initialProfile.resumeName) {
                 setResumeName(initialProfile.resumeName);
@@ -411,6 +488,31 @@ export function NewResumeBuilder({
         onSave(profileWithSettings);
     };
 
+    // Download Handlers
+    const handleDownloadPDF = async () => {
+        try {
+            const toastId = toast.loading('Generating PDF...');
+            // Generate blob using @react-pdf/renderer
+            const blob = await pdf(<ResumePDFDocument profile={profile} />).toBlob();
+            saveAs(blob, `${resumeName.replace(/\s+/g, '_')}_Resume.pdf`);
+            toast.success('Resume downloaded as PDF', { id: toastId });
+        } catch (error) {
+            console.error('PDF Generation Error:', error);
+            toast.error('Failed to generate PDF. Please try again.');
+        }
+    };
+
+    const handleDownloadDOCX = async () => {
+        try {
+            const toastId = toast.loading('Generating Word Document...');
+            await exportToDocx(profile, `${resumeName.replace(/\s+/g, '_')}_Resume.docx`);
+            toast.success('Resume downloaded as DOCX', { id: toastId });
+        } catch (error) {
+            console.error('DOCX Generation Error:', error);
+            toast.error('Failed to generate Word document.');
+        }
+    };
+
     if (isLayoutStyleEditorOpen) {
         return (
             <LayoutStyleEditor
@@ -461,10 +563,26 @@ export function NewResumeBuilder({
                         <Button variant="ghost" size="sm" onClick={handleSave} className="text-slate-600">
                             Save
                         </Button>
-                        <Button variant="default" size="sm" onClick={handleSave} className="bg-slate-900 text-white hover:bg-slate-800 shadow-sm">
-                            <Download className="w-4 h-4 mr-2" />
-                            Download PDF
-                        </Button>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="default" size="sm" className="bg-slate-900 text-white hover:bg-slate-800 shadow-sm">
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Download
+                                    <ChevronDown className="w-3 h-3 ml-2 opacity-70" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer">
+                                    <FileText className="w-4 h-4 mr-2 text-red-500" />
+                                    <span>Download PDF</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleDownloadDOCX} className="cursor-pointer">
+                                    <FileDown className="w-4 h-4 mr-2 text-blue-600" />
+                                    <span>Download Word</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </header>
 
@@ -537,6 +655,7 @@ export function NewResumeBuilder({
                                 onAskAI={handleAskAI}
                                 onApplySuggestion={handleApplySuggestion}
                                 onDenySuggestion={handleDenySuggestion}
+                                onReplySuggestion={handleReplySuggestion}
                             />
 
                             {/* Resume Sections */}
@@ -663,6 +782,8 @@ export function NewResumeBuilder({
                     onApplySuggestion={handleChatApplySuggestion}
                     onPreviewSuggestion={handleChatPreviewSuggestion}
                     onAddInlineSuggestion={handleAddInlineSuggestion}
+                    attachedContext={attachedChatContext}
+                    onClearContext={() => setAttachedChatContext(null)}
                 />
             </div>
             {/* Floating Chat Launcher - Always visible when chat is closed */}

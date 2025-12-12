@@ -19,7 +19,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const result = await query(
-      'DELETE FROM resumes WHERE id = $1 AND user_id = $2 RETURNING id',
+      'DELETE FROM tailored_resumes WHERE id = $1 AND user_id = $2 RETURNING id',
       [id, user.id]
     );
 

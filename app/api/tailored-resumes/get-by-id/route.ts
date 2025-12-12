@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await query(
-      'SELECT * FROM resumes WHERE id = $1 AND user_id = $2',
+      'SELECT * FROM tailored_resumes WHERE id = $1 AND user_id = $2',
       [id, user.id]
     );
 

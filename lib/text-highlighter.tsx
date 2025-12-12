@@ -70,14 +70,13 @@ export function renderHighlightedText(
 
     return segments.map((segment, index) => {
         if (segment.suggestion) {
+            // Wrap the segment in a HighlightedText with just the single suggestion
             return (
                 <HighlightedText
                     key={`${segment.suggestion.id}-${index}`}
-                    suggestion={segment.suggestion}
-                    onClick={() => onSuggestionClick?.(segment.suggestion!)}
-                >
-                    {segment.text}
-                </HighlightedText>
+                    text={segment.text}
+                    suggestions={[segment.suggestion]}
+                />
             );
         }
         return <span key={`text-${index}`}>{segment.text}</span>;
