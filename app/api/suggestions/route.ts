@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
         const result = await db.query(
             `SELECT * FROM ai_suggestions 
-             WHERE (tailored_resume_id = $1 OR base_resume_id = $1) AND user_id = $2 
+             WHERE resume_id = $1 AND user_id = $2 
              ORDER BY created_at DESC`,
             [resumeId, user.id]
         );
@@ -59,20 +59,15 @@ export async function POST(request: NextRequest) {
 
 
         try {
-            // Determine resume type
-            let targetColumn = 'tailored_resume_id';
-            const tailoredCheck = await db.query('SELECT id FROM tailored_resumes WHERE id = $1', [resumeId]);
+            // Check if resume exists in unified table
+            const resumeCheck = await db.query('SELECT id FROM resumes WHERE id = $1', [resumeId]);
             
-            if (tailoredCheck.rows.length === 0) {
-                const baseCheck = await db.query('SELECT id FROM base_resumes WHERE id = $1', [resumeId]);
-                if (baseCheck.rows.length === 0) {
-                     return NextResponse.json({ error: 'Resume not found' }, { status: 404 });
-                }
-                targetColumn = 'base_resume_id';
+            if (resumeCheck.rows.length === 0) {
+                 return NextResponse.json({ error: 'Resume not found' }, { status: 404 });
             }
 
             // First, delete existing suggestions for this resume
-            await db.query(`DELETE FROM ai_suggestions WHERE ${targetColumn} = $1`, [resumeId]);
+            await db.query(`DELETE FROM ai_suggestions WHERE resume_id = $1`, [resumeId]);
 
             if (suggestions.length === 0) {
                 await db.query('COMMIT');
@@ -83,7 +78,7 @@ export async function POST(request: NextRequest) {
             for (const s of suggestions) {
                 await db.query(
                     `INSERT INTO ai_suggestions (
-                        ${targetColumn}, user_id, type, severity, status,
+                        resume_id, user_id, type, severity, status,
                         target_section, target_item_id, target_field,
                         original_text, suggested_text, reason,
                         start_offset, end_offset, source
@@ -142,7 +137,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         await db.query(
-            'DELETE FROM ai_suggestions WHERE (tailored_resume_id = $1 OR base_resume_id = $1) AND user_id = $2',
+            'DELETE FROM ai_suggestions WHERE resume_id = $1 AND user_id = $2',
             [resumeId, user.id]
         );
 

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Get all base resumes for the user
     const result = await query(
-      'SELECT * FROM base_resumes WHERE user_id = $1 ORDER BY updated_at DESC',
+      'SELECT * FROM resumes WHERE user_id = $1 AND type = \'base\' ORDER BY updated_at DESC',
       [user.id]
     );
 
@@ -40,25 +40,28 @@ export async function POST(request: NextRequest) {
     data.user_id = user.id;
 
     // Create the base resume
+    const content = {
+        summary: data.summary || '',
+        contact_info: data.contact_info || {},
+        experience: data.experience || [],
+        education: data.education || [],
+        skills: data.skills || {},
+        projects: data.projects || [],
+        certifications: data.certifications || [],
+        custom_sections: data.custom_sections || []
+    };
+
     const result = await query(
-      `INSERT INTO base_resumes (
-        user_id, title, content, sections, contact_info, summary, 
-        experience, education, skills, certifications, projects, custom_sections
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+      `INSERT INTO resumes (
+        user_id, type, title, content, is_starred, settings
+      ) VALUES ($1, 'base', $2, $3, $4, $5) 
       RETURNING *`,
       [
         data.user_id,
         data.title,
-        JSON.stringify(data.content || {}),
-        JSON.stringify(data.sections || []),
-        JSON.stringify(data.contact_info || {}),
-        data.summary || '',
-        JSON.stringify(data.experience || []),
-        JSON.stringify(data.education || []),
-        JSON.stringify(data.skills || {}),
-        JSON.stringify(data.certifications || []),
-        JSON.stringify(data.projects || []),
-        JSON.stringify(data.custom_sections || []),
+        JSON.stringify(content),
+        false,
+        JSON.stringify(data.settings || {})
       ]
     );
 

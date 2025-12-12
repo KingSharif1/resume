@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const result = await query(
-      'SELECT * FROM tailored_resumes WHERE id = $1 AND user_id = $2',
+      'SELECT * FROM resumes WHERE id = $1 AND user_id = $2',
       [params.id, user.id]
     );
 
@@ -22,7 +22,17 @@ export async function GET(
       return NextResponse.json({ error: 'Resume not found' }, { status: 404 });
     }
 
-    return NextResponse.json(result.rows[0]);
+    // Adapt content back to expected format
+    const row = result.rows[0];
+    const adapted = {
+        ...row,
+        tailored_content: row.content,
+        base_resume_id: row.source_resume_id,
+        job_description: row.target_job_description,
+        original_content: row.content.original_content_text
+    };
+
+    return NextResponse.json(adapted);
   } catch (error: any) {
     console.error('Error fetching tailored resume:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -43,26 +53,43 @@ export async function PUT(
     const data = await request.json();
     
     // Build the SET part of the query dynamically based on provided fields
+    // Build the SET part of the query dynamically
     const updates: string[] = [];
     const values: any[] = [];
     let paramIndex = 1;
+
+    // Fetch existing content if we need to merge
+    let currentContent: any = {};
+    if (data.tailored_content || data.original_content) {
+         const existing = await query('SELECT content FROM resumes WHERE id = $1', [params.id]);
+         if (existing.rows.length > 0) {
+             currentContent = existing.rows[0].content;
+         }
+    }
 
     if (data.title !== undefined) {
       updates.push(`title = $${paramIndex++}`);
       values.push(data.title);
     }
-    if (data.original_content !== undefined) {
-      updates.push(`original_content = $${paramIndex++}`);
-      values.push(data.original_content);
+    
+    // Merge content updates
+    if (data.tailored_content !== undefined) {
+         currentContent = { ...currentContent, ...data.tailored_content };
     }
+    if (data.original_content !== undefined) {
+         currentContent.original_content_text = data.original_content;
+    }
+    
+    if (data.tailored_content !== undefined || data.original_content !== undefined) {
+        updates.push(`content = $${paramIndex++}`);
+        values.push(JSON.stringify(currentContent));
+    }
+
     if (data.job_description !== undefined) {
-      updates.push(`job_description = $${paramIndex++}`);
+      updates.push(`target_job_description = $${paramIndex++}`);
       values.push(data.job_description);
     }
-    if (data.tailored_content !== undefined) {
-      updates.push(`tailored_content = $${paramIndex++}`);
-      values.push(JSON.stringify(data.tailored_content));
-    }
+
     if (data.score !== undefined) {
       updates.push(`score = $${paramIndex++}`);
       values.push(data.score);

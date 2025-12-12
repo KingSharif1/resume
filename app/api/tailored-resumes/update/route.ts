@@ -20,27 +20,42 @@ export async function PUT(request: NextRequest) {
 
     const data = await request.json();
     
-    // Build the SET part of the query dynamically based on provided fields
+    // Build the SET part of the query dynamically
     const updates: string[] = [];
     const values: any[] = [];
     let paramIndex = 1;
+
+    // Fetch existing content if we need to merge
+    let currentContent: any = {};
+    if (data.tailored_content || data.original_content) {
+         const existing = await query('SELECT content FROM resumes WHERE id = $1', [id]);
+         if (existing.rows.length > 0) {
+             currentContent = existing.rows[0].content;
+         }
+    }
 
     if (data.title !== undefined) {
       updates.push(`title = $${paramIndex++}`);
       values.push(data.title);
     }
-    if (data.original_content !== undefined) {
-      updates.push(`original_content = $${paramIndex++}`);
-      values.push(data.original_content);
+    
+    if (data.tailored_content !== undefined) {
+         currentContent = { ...currentContent, ...data.tailored_content };
     }
+    if (data.original_content !== undefined) {
+         currentContent.original_content_text = data.original_content;
+    }
+    
+    if (data.tailored_content !== undefined || data.original_content !== undefined) {
+        updates.push(`content = $${paramIndex++}`);
+        values.push(JSON.stringify(currentContent));
+    }
+
     if (data.job_description !== undefined) {
-      updates.push(`job_description = $${paramIndex++}`);
+      updates.push(`target_job_description = $${paramIndex++}`);
       values.push(data.job_description);
     }
-    if (data.tailored_content !== undefined) {
-      updates.push(`tailored_content = $${paramIndex++}`);
-      values.push(JSON.stringify(data.tailored_content));
-    }
+
     if (data.score !== undefined) {
       updates.push(`score = $${paramIndex++}`);
       values.push(data.score);
@@ -62,7 +77,7 @@ export async function PUT(request: NextRequest) {
     values.push(user.id);
 
     const result = await query(
-      `UPDATE tailored_resumes SET ${updates.join(', ')} 
+      `UPDATE resumes SET ${updates.join(', ')} 
        WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}
        RETURNING *`,
       values
