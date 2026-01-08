@@ -1,18 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ResumeProfile } from '@/lib/resume-schema';
-import { calculateResumeScore, ScoreCategory } from '@/lib/resume-score';
+import { calculateResumeScore, ScoreCategory, ActionableTip } from '@/lib/resume-score';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronDown, CheckCircle2, AlertCircle, AlertTriangle, Lightbulb,
-    ShieldCheck, FileCheck, ClipboardList, Sparkles, X
+    ShieldCheck, FileCheck, ClipboardList, Sparkles, X, TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ResumeScoreProps {
     profile: ResumeProfile;
     className?: string;
+    onApplyFix?: (tip: ActionableTip) => void;
+    onDismissTip?: (tip: ActionableTip) => void;
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -22,12 +24,32 @@ const categoryIcons: Record<string, React.ReactNode> = {
     'Professional Polish': <Sparkles className="w-4 h-4" />,
 };
 
-export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
+export function ResumeScore({ profile, className = '', onApplyFix, onDismissTip }: ResumeScoreProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+    const [previousScore, setPreviousScore] = useState<number | null>(null);
+    const [scoreChange, setScoreChange] = useState<number>(0);
+    const [showChangeIndicator, setShowChangeIndicator] = useState(false);
 
-    const score = calculateResumeScore(profile);
+    const score = useMemo(() => calculateResumeScore(profile), [profile]);
+    
     const { categories, percentage, overallGrade, summary, atsCompatibility, jobReadiness } = score;
+
+    useEffect(() => {
+        if (previousScore !== null && previousScore !== percentage) {
+            const change = percentage - previousScore;
+            console.log(`📊 Score: ${previousScore}% → ${percentage}% (${change > 0 ? '+' : ''}${change}%)`);
+            setScoreChange(change);
+            setShowChangeIndicator(true);
+            
+            const timer = setTimeout(() => {
+                setShowChangeIndicator(false);
+            }, 2000);
+            
+            return () => clearTimeout(timer);
+        }
+        setPreviousScore(percentage);
+    }, [percentage, previousScore]);
 
     const totalIssues = categories.reduce((sum, cat) => sum + cat.tips.length, 0);
 
@@ -65,7 +87,11 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
             >
                 <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                     {/* Circular Progress */}
-                    <div className="relative w-16 h-16 flex-shrink-0">
+                    <motion.div 
+                        className="relative w-16 h-16 flex-shrink-0"
+                        animate={showChangeIndicator ? { scale: [1, 1.1, 1] } : {}}
+                        transition={{ duration: 0.3 }}
+                    >
                         <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
                             {/* Background circle */}
                             <circle
@@ -78,6 +104,7 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
                             />
                             {/* Progress circle */}
                             <motion.circle
+                                key={percentage}
                                 cx="50"
                                 cy="50"
                                 r="45"
@@ -88,15 +115,29 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
                                 strokeDasharray={circumference}
                                 initial={{ strokeDashoffset: circumference }}
                                 animate={{ strokeDashoffset }}
-                                transition={{ duration: 1, ease: "easeOut" }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
                             />
                         </svg>
                         {/* Center text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className={`text-xl font-bold ${colors.text}`}>{overallGrade}</span>
-                            <span className="text-[10px] text-slate-500">{percentage}%</span>
+                            <motion.span 
+                                key={`grade-${overallGrade}`}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className={`text-xl font-bold ${colors.text}`}
+                            >
+                                {overallGrade}
+                            </motion.span>
+                            <motion.span 
+                                key={`pct-${percentage}`}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="text-[10px] text-slate-500"
+                            >
+                                {percentage}%
+                            </motion.span>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Score Info */}
                     <div className="flex-1 min-w-0">
@@ -107,6 +148,21 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
                                     {totalIssues} tips
                                 </span>
                             )}
+                            <AnimatePresence>
+                                {showChangeIndicator && scoreChange !== 0 && (
+                                    <motion.span
+                                        initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                                        className={`text-xs font-semibold flex items-center gap-1 ${
+                                            scoreChange > 0 ? 'text-emerald-600' : 'text-red-600'
+                                        }`}
+                                    >
+                                        <TrendingUp className={`w-3 h-3 ${scoreChange < 0 ? 'rotate-180' : ''}`} />
+                                        {scoreChange > 0 ? '+' : ''}{scoreChange}%
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
                         </div>
                         <p className="text-xs text-slate-500 line-clamp-2">{summary}</p>
                     </div>
@@ -145,7 +201,7 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
 
                         {/* Categories */}
                         <div className="p-4 space-y-3">
-                            {categories.map((category) => {
+                            {categories.map((category, idx) => {
                                 const pct = Math.round((category.score / category.maxScore) * 100);
                                 const isOpen = expandedCategory === category.label;
                                 const icon = categoryIcons[category.label] || <CheckCircle2 className="w-4 h-4" />;
@@ -166,16 +222,28 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     {getStatusIcon(category.status)}
-                                                    <span className="text-sm font-semibold text-slate-600">
+                                                    <motion.span 
+                                                        key={`${category.label}-${category.score}`}
+                                                        initial={{ scale: 1.2, color: '#10b981' }}
+                                                        animate={{ scale: 1, color: 'inherit' }}
+                                                        transition={{ duration: 0.3 }}
+                                                        className="text-sm font-semibold text-slate-600"
+                                                    >
                                                         {category.score}/{category.maxScore}
-                                                    </span>
+                                                    </motion.span>
                                                 </div>
                                             </div>
                                             {/* Mini progress bar */}
                                             <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                                 <motion.div
+                                                    key={`${category.label}-bar-${pct}`}
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${pct}%` }}
+                                                    transition={{ 
+                                                        duration: 0.6, 
+                                                        delay: idx * 0.1,
+                                                        ease: "easeOut" 
+                                                    }}
                                                     className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-red-500'
                                                         }`}
                                                 />
@@ -184,7 +252,7 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
 
                                         {/* Expanded Tips */}
                                         <AnimatePresence>
-                                            {isOpen && category.tips.length > 0 && (
+                                            {isOpen && (category.actionableTips?.length || category.tips.length) > 0 && (
                                                 <motion.div
                                                     initial={{ height: 0 }}
                                                     animate={{ height: 'auto' }}
@@ -192,7 +260,65 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
                                                     className="border-t border-slate-100 bg-blue-50/50"
                                                 >
                                                     <div className="p-3 space-y-2">
-                                                        {category.tips.map((tip, idx) => (
+                                                        {/* Show actionable tips first if available */}
+                                                        {category.actionableTips?.map((tip, idx) => (
+                                                            <div 
+                                                                key={`actionable-${idx}`} 
+                                                                className="flex items-center justify-between gap-2 p-2 bg-white rounded border border-amber-200 hover:border-amber-300 transition-colors group"
+                                                            >
+                                                                <div className="flex items-start gap-2 flex-1">
+                                                                    <Lightbulb className="w-3 h-3 text-amber-500 mt-0.5 flex-shrink-0" />
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            // Scroll to the field with the error
+                                                                            const fieldId = tip.itemId 
+                                                                                ? `${tip.section}-${tip.itemId}-${tip.field}`
+                                                                                : `${tip.section}-${tip.field}`;
+                                                                            const element = document.getElementById(fieldId);
+                                                                            if (element) {
+                                                                                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                                                element.focus();
+                                                                                // Add highlight effect
+                                                                                element.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2');
+                                                                                setTimeout(() => {
+                                                                                    element.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2');
+                                                                                }, 2000);
+                                                                            }
+                                                                        }}
+                                                                        className="text-xs text-slate-700 hover:text-amber-600 text-left transition-colors"
+                                                                    >
+                                                                        {tip.message}
+                                                                    </button>
+                                                                </div>
+                                                                {tip.canAutoFix && tip.suggestedText && (
+                                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                onApplyFix?.(tip);
+                                                                            }}
+                                                                            className="px-2 py-1 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 transition-colors"
+                                                                            title="Apply fix"
+                                                                        >
+                                                                            Fix
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                onDismissTip?.(tip);
+                                                                            }}
+                                                                            className="px-2 py-1 text-xs bg-slate-200 text-slate-600 rounded hover:bg-slate-300 transition-colors"
+                                                                            title="Dismiss"
+                                                                        >
+                                                                            ✕
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                        
+                                                        {/* Show regular tips if no actionable tips */}
+                                                        {!category.actionableTips?.length && category.tips.map((tip, idx) => (
                                                             <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
                                                                 <Lightbulb className="w-3 h-3 text-amber-500 mt-0.5 flex-shrink-0" />
                                                                 <span>{tip}</span>
@@ -210,14 +336,36 @@ export function ResumeScore({ profile, className = '' }: ResumeScoreProps) {
                         {/* Footer Stats */}
                         <div className="p-4 border-t border-slate-100 bg-slate-50">
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="text-center p-3 bg-white rounded-lg">
-                                    <div className="text-lg font-bold text-blue-600">{atsCompatibility}%</div>
+                                <motion.div 
+                                    className="text-center p-3 bg-white rounded-lg"
+                                    whileHover={{ scale: 1.02 }}
+                                >
+                                    <motion.div 
+                                        key={`ats-${atsCompatibility}`}
+                                        initial={{ scale: 1.2, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="text-lg font-bold text-blue-600"
+                                    >
+                                        {atsCompatibility}%
+                                    </motion.div>
                                     <div className="text-xs text-slate-500">ATS Ready</div>
-                                </div>
-                                <div className="text-center p-3 bg-white rounded-lg">
-                                    <div className="text-lg font-bold text-purple-600">{jobReadiness}%</div>
+                                </motion.div>
+                                <motion.div 
+                                    className="text-center p-3 bg-white rounded-lg"
+                                    whileHover={{ scale: 1.02 }}
+                                >
+                                    <motion.div 
+                                        key={`job-${jobReadiness}`}
+                                        initial={{ scale: 1.2, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="text-lg font-bold text-purple-600"
+                                    >
+                                        {jobReadiness}%
+                                    </motion.div>
                                     <div className="text-xs text-slate-500">Job Ready</div>
-                                </div>
+                                </motion.div>
                             </div>
                         </div>
                     </motion.div>

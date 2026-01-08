@@ -26,12 +26,15 @@ import {
     ThumbsDown,
     Copy,
     RotateCcw,
+    RefreshCw,
     Check,
     X,
     Lightbulb,
     ArrowRight,
     Maximize2,
-    Minimize2
+    Minimize2,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -40,6 +43,8 @@ import { toast } from 'react-hot-toast';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { cn } from '@/lib/utils';
+import { useSuggestionHover } from '@/lib/suggestion-hover-context';
+import { scrollToSuggestionHighlight } from '@/lib/scroll-utils';
 
 dayjs.extend(relativeTime);
 
@@ -50,8 +55,11 @@ export interface ChatSuggestion {
     targetSection: string;
     targetId?: string;
     originalText?: string;
+    previousSuggestion?: string; // The previous suggestion (if this is an update)
     suggestedText: string;
     reasoning: string;
+    actualSuggestionId?: string; // The actual ID of the suggestion in the panel
+    isUpdated?: boolean; // Track if user has already updated this suggestion
 }
 
 export interface ReplyContext {
@@ -73,6 +81,12 @@ export interface Message {
         model?: string;
         isFallback?: boolean;
     };
+    versions?: Array<{
+        content: string;
+        suggestion?: ChatSuggestion;
+        timestamp: Date;
+    }>;
+    currentVersionIndex?: number;
 }
 
 export interface ChatSession {
@@ -91,7 +105,7 @@ export interface AIChatWidgetProps {
     onMessageSent?: () => void;
     onApplySuggestion?: (suggestion: ChatSuggestion) => void;
     onPreviewSuggestion?: (suggestion: ChatSuggestion | null) => void;
-    onAddInlineSuggestion?: (suggestion: ChatSuggestion) => void;
+    onAddInlineSuggestion?: (suggestion: ChatSuggestion) => string;
     attachedContext?: ChatSuggestion | null;
     onClearContext?: () => void;
 }
@@ -163,14 +177,60 @@ const MessageBubble = ({
     message,
     onAcceptSuggestion,
     onDenySuggestion,
-    onReplySuggestion
+    onReplySuggestion,
+    onRegenerateMessage,
+    onUpdateSuggestion,
+    onUpdateMessageVersion
 }: {
     message: Message;
     onAcceptSuggestion?: (suggestion: ChatSuggestion) => void;
     onDenySuggestion?: (suggestionId: string) => void;
     onReplySuggestion?: (suggestion: ChatSuggestion) => void;
+    onRegenerateMessage?: (messageId: string) => void;
+    onUpdateSuggestion?: (suggestion: ChatSuggestion) => void;
+    onUpdateMessageVersion?: (messageId: string, versionIndex: number) => void;
 }) => {
     const isUser = message.role === 'user';
+    const [copied, setCopied] = useState(false);
+    const [thumbsState, setThumbsState] = useState<'up' | 'down' | null>(null);
+    const [isInlineCardHovered, setIsInlineCardHovered] = useState(false);
+    
+    // Import suggestion hover context for bidirectional highlighting
+    const { setHoveredSuggestion, setActiveSuggestionId } = useSuggestionHover();
+    
+    // Version navigation
+    const hasVersions = message.versions && message.versions.length > 1;
+    const currentVersion = message.currentVersionIndex ?? 0;
+    const totalVersions = message.versions?.length ?? 1;
+    
+    const handlePreviousVersion = () => {
+        if (currentVersion > 0 && onUpdateMessageVersion) {
+            onUpdateMessageVersion(message.id, currentVersion - 1);
+        }
+    };
+    
+    const handleNextVersion = () => {
+        if (currentVersion < totalVersions - 1 && onUpdateMessageVersion) {
+            onUpdateMessageVersion(message.id, currentVersion + 1);
+        }
+    };
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(message.content);
+        setCopied(true);
+        toast.success('Copied to clipboard');
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleThumbsUp = () => {
+        setThumbsState(thumbsState === 'up' ? null : 'up');
+        toast.success('Thanks for the feedback!');
+    };
+
+    const handleThumbsDown = () => {
+        setThumbsState(thumbsState === 'down' ? null : 'down');
+        toast.success('Thanks for the feedback!');
+    };
 
     return (
         <div className={cn(
@@ -205,21 +265,78 @@ const MessageBubble = ({
                 )}>
                     {/* Reply Context Attachment */}
                     {message.replyContext && (
-                        <div className={cn(
-                            "mb-2 flex items-center gap-2 rounded-lg p-2 text-xs font-medium border border-blue-400/30 bg-blue-700/30",
-                            !isUser && "bg-gray-50 border-gray-200 text-gray-600"
-                        )}>
+                        <button
+                            onMouseEnter={() => {
+                                // Trigger hover effect - highlight preview and panel card
+                                const suggestionId = message.replyContext?.id;
+                                if (suggestionId) {
+                                    console.log('[MessageBubble] Hovering reply context - highlighting preview and card:', suggestionId);
+                                    setHoveredSuggestion(suggestionId);
+                                    scrollToSuggestionHighlight(suggestionId);
+                                }
+                            }}
+                            onMouseLeave={() => {
+                                // Clear hover effect
+                                setHoveredSuggestion(null);
+                            }}
+                            onClick={() => {
+                                // Scroll to both the suggestion in preview AND the suggestion card
+                                const suggestionId = message.replyContext?.id;
+                                if (suggestionId) {
+                                    console.log('[MessageBubble] Clicking reply context - scrolling to preview and card:', suggestionId);
+                                    setActiveSuggestionId(suggestionId);
+                                    
+                                    // Scroll to highlight in preview
+                                    const highlight = document.querySelector(`[data-suggestion-id="${suggestionId}"]`);
+                                    if (highlight instanceof HTMLElement) {
+                                        highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
+                                    
+                                    // Scroll to suggestion card
+                                    const card = document.querySelector(`[data-suggestion-card="${suggestionId}"]`);
+                                    if (card instanceof HTMLElement) {
+                                        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }
+                                }
+                            }}
+                            className={cn(
+                                "mb-2 w-full flex items-start gap-3 rounded-lg p-3 text-xs border transition-all cursor-pointer",
+                                !isUser 
+                                    ? "bg-blue-50/80 border-blue-200 text-gray-700 hover:bg-blue-100 hover:border-blue-300" 
+                                    : "bg-blue-700/40 border-blue-400/40 text-white hover:bg-blue-700/60"
+                            )}
+                        >
                             <div className={cn(
-                                "flex h-5 w-5 items-center justify-center rounded-md bg-white/20 text-white shrink-0",
-                                !isUser && "bg-yellow-100 text-yellow-700"
+                                "flex h-6 w-6 items-center justify-center rounded-md shrink-0",
+                                !isUser ? "bg-blue-100 text-blue-600" : "bg-white/20 text-white"
                             )}>
-                                <Lightbulb size={12} />
+                                <Lightbulb size={14} />
                             </div>
-                            <div className="flex flex-col gap-0.5 min-w-0">
-                                <span className="opacity-70 text-[9px] uppercase tracking-wider">Replying to suggestion</span>
-                                <span className="truncate">{message.replyContext.title}</span>
+                            <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className={cn(
+                                        "text-[10px] font-semibold uppercase tracking-wider",
+                                        !isUser ? "text-blue-600" : "text-white/70"
+                                    )}>Discussing Suggestion</span>
+                                    <span className={cn(
+                                        "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                                        !isUser ? "bg-blue-100 text-blue-700" : "bg-white/20 text-white"
+                                    )}>{message.replyContext.title}</span>
+                                </div>
+                                {message.replyContext.suggestedText && (
+                                    <p className={cn(
+                                        "text-xs line-clamp-2 leading-relaxed",
+                                        !isUser ? "text-gray-600" : "text-white/90"
+                                    )}>
+                                        "{message.replyContext.suggestedText}"
+                                    </p>
+                                )}
+                                <span className={cn(
+                                    "text-[10px] italic mt-0.5",
+                                    !isUser ? "text-gray-400" : "text-white/50"
+                                )}>Click to view in preview</span>
                             </div>
-                        </div>
+                        </button>
                     )}
 
                     {message.content.split('\n').map((line, i) => (
@@ -232,7 +349,51 @@ const MessageBubble = ({
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full max-w-md"
+                        onMouseEnter={() => {
+                            // Only trigger hover if suggestion has been added to panel (has actualSuggestionId)
+                            const suggestionId = message.suggestion?.actualSuggestionId;
+                            setIsInlineCardHovered(true);
+                            if (suggestionId) {
+                                console.log('[MessageBubble] Hovering inline suggestion - highlighting panel card and preview:', suggestionId);
+                                setHoveredSuggestion(suggestionId);
+                                scrollToSuggestionHighlight(suggestionId);
+                            } else {
+                                console.log('[MessageBubble] Inline suggestion not yet added to panel - no highlighting');
+                            }
+                        }}
+                        onMouseLeave={() => {
+                            // Clear hover effect
+                            setIsInlineCardHovered(false);
+                            setHoveredSuggestion(null);
+                        }}
+                        onClick={() => {
+                            // Only scroll if suggestion has been added to panel
+                            const suggestionId = message.suggestion?.actualSuggestionId;
+                            if (suggestionId) {
+                                console.log('[MessageBubble] Clicking inline suggestion - scrolling to panel card and preview:', suggestionId);
+                                setActiveSuggestionId(suggestionId);
+                                
+                                // Scroll to highlight in preview
+                                const highlight = document.querySelector(`[data-suggestion-id="${suggestionId}"]`);
+                                if (highlight instanceof HTMLElement) {
+                                    highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                                
+                                // Scroll to suggestion card in panel
+                                const card = document.querySelector(`[data-suggestion-card="${suggestionId}"]`);
+                                if (card instanceof HTMLElement) {
+                                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                }
+                            } else {
+                                console.log('[MessageBubble] Inline suggestion not yet added to panel - click "Update Suggestion" first');
+                            }
+                        }}
+                        className={cn(
+                            "mt-2 bg-white rounded-xl border shadow-sm overflow-hidden w-full max-w-md cursor-pointer transition-all",
+                            isInlineCardHovered 
+                                ? "border-blue-400 shadow-md ring-2 ring-blue-200 ring-offset-1" 
+                                : "border-gray-200 hover:border-blue-300 hover:shadow-md"
+                        )}
                     >
                         <div className="p-3">
                             {/* Header */}
@@ -245,15 +406,34 @@ const MessageBubble = ({
                                 </span>
                             </div>
 
-                            {/* Content Diff */}
+                            {/* Content Diff - 3-way comparison if this is an update */}
                             <div className="mb-3 space-y-2">
+                                {/* Original Text */}
                                 {message.suggestion.originalText && (
-                                    <div className="text-gray-400 line-through text-xs leading-relaxed pl-2 border-l-2 border-red-200 bg-red-50/30 p-1.5 rounded-r-md">
-                                        {message.suggestion.originalText}
+                                    <div>
+                                        <div className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Original:</div>
+                                        <div className="text-gray-400 line-through text-xs leading-relaxed pl-2 border-l-2 border-red-200 bg-red-50/30 p-1.5 rounded-r-md">
+                                            {message.suggestion.originalText}
+                                        </div>
                                     </div>
                                 )}
-                                <div className="flex items-start gap-2">
-                                    <ArrowRight className="text-blue-500 shrink-0 mt-0.5" size={12} />
+                                
+                                {/* Previous Suggestion (if this is an update) */}
+                                {message.suggestion.previousSuggestion && (
+                                    <div>
+                                        <div className="text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">Previous Suggestion:</div>
+                                        <div className="text-gray-500 text-xs leading-relaxed pl-2 border-l-2 border-yellow-200 bg-yellow-50/30 p-1.5 rounded-r-md">
+                                            {message.suggestion.previousSuggestion}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* New Suggestion */}
+                                <div>
+                                    <div className="text-[10px] font-semibold text-blue-600 mb-1 uppercase tracking-wide flex items-center gap-1">
+                                        <ArrowRight size={10} />
+                                        {message.suggestion.previousSuggestion ? 'Updated Suggestion:' : 'Suggestion:'}
+                                    </div>
                                     <div className="text-gray-900 font-medium text-xs leading-relaxed bg-blue-50/50 p-2 rounded-md border border-blue-100 w-full">
                                         {message.suggestion.suggestedText}
                                     </div>
@@ -266,53 +446,96 @@ const MessageBubble = ({
                                 {message.suggestion.reasoning}
                             </div>
 
-                            {/* Actions */}
-                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
-                                <button
-                                    onClick={() => onDenySuggestion?.(message.suggestion!.suggestedText)}
-                                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                >
-                                    <X size={12} />
-                                    Deny
-                                </button>
-
-                                <div className="flex items-center gap-2">
+                            {/* Actions - Hide button after update */}
+                            {!message.suggestion.isUpdated && (
+                                <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
                                     <button
-                                        onClick={() => onReplySuggestion?.(message.suggestion!)}
-                                        className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 rounded-lg transition-all"
+                                        onClick={() => {
+                                            // Mark as updated and call handler
+                                            if (message.suggestion) {
+                                                const updatedSuggestion = { ...message.suggestion, isUpdated: true };
+                                                onUpdateSuggestion?.(updatedSuggestion);
+                                            }
+                                        }}
+                                        className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all"
                                     >
-                                        <MessageSquare size={12} />
-                                        Reply
-                                    </button>
-                                    <button
-                                        onClick={() => onAcceptSuggestion?.(message.suggestion!)}
-                                        className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all"
-                                    >
-                                        <Check size={12} />
-                                        Approve
+                                        <RefreshCw size={12} />
+                                        Update Suggestion
                                     </button>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </motion.div>
                 )}
 
                 {/* Action Row for AI messages */}
-                {!isUser && !message.suggestion && (
-                    <div className="flex items-center gap-0.5 mt-1 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors">
-                            <Copy size={12} />
+                {!isUser && (
+                    <div className="flex items-center justify-between mt-1 ml-1">
+                        {/* Version Navigation */}
+                        {hasVersions && (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-600">
+                                <button
+                                    onClick={handlePreviousVersion}
+                                    disabled={currentVersion === 0}
+                                    className="p-0.5 hover:bg-gray-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    title="Previous version"
+                                >
+                                    <ChevronLeft size={12} />
+                                </button>
+                                <span className="font-medium min-w-[3ch] text-center">
+                                    {currentVersion + 1}/{totalVersions}
+                                </span>
+                                <button
+                                    onClick={handleNextVersion}
+                                    disabled={currentVersion === totalVersions - 1}
+                                    className="p-0.5 hover:bg-gray-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    title="Next version"
+                                >
+                                    <ChevronRight size={12} />
+                                </button>
+                            </div>
+                        )}
+                        
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button 
+                            onClick={handleCopy}
+                            className={cn(
+                                "p-1 rounded transition-colors",
+                                copied ? "text-green-600 bg-green-50" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                            )}
+                            title="Copy message"
+                        >
+                            {copied ? <Check size={12} /> : <Copy size={12} />}
                         </button>
-                        <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors">
+                        <button 
+                            onClick={() => onRegenerateMessage?.(message.id)}
+                            className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                            title="Regenerate response"
+                        >
                             <RotateCcw size={12} />
                         </button>
                         <div className="h-2 w-[1px] bg-gray-200 mx-0.5" />
-                        <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors">
+                        <button 
+                            onClick={handleThumbsUp}
+                            className={cn(
+                                "p-1 rounded transition-colors",
+                                thumbsState === 'up' ? "text-green-600 bg-green-50" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                            )}
+                            title="Good response"
+                        >
                             <ThumbsUp size={12} />
                         </button>
-                        <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors">
+                        <button 
+                            onClick={handleThumbsDown}
+                            className={cn(
+                                "p-1 rounded transition-colors",
+                                thumbsState === 'down' ? "text-red-600 bg-red-50" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                            )}
+                            title="Bad response"
+                        >
                             <ThumbsDown size={12} />
                         </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -542,9 +765,8 @@ export function AIChatWidget({
 
             setMessages(prev => [...prev, aiMessage]);
 
-            if (data.suggestion && onAddInlineSuggestion) {
-                onAddInlineSuggestion(data.suggestion);
-            }
+            // Don't automatically add suggestion to panel - let user click "Update Suggestion" button
+            // The suggestion stays in the chat until user explicitly adds it
         } catch (error) {
             console.error('[AIChatWidget] Chat error:', error);
             toast.error('Failed to get AI response');
@@ -567,6 +789,114 @@ export function AIChatWidget({
 
     const handleReplySuggestion = (suggestion: ChatSuggestion) => {
         setReplyingTo(suggestion);
+    };
+
+    const handleRegenerateMessage = async (messageId: string) => {
+        console.log('[AIChatWidget] Regenerating message:', messageId);
+        
+        // Find the message and the user message before it
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+        if (messageIndex <= 0) return;
+        
+        const aiMessage = messages[messageIndex];
+        const userMessage = messages[messageIndex - 1];
+        if (userMessage.role !== 'user') return;
+        
+        setIsLoading(true);
+
+        try {
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    resumeId,
+                    message: userMessage.content,
+                    profile,
+                    history: messages.slice(0, messageIndex - 1).map(m => ({ role: m.role, content: m.content })),
+                    attachedContext: userMessage.replyContext ? {
+                        type: 'suggestion',
+                        targetSection: userMessage.replyContext.title,
+                        originalText: userMessage.replyContext.originalText,
+                        suggestedText: userMessage.replyContext.suggestedText,
+                        reasoning: userMessage.replyContext.reasoning
+                    } : null
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to get response');
+
+            const data = await response.json();
+
+            // Update the message in-place with version history
+            setMessages(prev => prev.map(msg => {
+                if (msg.id === messageId) {
+                    // Initialize versions array if it doesn't exist
+                    const versions = msg.versions || [
+                        { content: msg.content, suggestion: msg.suggestion, timestamp: msg.timestamp }
+                    ];
+                    
+                    // Add new version
+                    versions.push({
+                        content: data.message,
+                        suggestion: data.suggestion,
+                        timestamp: new Date()
+                    });
+
+                    return {
+                        ...msg,
+                        content: data.message,
+                        suggestion: data.suggestion,
+                        versions,
+                        currentVersionIndex: versions.length - 1
+                    };
+                }
+                return msg;
+            }));
+
+            toast.success('Response regenerated');
+        } catch (error) {
+            console.error('[AIChatWidget] Regenerate error:', error);
+            toast.error('Failed to regenerate response');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleUpdateSuggestion = (suggestion: ChatSuggestion) => {
+        console.log('[AIChatWidget] Updating suggestion:', suggestion);
+        
+        // Add the suggestion to inline suggestions panel (this will update existing one if it matches)
+        if (onAddInlineSuggestion) {
+            const suggestionId = onAddInlineSuggestion(suggestion);
+            
+            // Update the message with the actual suggestion ID for proper highlighting
+            setMessages(prev => prev.map(msg => 
+                msg.suggestion && 
+                msg.suggestion.targetSection === suggestion.targetSection &&
+                msg.suggestion.suggestedText === suggestion.suggestedText
+                    ? { ...msg, suggestion: { ...msg.suggestion, actualSuggestionId: suggestionId, isUpdated: true } }
+                    : msg
+            ));
+            
+            toast.success('Suggestion added to panel!');
+        }
+    };
+
+    const handleUpdateMessageVersion = (messageId: string, versionIndex: number) => {
+        console.log('[AIChatWidget] Switching to version:', { messageId, versionIndex });
+        
+        setMessages(prev => prev.map(msg => {
+            if (msg.id === messageId && msg.versions) {
+                const version = msg.versions[versionIndex];
+                return {
+                    ...msg,
+                    content: version.content,
+                    suggestion: version.suggestion,
+                    currentVersionIndex: versionIndex
+                };
+            }
+            return msg;
+        }));
     };
 
     // Group sessions by time
@@ -764,6 +1094,9 @@ export function AIChatWidget({
                                         onAcceptSuggestion={handleAcceptSuggestion}
                                         onDenySuggestion={() => { }}
                                         onReplySuggestion={handleReplySuggestion}
+                                        onRegenerateMessage={handleRegenerateMessage}
+                                        onUpdateSuggestion={handleUpdateSuggestion}
+                                        onUpdateMessageVersion={handleUpdateMessageVersion}
                                     />
                                 </motion.div>
                             ))}
@@ -796,22 +1129,37 @@ export function AIChatWidget({
                     )}>
                         {/* Reply Context */}
                         {replyingTo && (
-                            <div className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-t-xl mx-1 px-3 py-2 text-xs text-blue-700 -mb-1 pb-3 relative z-0">
-                                <div className="flex items-center gap-2 overflow-hidden">
-                                    <Lightbulb size={12} className="shrink-0 text-blue-500" />
-                                    <span className="font-medium truncate">
-                                        Replying to: {replyingTo.targetSection}
-                                    </span>
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-t-xl mx-1 px-4 py-3 -mb-1 pb-4 relative z-0 shadow-sm">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600 shrink-0">
+                                        <Lightbulb size={14} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
+                                                Discussing Suggestion
+                                            </span>
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+                                                {replyingTo.targetSection}
+                                            </span>
+                                        </div>
+                                        {replyingTo.suggestedText && (
+                                            <p className="text-xs text-gray-600 line-clamp-1 leading-relaxed">
+                                                "{replyingTo.suggestedText}"
+                                            </p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setReplyingTo(null);
+                                            onClearContext?.();
+                                        }}
+                                        className="p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded-md transition-colors shrink-0"
+                                        title="Clear context"
+                                    >
+                                        <X size={14} />
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setReplyingTo(null);
-                                        onClearContext?.();
-                                    }}
-                                    className="text-blue-400 hover:text-blue-600 shrink-0"
-                                >
-                                    <X size={12} />
-                                </button>
                             </div>
                         )}
 

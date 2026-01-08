@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ResumeProfile, SectionType, SECTION_CONFIGS, createEmptyProfile } from '@/lib/resume-schema';
-import { calculateResumeScore } from '@/lib/resume-score';
+import { calculateResumeScore, ActionableTip } from '@/lib/resume-score';
 import { InlineSuggestion, applySuggestionToProfile, createInlineSuggestion, SuggestionType, SuggestionSeverity, TargetSection } from '@/lib/inline-suggestions';
+import { ChangelogEntry, createChangelogEntry } from '@/types/changelog';
 import { toast } from 'react-hot-toast';
 import { pdf } from '@react-pdf/renderer'; // Add this import
 import { saveAs } from 'file-saver'; // Add this import
@@ -45,8 +46,8 @@ import { LayoutStyleEditor } from './LayoutStyleEditor';
 import { AIChatWidget, ChatSuggestion } from './AIChatWidget';
 import { UnifiedAnalysisPanel } from './UnifiedAnalysisPanel';
 import { TemplateModal } from './TemplateModal';
+import { ChangelogPanel } from '@/components/ChangelogPanel';
 import { useResumeSettings } from '@/lib/resume-settings-context';
-import { SuggestionHoverProvider } from '@/lib/suggestion-hover-context';
 import { suggestionsRepository } from '@/lib/db/repositories/suggestions-repository';
 
 interface SectionVisibility {
@@ -79,9 +80,23 @@ export function NewResumeBuilder({
     const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
     const [isDesktop, setIsDesktop] = useState(true);
 
+    // Unsaved Changes State
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [lastSavedProfile, setLastSavedProfile] = useState<string>(JSON.stringify(initialProfile || createEmptyProfile()));
+    const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     // AI Analysis State
     const [inlineSuggestions, setInlineSuggestions] = useState<InlineSuggestion[]>([]);
     const [isScanning, setIsScanning] = useState(false);
+    const [regeneratingSuggestionId, setRegeneratingSuggestionId] = useState<string | null>(null);
+    const [highlightedSuggestionId, setHighlightedSuggestionId] = useState<string | null>(null);
+    const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
+    // Changelog State
+    const [changelog, setChangelog] = useState<ChangelogEntry[]>([]);
+    
+    // Resume Score State
+    const [resumeScore, setResumeScore] = useState(calculateResumeScore(initialProfile || createEmptyProfile()));
 
     // Preview State for Chat Suggestions
     const [previewProfile, setPreviewProfile] = useState<ResumeProfile | null>(null);
@@ -167,7 +182,7 @@ export function NewResumeBuilder({
     };
 
     // New Callback to sync Chat suggestions to Analysis Panel
-    const handleAddInlineSuggestion = (suggestion: ChatSuggestion) => {
+    const handleAddInlineSuggestion = (suggestion: ChatSuggestion): string => {
         const newSuggestion: InlineSuggestion = createInlineSuggestion({
             type: 'wording',
             severity: 'suggestion',
@@ -181,13 +196,44 @@ export function NewResumeBuilder({
             endOffset: (suggestion.originalText || '').length
         });
 
-        // Avoid duplicates
+        let resultId = newSuggestion.id;
+
+        // Check if updating existing suggestion or adding new one
         setInlineSuggestions(prev => {
-            const exists = prev.some(s => s.suggestedText === newSuggestion.suggestedText);
-            if (exists) return prev;
-            toast.success("Suggestion saved to Analysis Panel");
-            return [...prev, newSuggestion];
+            const existingIndex = prev.findIndex(s => 
+                s.targetSection === newSuggestion.targetSection &&
+                s.targetField === newSuggestion.targetField &&
+                s.originalText === newSuggestion.originalText
+            );
+            
+            if (existingIndex >= 0) {
+                // Update existing suggestion
+                const updated = [...prev];
+                updated[existingIndex] = { ...updated[existingIndex], ...newSuggestion };
+                resultId = updated[existingIndex].id;
+                
+                // Clear any existing highlight timeout
+                if (highlightTimeoutRef.current) {
+                    clearTimeout(highlightTimeoutRef.current);
+                }
+                
+                // Highlight the updated suggestion with reduced intensity (shorter duration)
+                setHighlightedSuggestionId(updated[existingIndex].id);
+                highlightTimeoutRef.current = setTimeout(() => {
+                    setHighlightedSuggestionId(null);
+                    highlightTimeoutRef.current = null;
+                }, 1500); // Reduced from 3000ms to 1500ms
+                
+                toast.success("Suggestion updated!");
+                return updated;
+            } else {
+                // Add new suggestion
+                toast.success("Suggestion added to Analysis Panel");
+                return [...prev, newSuggestion];
+            }
         });
+
+        return resultId;
     };
 
     // Handler for replying to a suggestion - opens chat with context
@@ -349,14 +395,124 @@ export function NewResumeBuilder({
     };
 
     const handleApplySuggestion = (suggestion: InlineSuggestion) => {
+        console.log('[Apply Suggestion]', {
+            type: suggestion.type,
+            section: suggestion.targetSection,
+            field: suggestion.targetField,
+            suggestion: suggestion
+        });
+        
         const updatedProfile = applySuggestionToProfile(profile, suggestion);
         setProfile(updatedProfile);
-        // Remove applied suggestion
         setInlineSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
+        
+        // Add to changelog
+        const changeEntry = createChangelogEntry({
+            type: 'suggestion_applied',
+            section: suggestion.targetSection,
+            field: suggestion.targetField,
+            itemId: suggestion.targetItemId,
+            before: suggestion.originalText,
+            after: suggestion.suggestedText,
+            suggestionType: suggestion.type,
+            reason: suggestion.reason,
+        });
+        setChangelog(prev => [changeEntry, ...prev]);
+        
+        toast.success(`Applied: ${suggestion.type}`);
     };
 
     const handleDenySuggestion = (suggestionId: string) => {
         setInlineSuggestions(prev => prev.filter(s => s.id !== suggestionId));
+    };
+
+    const handleRegenerateSuggestion = async (suggestionId: string, userPrompt: string) => {
+        console.log('[NewResumeBuilder] Regenerating suggestion:', { suggestionId, userPrompt });
+        
+        const suggestion = inlineSuggestions.find(s => s.id === suggestionId);
+        if (!suggestion) {
+            console.warn('[NewResumeBuilder] Suggestion not found:', suggestionId);
+            return;
+        }
+
+        console.log('[NewResumeBuilder] Found suggestion to regenerate:', suggestion);
+
+        // Set loading state - keep suggestion visible
+        setRegeneratingSuggestionId(suggestionId);
+        toast('Regenerating suggestion...', { icon: '🔄' });
+        
+        try {
+            const response = await fetch('/api/ai/suggestions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    profile,
+                    regenerateContext: {
+                        targetSection: suggestion.targetSection,
+                        targetField: suggestion.targetField,
+                        targetItemId: suggestion.targetItemId,
+                        originalText: suggestion.originalText,
+                        previousSuggestion: suggestion.suggestedText,
+                        suggestionType: suggestion.type,
+                        userPrompt: userPrompt || undefined
+                    }
+                })
+            });
+
+            console.log('[NewResumeBuilder] API response status:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[NewResumeBuilder] API error:', errorText);
+                throw new Error('Regeneration failed');
+            }
+
+            const data = await response.json();
+            console.log('[NewResumeBuilder] API response data:', data);
+            
+            const apiSuggestions = data.suggestions || [];
+            console.log('[NewResumeBuilder] Received suggestions:', apiSuggestions);
+
+            if (apiSuggestions.length === 0) {
+                console.warn('[NewResumeBuilder] No suggestions returned from API');
+                toast('No new suggestions generated', { icon: 'ℹ️' });
+                setRegeneratingSuggestionId(null);
+                return;
+            }
+
+            // Replace the old suggestion with the new one
+            console.log('[NewResumeBuilder] Replacing suggestion:', {
+                oldId: suggestionId,
+                oldSuggestion: suggestion,
+                newSuggestion: apiSuggestions[0]
+            });
+            
+            // Preserve all required fields from the old suggestion
+            const updatedSuggestion = {
+                ...suggestion,  // Keep all original fields (id, status, source, createdAt, etc.)
+                ...apiSuggestions[0],  // Override with new API data
+                id: suggestionId,  // Ensure ID stays the same
+                status: 'pending',  // Reset status
+                source: 'regenerated'  // Mark as regenerated
+            };
+            
+            console.log('[NewResumeBuilder] Merged suggestion:', updatedSuggestion);
+            
+            setInlineSuggestions(prev => {
+                const updated = prev.map(s => 
+                    s.id === suggestionId ? updatedSuggestion : s
+                );
+                console.log('[NewResumeBuilder] Updated suggestions:', updated);
+                return updated;
+            });
+            
+            toast.success('Suggestion regenerated!');
+        } catch (error) {
+            console.error('[NewResumeBuilder] Regeneration error:', error);
+            toast.error('Failed to regenerate suggestion');
+        } finally {
+            setRegeneratingSuggestionId(null);
+        }
     };
 
     useEffect(() => {
@@ -428,16 +584,114 @@ export function NewResumeBuilder({
 
     useEffect(() => {
         if (initialProfile) {
-
             setProfile(initialProfile);
             if (initialProfile.resumeName) {
                 setResumeName(initialProfile.resumeName);
             }
+            // Update last saved state when initial profile loads
+            setLastSavedProfile(JSON.stringify(initialProfile));
+            setHasUnsavedChanges(false);
         }
     }, [initialProfile]);
 
+    // Detect unsaved changes and trigger auto-save
+    useEffect(() => {
+        const currentProfileString = JSON.stringify(profile);
+        const hasChanges = currentProfileString !== lastSavedProfile;
+        setHasUnsavedChanges(hasChanges);
+        
+        // Auto-save after 3 seconds of inactivity (only if there are changes and profile has an ID)
+        if (hasChanges && profile.id) {
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+            
+            autoSaveTimeoutRef.current = setTimeout(() => {
+                console.log('🔄 Auto-saving profile changes...');
+                handleSave();
+                toast.success('Auto-saved', { duration: 2000, icon: '💾' });
+            }, 3000); // 3 seconds
+        }
+        
+        return () => {
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+        };
+    }, [profile, lastSavedProfile]);
+
+    // Warn before closing/refreshing with unsaved changes
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                return e.returnValue;
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [hasUnsavedChanges]);
+
     const updateProfile = (updates: Partial<ResumeProfile>) => {
-        setProfile(prev => ({ ...prev, ...updates }));
+        setProfile(prev => {
+            const updated = { ...prev, ...updates };
+            
+            // Update resume score in real-time
+            const newScore = calculateResumeScore(updated);
+            setResumeScore(newScore);
+            
+            // Invalidate suggestions that are no longer relevant
+            setInlineSuggestions(prevSuggestions => {
+                return prevSuggestions.filter(suggestion => {
+                    // Don't filter out suggestions that are currently being regenerated
+                    if (regeneratingSuggestionId === suggestion.id) {
+                        console.log('[updateProfile] Keeping regenerating suggestion:', suggestion.id);
+                        return true;
+                    }
+                    
+                    // Check if the text still matches
+                    if (suggestion.originalText) {
+                        const section = suggestion.targetSection.toLowerCase().replace(/\s+/g, '_');
+                        
+                        // For summary
+                        if (section === 'summary' || section === 'professional_summary') {
+                            return updated.summary?.content?.includes(suggestion.originalText);
+                        }
+                        
+                        // For experience
+                        if (section === 'experience' || section === 'work_experience') {
+                            return updated.experience.some(exp => 
+                                exp.description?.includes(suggestion.originalText) ||
+                                exp.achievements?.some(a => a.includes(suggestion.originalText))
+                            );
+                        }
+                        
+                        // For projects
+                        if (section === 'projects') {
+                            return updated.projects.some(proj => 
+                                proj.description?.includes(suggestion.originalText)
+                            );
+                        }
+                        
+                        // For skills - check if category still exists
+                        if (section === 'skills') {
+                            const text = suggestion.originalText || suggestion.suggestedText;
+                            if (text && text.includes(':')) {
+                                const category = text.split(':')[0].trim();
+                                return !!updated.skills[category];
+                            }
+                        }
+                    }
+                    
+                    // Keep suggestion if we can't determine
+                    return true;
+                });
+            });
+            
+            return updated;
+        });
     };
 
     const toggleSection = (sectionKey: SectionType) => {
@@ -486,6 +740,112 @@ export function NewResumeBuilder({
             targetJob: profile.targetJob
         };
         onSave(profileWithSettings);
+        
+        // Update last saved state and clear unsaved flag
+        setLastSavedProfile(JSON.stringify(profileWithSettings));
+        setHasUnsavedChanges(false);
+    };
+
+    // Handle applying a fix from the score panel
+    const handleApplyScoreFix = (tip: ActionableTip) => {
+        if (!tip.originalText || !tip.suggestedText) return;
+        
+        const original = tip.originalText;
+        const replacement = tip.suggestedText;
+        
+        // Create a case-insensitive replacement function
+        const replaceText = (text: string) => {
+            const regex = new RegExp(original, 'gi');
+            return text.replace(regex, (match) => {
+                // Preserve original case pattern
+                if (match[0] === match[0].toUpperCase()) {
+                    return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+                }
+                return replacement;
+            });
+        };
+        
+        // Apply fix based on section
+        if (tip.section === 'summary') {
+            updateProfile({
+                summary: {
+                    ...profile.summary,
+                    content: replaceText(profile.summary?.content || '')
+                }
+            });
+            toast.success(`Fixed: "${original}" → "${replacement}"`);
+        } else if (tip.section === 'experience' && tip.itemId) {
+            const updatedExperience = profile.experience.map(exp => {
+                if (exp.id === tip.itemId) {
+                    return {
+                        ...exp,
+                        description: replaceText(exp.description || ''),
+                        achievements: exp.achievements.map(a => replaceText(a))
+                    };
+                }
+                return exp;
+            });
+            updateProfile({ experience: updatedExperience });
+            toast.success(`Fixed: "${original}" → "${replacement}"`);
+        } else if (tip.section === 'projects' && tip.itemId) {
+            const updatedProjects = profile.projects.map(proj => {
+                if (proj.id === tip.itemId) {
+                    return {
+                        ...proj,
+                        description: replaceText(proj.description || ''),
+                        achievements: proj.achievements.map(a => replaceText(a))
+                    };
+                }
+                return proj;
+            });
+            updateProfile({ projects: updatedProjects });
+            toast.success(`Fixed: "${original}" → "${replacement}"`);
+        } else if (tip.section === 'contact') {
+            // Handle capitalization fixes for contact fields
+            if (tip.field === 'firstName' && profile.contact.firstName) {
+                updateProfile({
+                    contact: {
+                        ...profile.contact,
+                        firstName: profile.contact.firstName.charAt(0).toUpperCase() + profile.contact.firstName.slice(1)
+                    }
+                });
+                toast.success('Capitalized first name');
+            } else if (tip.field === 'lastName' && profile.contact.lastName) {
+                updateProfile({
+                    contact: {
+                        ...profile.contact,
+                        lastName: profile.contact.lastName.charAt(0).toUpperCase() + profile.contact.lastName.slice(1)
+                    }
+                });
+                toast.success('Capitalized last name');
+            }
+        } else if (tip.section === 'experience' && tip.itemId && (tip.field === 'position' || tip.field === 'company')) {
+            // Handle capitalization fixes for experience fields
+            const updatedExperience = profile.experience.map(exp => {
+                if (exp.id === tip.itemId) {
+                    if (tip.field === 'position' && exp.position) {
+                        return {
+                            ...exp,
+                            position: exp.position.charAt(0).toUpperCase() + exp.position.slice(1)
+                        };
+                    } else if (tip.field === 'company' && exp.company) {
+                        return {
+                            ...exp,
+                            company: exp.company.charAt(0).toUpperCase() + exp.company.slice(1)
+                        };
+                    }
+                }
+                return exp;
+            });
+            updateProfile({ experience: updatedExperience });
+            toast.success(`Capitalized ${tip.field}`);
+        }
+    };
+
+    // Handle dismissing a tip from the score panel
+    const handleDismissScoreTip = (tip: ActionableTip) => {
+        // For now, just show a toast - in the future could track dismissed tips
+        toast('Tip dismissed', { icon: '👋', duration: 1500 });
     };
 
     // Download Handlers
@@ -523,7 +883,7 @@ export function NewResumeBuilder({
     }
 
     return (
-        <SuggestionHoverProvider>
+        <>
             <div className="flex flex-col h-screen bg-slate-50">
                 {/* Global Header */}
                 <header className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3 flex items-center justify-between sticky top-0 z-50">
@@ -560,8 +920,16 @@ export function NewResumeBuilder({
 
                         <div className="h-6 w-px bg-slate-200 hidden sm:block" />
 
-                        <Button variant="ghost" size="sm" onClick={handleSave} className="text-slate-600">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={handleSave} 
+                            className={`relative ${hasUnsavedChanges ? 'text-blue-600 font-semibold' : 'text-slate-600'}`}
+                        >
                             Save
+                            {hasUnsavedChanges && (
+                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
+                            )}
                         </Button>
 
                         <DropdownMenu>
@@ -656,7 +1024,20 @@ export function NewResumeBuilder({
                                 onApplySuggestion={handleApplySuggestion}
                                 onDenySuggestion={handleDenySuggestion}
                                 onReplySuggestion={handleReplySuggestion}
+                                onRegenerateSuggestion={handleRegenerateSuggestion}
+                                regeneratingSuggestionId={regeneratingSuggestionId}
+                                highlightedSuggestionId={highlightedSuggestionId}
+                                resumeScore={resumeScore}
+                                onApplyScoreFix={handleApplyScoreFix}
+                                onDismissScoreTip={handleDismissScoreTip}
                             />
+
+                            {/* Changelog Panel */}
+                            {changelog.length > 0 && (
+                                <div className="mb-6">
+                                    <ChangelogPanel entries={changelog} maxHeight="300px" />
+                                </div>
+                            )}
 
                             {/* Resume Sections */}
                             <div className="space-y-1">
@@ -796,6 +1177,6 @@ export function NewResumeBuilder({
                 </Button>
             )}
 
-        </SuggestionHoverProvider>
+        </>
     );
 }

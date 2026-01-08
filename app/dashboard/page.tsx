@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Upload, X, Loader2, Search, FileText, Trash2, Copy } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
-import { ResumeCard } from '@/components/Dashboard/ResumeCard';
+import { FolderCard } from '@/components/Dashboard/FolderCard';
 import { ResumeUploadModal } from '@/components/ResumeUploadModal';
 
 export interface BaseResume {
@@ -108,6 +108,30 @@ export default function Dashboard() {
       toast.error('Failed to update pin status');
       // Revert on error
       loadResumes();
+    }
+  };
+
+  const updateResumeTitle = async (id: string, newTitle: string) => {
+    if (!user?.id) return;
+
+    try {
+      const response = await fetch('/api/resumes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          userId: user.id,
+          title: newTitle
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to update title');
+
+      // Reload to sync
+      loadResumes();
+    } catch (error) {
+      console.error('Error updating title:', error);
+      throw error;
     }
   };
 
@@ -285,64 +309,56 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Base Resumes Shelf */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Base Resumes</h2>
-                <p className="text-sm text-slate-500">Master templates targeted to specific roles</p>
-              </div>
-              <div className="flex gap-3">
-                <Button onClick={() => setShowUpload(true)} variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Import
-                </Button>
-                <Button onClick={() => router.push('/builder')} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New
-                </Button>
-              </div>
-            </div>
+          {/* Base Resumes Grid */}
+          <div>
 
             {filteredResumes.length === 0 ? (
               <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                 <FileText className="w-12 h-12 mx-auto text-slate-300 mb-3" />
                 <h3 className="text-lg font-medium text-slate-900">No resumes found</h3>
-                <p className="text-slate-500 mb-6">Get started by creating your first resume</p>
+                <p className="text-slate-500 mb-6">Get started by creating your first resume folder</p>
                 <Button onClick={() => router.push('/builder')} variant="outline">
-                  Create Resume
+                  Create Folder
                 </Button>
               </div>
             ) : (
-              <div className="flex gap-6 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-hide snap-x">
-                {filteredResumes.map((resume) => (
-                  <ResumeCard
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {/* New Folder Card */}
+                <div
+                  onClick={() => router.push('/builder')}
+                  className="relative group cursor-pointer"
+                >
+                  {/* Tab Layer */}
+                  <div className="absolute -top-2 left-6 w-28 h-6 bg-slate-300/70 rounded-t-lg z-30" />
+
+                  {/* White Paper Layer */}
+                  <div className="absolute top-4 left-0 right-0 bg-white/90 rounded-2xl shadow-sm z-10" style={{ height: 'calc(100% - 16px)' }} />
+
+                  {/* Main Body */}
+                  <div className="relative bg-slate-100/40 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden z-20 group-hover:-translate-y-2">
+                    <div className="p-6 pt-8 min-h-[180px] flex flex-col items-center justify-center">
+                      <div className="w-16 h-16 bg-slate-400 group-hover:bg-blue-500 rounded-full flex items-center justify-center mb-4 transition-all duration-300 shadow-md">
+                        <Plus className="w-8 h-8 text-white transition-colors duration-300" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-700 group-hover:text-blue-600 transition-colors mb-1">New Folder</h3>
+                      <p className="text-xs text-slate-500">Create from scratch</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Existing Folders */}
+                {filteredResumes.map((resume, index) => (
+                  <FolderCard
                     key={resume.id}
                     resume={resume}
-                    onDelete={deleteResume}
-                    onDuplicate={duplicateResume}
-                    onToggleStar={toggleStar}
+                    tailoredResumes={[]} // TODO: Fetch tailored resumes when backend is ready
+                    onEdit={(id) => router.push(`/builder?id=${id}`)}
+                    onUpdateTitle={updateResumeTitle}
+                    colorIndex={index}
                   />
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Job Tailored Resumes Shelf (Placeholder for now) */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 opacity-60 pointer-events-none grayscale">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Job Tailored Resumes</h2>
-                <p className="text-sm text-slate-500">Resumes customized for specific job descriptions</p>
-              </div>
-              <Button variant="outline" disabled>
-                <Plus className="w-4 h-4 mr-2" />
-                Tailor New
-              </Button>
-            </div>
-            <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-              <p className="text-slate-500">Tailored resumes will appear here soon</p>
-            </div>
           </div>
         </div>
 

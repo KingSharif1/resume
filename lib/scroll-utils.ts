@@ -40,7 +40,14 @@ export function scrollToElement(
 export function scrollToSuggestionHighlight(suggestionId: string) {
   const highlight = document.querySelector(`[data-suggestion-id="${suggestionId}"]`);
   if (highlight instanceof HTMLElement) {
-    scrollToElement(highlight, { block: 'center' });
+    // Find the scrollable preview container
+    const previewContainer = highlight.closest('.overflow-y-auto');
+    if (previewContainer) {
+      // Scroll within the container
+      highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      scrollToElement(highlight, { block: 'center' });
+    }
   }
 }
 

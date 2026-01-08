@@ -14,9 +14,12 @@ import {
 } from "@/components/ui/select";
 import { Github, Linkedin, Mail, MapPin, Phone, Globe, Sparkles, Layout } from 'lucide-react';
 import { useResumeSettings } from '@/lib/resume-settings-context';
+import { cn } from '@/lib/utils';
 
 import { HighlightedText } from '@/components/HighlightedText';
 import { InlineSuggestion } from '@/lib/inline-suggestions';
+import { useSuggestionHover } from '@/lib/suggestion-hover-context';
+import { scrollToSuggestionCard } from '@/lib/scroll-utils';
 
 interface FullPageResumePreviewProps {
   profile: ResumeProfile;
@@ -52,6 +55,7 @@ export function FullPageResumePreview({
   const { settings, updateFontSettings, updateThemeSettings } = useResumeSettings();
   const { font, layout, template, theme } = settings;
   const [zoomLevel, setZoomLevel] = useState(70);
+  const { hoveredSuggestionId, setHoveredHighlight, activeSuggestionId, setActiveSuggestionId } = useSuggestionHover();
 
   const isModern = template === 'Modern';
   const isProfessional = template === 'Professional';
@@ -97,36 +101,68 @@ export function FullPageResumePreview({
   const renderWithHighlights = (text: string, section: SectionType, itemId?: string, field?: string) => {
     if (!text) return null;
 
+    // If no suggestions at all, return plain text
+    if (!inlineSuggestions || inlineSuggestions.length === 0) {
+      return text;
+    }
+
     // Filter suggestions for this specific field - be flexible with matching
     const relevantSuggestions = inlineSuggestions.filter(s => {
-      // Must match section
-      if (s.targetSection !== section) return false;
+      // Must match section (case-insensitive)
+      if (s.targetSection.toLowerCase() !== section.toLowerCase()) return false;
 
       // If suggestion specifies itemId, it must match (or itemId can be undefined for general section suggestions)
       if (s.targetItemId && itemId && s.targetItemId !== itemId) {
-        // console.log(`Mismatch ID: ${s.targetItemId} vs ${itemId}`);
         return false;
       }
 
       // If suggestion specifies field, it must match (or field can be undefined)
       if (s.targetField && field && s.targetField !== field) {
-        // console.log(`Mismatch Field: ${s.targetField} vs ${field}`);
         return false;
       }
 
       return true;
     });
 
-    if (relevantSuggestions.length > 0) {
-      console.log(`[Highlight] Found ${relevantSuggestions.length} match for ${section}/${field}`, relevantSuggestions);
-    }
+    // Also check for suggestions that might match by originalText content
+    // This helps when section/field matching is too strict
+    const textMatchSuggestions = inlineSuggestions.filter(s => {
+      if (relevantSuggestions.includes(s)) return false; // Already included
+      if (!s.originalText) return false;
+      // Check if the originalText exists in this text
+      return text.includes(s.originalText) || 
+             text.replace(/\s+/g, ' ').includes(s.originalText.replace(/\s+/g, ' '));
+    });
 
-    if (relevantSuggestions.length === 0) return text;
+    const allSuggestions = [...relevantSuggestions, ...textMatchSuggestions];
+
+    // Always render HighlightedText if we have any suggestions for this section
+    // This ensures the hover context is connected even if offsets need recalculation
+    if (allSuggestions.length === 0) {
+      // Check if ANY suggestion's originalText is in this text (fallback)
+      const anyMatchingSuggestions = inlineSuggestions.filter(s => {
+        if (!s.originalText) return false;
+        const normalizedText = text.replace(/\s+/g, ' ').toLowerCase();
+        const normalizedOriginal = s.originalText.replace(/\s+/g, ' ').toLowerCase();
+        return normalizedText.includes(normalizedOriginal);
+      });
+      
+      if (anyMatchingSuggestions.length > 0) {
+        return (
+          <HighlightedText
+            text={text}
+            suggestions={anyMatchingSuggestions}
+            className=""
+          />
+        );
+      }
+      return text;
+    }
 
     return (
       <HighlightedText
         text={text}
-        suggestions={relevantSuggestions}
+        suggestions={allSuggestions}
         className=""
       />
     );
@@ -158,13 +194,17 @@ export function FullPageResumePreview({
               {visibleExperience.map((exp, index) => (
                 <div key={exp.id || `exp-${index}`}>
                   <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-bold text-slate-900" style={{ fontSize: `${(12 * font.bodySize) / 100}px` }}>{exp.position}</h3>
+                    <h3 className="font-bold text-slate-900" style={{ fontSize: `${(12 * font.bodySize) / 100}px` }}>
+                      {renderWithHighlights(exp.position, 'experience', exp.id, 'position')}
+                    </h3>
                     <span className="text-slate-600 whitespace-nowrap" style={bodyStyle}>
                       {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
                     </span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium text-slate-800" style={bodyStyle}>{exp.company}</span>
+                    <span className="font-medium text-slate-800" style={bodyStyle}>
+                      {renderWithHighlights(exp.company, 'experience', exp.id, 'company')}
+                    </span>
                     <span className="text-slate-600" style={bodyStyle}>{exp.location}</span>
                   </div>
                   {exp.description && (
@@ -195,20 +235,26 @@ export function FullPageResumePreview({
               Education
             </h2>
             <div className="space-y-3">
-              {visibleEducation.map((edu, index) => (
-                <div key={edu.id || `edu-${index}`}>
-                  <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-bold text-slate-900" style={{ fontSize: `${(12 * font.bodySize) / 100}px` }}>{edu.institution}</h3>
-                    <span className="text-slate-600 whitespace-nowrap" style={bodyStyle}>
-                      {edu.startDate} – {edu.current ? 'Present' : edu.endDate}
-                    </span>
+              {visibleEducation.map((edu, index) => {
+                // Build the combined education text for highlighting
+                const combinedText = `${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''} from ${edu.institution}`;
+                
+                return (
+                  <div key={edu.id || `edu-${index}`}>
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="font-medium text-slate-800" style={bodyStyle}>
+                        {renderWithHighlights(combinedText, 'education', edu.id, 'content')}
+                      </span>
+                      <span className="text-slate-600 whitespace-nowrap" style={bodyStyle}>
+                        {edu.startDate} – {edu.current ? 'Present' : edu.endDate}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-600" style={bodyStyle}>{edu.location}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-slate-800" style={bodyStyle}>{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</span>
-                    <span className="text-slate-600" style={bodyStyle}>{edu.location}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         );
@@ -257,36 +303,158 @@ export function FullPageResumePreview({
       case 'skills':
         if (!sectionVisibility.skills || Object.keys(profile.skills).length === 0) return null;
 
+        // Get skills suggestions for highlighting
+        const skillsSuggestions = inlineSuggestions.filter(s => 
+          s.targetSection.toLowerCase() === 'skills'
+        );
+
+        // Helper to check if a skill should be highlighted
+        const getSkillHighlight = (category: string, skill: string) => {
+          const suggestion = skillsSuggestions.find(s => {
+            // Try targetItemId first
+            if (s.targetItemId === category) {
+              return true;
+            }
+            
+            // Extract category from originalText or suggestedText
+            const text = s.originalText || s.suggestedText;
+            if (text && text.includes(':')) {
+              const extractedCategory = text.split(':')[0].trim();
+              if (extractedCategory === category) {
+                return true;
+              }
+            }
+            
+            return false;
+          });
+          
+          if (!suggestion) {
+            return null;
+          }
+
+          // Check if this specific skill is in the NEW suggestion (not in original)
+          const suggestedSkillsText = suggestion.suggestedText.includes(':') 
+            ? suggestion.suggestedText.split(':')[1] 
+            : suggestion.suggestedText;
+          
+          const originalSkillsText = suggestion.originalText && suggestion.originalText.includes(':')
+            ? suggestion.originalText.split(':')[1]
+            : suggestion.originalText || '';
+          
+          // Parse skill lists
+          const suggestedSkills = suggestedSkillsText.split(',').map(s => s.trim()).filter(Boolean);
+          const originalSkills = originalSkillsText ? originalSkillsText.split(',').map(s => s.trim()).filter(Boolean) : [];
+          
+          // Only highlight if skill is in suggested but NOT in original (new skill)
+          const isNewSkill = suggestedSkills.includes(skill) && !originalSkills.includes(skill);
+          
+          if (!isNewSkill) {
+            return null;
+          }
+
+          const primaryType = suggestion.type.split(',')[0].trim().toLowerCase();
+          const colors: Record<string, string> = {
+            'ats': 'bg-blue-100 border-blue-400 text-blue-900',
+            'metric': 'bg-green-100 border-green-400 text-green-900',
+            'wording': 'bg-purple-100 border-purple-400 text-purple-900',
+            'grammar': 'bg-red-100 border-red-400 text-red-900',
+            'tone': 'bg-orange-100 border-orange-400 text-orange-900',
+          };
+          return colors[primaryType] || 'bg-gray-100 border-gray-400 text-gray-900';
+        };
+
         return (
           <div key="skills" style={sectionStyle}>
             <h2 className="font-bold uppercase tracking-wider mb-3" style={subHeadingStyle}>
               Skills
             </h2>
-            {layout.skillsLayout === 'columns' ? (
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(profile.skills).map(([category, skills]) => (
+            <div className="space-y-3">
+              {Object.entries(profile.skills).map(([category, skills]) => {
+                if (!skills || skills.length === 0) return null;
+                
+                // Check if there's a suggestion for this category
+                const categorySuggestion = skillsSuggestions.find(s => {
+                  if (s.targetItemId === category) return true;
+                  const text = s.originalText || s.suggestedText;
+                  if (text && text.includes(':')) {
+                    const extractedCategory = text.split(':')[0].trim();
+                    return extractedCategory === category;
+                  }
+                  return false;
+                });
+
+                // If there's a suggestion, get the suggested skills to show
+                let displaySkills = skills as string[];
+                if (categorySuggestion) {
+                  const suggestedText = categorySuggestion.suggestedText;
+                  const suggestedSkillsText = suggestedText.includes(':') ? suggestedText.split(':')[1] : suggestedText;
+                  const suggestedSkills = suggestedSkillsText.split(',').map(s => s.trim()).filter(Boolean);
+                  
+                  // Show suggested skills (which includes both existing and new)
+                  displaySkills = suggestedSkills;
+                }
+                
+                return (
                   <div key={category}>
-                    <h3 className="font-bold text-slate-800 mb-1 capitalize" style={bodyStyle}>{category}</h3>
-                    <ul className="list-disc list-inside">
-                      {(skills as string[]).map(skill => (
-                        <li key={skill} style={bodyStyle}>{skill}</li>
-                      ))}
-                    </ul>
+                    <h3 className="font-semibold text-slate-800 mb-1.5" style={bodyStyle}>
+                      {category}:
+                    </h3>
+                    <div className="flex flex-wrap gap-x-2 gap-y-1.5">
+                      {displaySkills.map((skill, idx) => {
+                        const highlight = getSkillHighlight(category, skill);
+                        
+                        // Find the suggestion for this category to get the ID
+                        const suggestion = categorySuggestion;
+                        const isHovered = suggestion && hoveredSuggestionId === suggestion.id;
+                        const isActive = suggestion && activeSuggestionId === suggestion.id;
+                        
+                        if (highlight) {
+                          return (
+                            <span
+                              key={`${category}-${idx}`}
+                              data-suggestion-id={suggestion?.id}
+                              className={cn(
+                                'px-2 py-0.5 rounded text-xs font-medium border-2 cursor-pointer transition-all duration-150',
+                                highlight,
+                                isHovered && 'ring-2 ring-offset-1',
+                                isActive && 'ring-2 ring-offset-2'
+                              )}
+                              style={bodyStyle}
+                              onMouseEnter={() => {
+                                if (suggestion) {
+                                  setHoveredHighlight(suggestion.id);
+                                  scrollToSuggestionCard(suggestion.id);
+                                }
+                              }}
+                              onMouseLeave={() => setHoveredHighlight(null)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (suggestion) {
+                                  setActiveSuggestionId(suggestion.id);
+                                }
+                              }}
+                            >
+                              {skill}
+                            </span>
+                          );
+                        }
+                        
+                        return (
+                          <span
+                            key={`${category}-${idx}`}
+                            className="text-slate-700"
+                            style={bodyStyle}
+                          >
+                            {skill}
+                            {idx < displaySkills.length - 1 && ', '}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {Object.entries(profile.skills).map(([category, skills]) => (
-                  <div key={category} className="flex flex-col sm:flex-row sm:items-baseline gap-2">
-                    <span className="font-bold text-slate-800 min-w-[120px] capitalize" style={bodyStyle}>{category}:</span>
-                    <span className="text-slate-700" style={bodyStyle}>
-                      {(skills as string[]).join(', ')}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         );
 
@@ -298,10 +466,14 @@ export function FullPageResumePreview({
             </h2>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               {profile.languages.map((lang, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="font-medium text-slate-900" style={bodyStyle}>{lang.name}</span>
+                <div key={lang.id || index} className="flex items-center gap-2">
+                  <span className="font-medium text-slate-900" style={bodyStyle}>
+                    {renderWithHighlights(lang.name, 'languages', lang.id, 'name')}
+                  </span>
                   {lang.proficiency && (
-                    <span className="text-slate-600" style={bodyStyle}>({lang.proficiency})</span>
+                    <span className="text-slate-600" style={bodyStyle}>
+                      ({renderWithHighlights(lang.proficiency, 'languages', lang.id, 'proficiency')})
+                    </span>
                   )}
                 </div>
               ))}
@@ -318,13 +490,88 @@ export function FullPageResumePreview({
             </h2>
             <div className="space-y-2">
               {visibleCertifications.map((cert, index) => (
-                <div key={index} className="flex justify-between items-baseline">
+                <div key={cert.id || index} className="flex justify-between items-baseline">
                   <div>
-                    <span className="font-bold text-slate-900" style={bodyStyle}>{cert.name}</span>
+                    <span className="font-bold text-slate-900" style={bodyStyle}>
+                      {renderWithHighlights(cert.name, 'certifications', cert.id, 'name')}
+                    </span>
                     <span className="text-slate-700 mx-2" style={bodyStyle}>-</span>
-                    <span className="text-slate-700" style={bodyStyle}>{cert.issuer}</span>
+                    <span className="text-slate-700" style={bodyStyle}>
+                      {renderWithHighlights(cert.issuer, 'certifications', cert.id, 'issuer')}
+                    </span>
                   </div>
                   <span className="text-slate-600" style={bodyStyle}>{cert.date}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'volunteer':
+        const visibleVolunteer = profile.volunteer?.filter(vol => vol.visible !== false) || [];
+        return sectionVisibility.volunteer && visibleVolunteer.length > 0 && (
+          <div key="volunteer" style={sectionStyle}>
+            <h2 className="font-bold uppercase tracking-wider mb-3" style={subHeadingStyle}>
+              Volunteer Experience
+            </h2>
+            <div className="space-y-3">
+              {visibleVolunteer.map((vol, index) => (
+                <div key={vol.id || index}>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-slate-900" style={{ fontSize: `${(12 * font.bodySize) / 100}px` }}>
+                      {renderWithHighlights(vol.role, 'volunteer', vol.id, 'role')}
+                    </h3>
+                    <span className="text-slate-600 whitespace-nowrap" style={bodyStyle}>
+                      {vol.startDate} – {vol.current ? 'Present' : vol.endDate}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-slate-800" style={bodyStyle}>
+                      {renderWithHighlights(vol.organization, 'volunteer', vol.id, 'organization')}
+                    </span>
+                  </div>
+                  {vol.description && (
+                    <div className="text-slate-700" style={bodyStyle}>
+                      {renderWithHighlights(vol.description, 'volunteer', vol.id, 'description')}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'references':
+        const visibleReferences = profile.references?.filter(ref => ref.visible !== false) || [];
+        return sectionVisibility.references && visibleReferences.length > 0 && (
+          <div key="references" style={sectionStyle}>
+            <h2 className="font-bold uppercase tracking-wider mb-3" style={subHeadingStyle}>
+              References
+            </h2>
+            <div className="space-y-3">
+              {visibleReferences.map((ref, index) => (
+                <div key={ref.id || index}>
+                  <div className="font-bold text-slate-900" style={bodyStyle}>
+                    {renderWithHighlights(ref.name, 'references', ref.id, 'name')}
+                  </div>
+                  <div className="text-slate-700" style={bodyStyle}>
+                    {renderWithHighlights(ref.title, 'references', ref.id, 'title')}
+                  </div>
+                  {ref.company && (
+                    <div className="text-slate-700" style={bodyStyle}>
+                      {renderWithHighlights(ref.company, 'references', ref.id, 'company')}
+                    </div>
+                  )}
+                  {ref.email && (
+                    <div className="text-slate-600" style={bodyStyle}>
+                      {renderWithHighlights(ref.email, 'references', ref.id, 'email')}
+                    </div>
+                  )}
+                  {ref.phone && (
+                    <div className="text-slate-600" style={bodyStyle}>
+                      {renderWithHighlights(ref.phone, 'references', ref.id, 'phone')}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -511,7 +758,7 @@ export function FullPageResumePreview({
               } : {})
             }}>
               <h1 style={{ ...headingStyle, fontWeight: 'bold', color: '#1a202c' }}>
-                {profile.contact.firstName} {profile.contact.middleName && `${profile.contact.middleName} `}{profile.contact.lastName}
+                {renderWithHighlights(`${profile.contact.firstName}${profile.contact.middleName ? ` ${profile.contact.middleName}` : ''} ${profile.contact.lastName}`, 'contact', undefined, 'name')}
               </h1>
 
               <div className={`flex flex-wrap gap-4 text-sm text-slate-600 mt-2 ${layout.headerAlignment === 'center' ? 'justify-center' :
@@ -520,19 +767,19 @@ export function FullPageResumePreview({
                 {profile.contact.email && (
                   <div className="flex items-center gap-1">
                     <Mail className="w-3 h-3" style={{ color: accentColor }} />
-                    <span>{profile.contact.email}</span>
+                    <span>{renderWithHighlights(profile.contact.email, 'contact', undefined, 'email')}</span>
                   </div>
                 )}
                 {profile.contact.phone && (
                   <div className="flex items-center gap-1">
                     <Phone className="w-3 h-3" style={{ color: accentColor }} />
-                    <span>{profile.contact.phone}</span>
+                    <span>{renderWithHighlights(profile.contact.phone, 'contact', undefined, 'phone')}</span>
                   </div>
                 )}
                 {profile.contact.location && (
                   <div className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" style={{ color: accentColor }} />
-                    <span>{profile.contact.location}</span>
+                    <span>{renderWithHighlights(profile.contact.location, 'contact', undefined, 'location')}</span>
                   </div>
                 )}
                 {profile.contact.linkedin && (
