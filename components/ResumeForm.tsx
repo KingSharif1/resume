@@ -42,7 +42,8 @@ export function ResumeForm({ onResumeGenerated }: ResumeFormProps) {
     try {
       const fileType = fileName.endsWith('.docx') ? 'DOCX' : 'PDF';
       toast.loading(`Parsing ${fileType}...`, { id: 'file-parse' });
-      const text = await parsePDFToText(file);
+      const result = await parsePDFToText(file);
+      const text = result.text;
       setBaseResume(text);
 
       const structured = parseResumeText(text);

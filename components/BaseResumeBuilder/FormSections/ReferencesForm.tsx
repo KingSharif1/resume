@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { Reference, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { UnifiedTextField } from '@/components/fields';
 
 interface ReferencesFormProps {
     references: Reference[];
@@ -132,74 +131,76 @@ export function ReferencesForm({ references, onChange }: ReferencesFormProps) {
                                 {isExpanded && (
                                     <CardContent className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor={`name-${ref.id}`}>Name *</Label>
-                                                <Input
-                                                    id={`name-${ref.id}`}
-                                                    value={ref.name}
-                                                    onChange={(e) => updateReference(ref.id, { name: e.target.value })}
-                                                    placeholder="Jane Doe"
-                                                    className="mt-1"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor={`relationship-${ref.id}`}>Relationship *</Label>
-                                                <Input
-                                                    id={`relationship-${ref.id}`}
-                                                    value={ref.relationship}
-                                                    onChange={(e) => updateReference(ref.id, { relationship: e.target.value })}
-                                                    placeholder="Former Manager"
-                                                    className="mt-1"
-                                                />
-                                            </div>
+                                            <UnifiedTextField
+                                                id={`references-${ref.id}-name`}
+                                                section="references"
+                                                fieldKey="name"
+                                                itemId={ref.id}
+                                                label="Name"
+                                                value={ref.name}
+                                                onChange={(value) => updateReference(ref.id, { name: value })}
+                                                placeholder="Jane Doe"
+                                                required
+                                            />
+                                            <UnifiedTextField
+                                                id={`references-${ref.id}-relationship`}
+                                                section="references"
+                                                fieldKey="relationship"
+                                                itemId={ref.id}
+                                                label="Relationship"
+                                                value={ref.relationship}
+                                                onChange={(value) => updateReference(ref.id, { relationship: value })}
+                                                placeholder="Former Manager"
+                                                required
+                                            />
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor={`title-${ref.id}`}>Job Title</Label>
-                                                <Input
-                                                    id={`title-${ref.id}`}
-                                                    value={ref.title}
-                                                    onChange={(e) => updateReference(ref.id, { title: e.target.value })}
-                                                    placeholder="Senior Developer"
-                                                    className="mt-1"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor={`company-${ref.id}`}>Company</Label>
-                                                <Input
-                                                    id={`company-${ref.id}`}
-                                                    value={ref.company}
-                                                    onChange={(e) => updateReference(ref.id, { company: e.target.value })}
-                                                    placeholder="Tech Corp"
-                                                    className="mt-1"
-                                                />
-                                            </div>
+                                            <UnifiedTextField
+                                                id={`references-${ref.id}-title`}
+                                                section="references"
+                                                fieldKey="title"
+                                                itemId={ref.id}
+                                                label="Job Title"
+                                                value={ref.title}
+                                                onChange={(value) => updateReference(ref.id, { title: value })}
+                                                placeholder="Senior Developer"
+                                            />
+                                            <UnifiedTextField
+                                                id={`references-${ref.id}-company`}
+                                                section="references"
+                                                fieldKey="company"
+                                                itemId={ref.id}
+                                                label="Company"
+                                                value={ref.company}
+                                                onChange={(value) => updateReference(ref.id, { company: value })}
+                                                placeholder="Tech Corp"
+                                            />
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor={`email-${ref.id}`}>Email</Label>
-                                                <Input
-                                                    id={`email-${ref.id}`}
-                                                    type="email"
-                                                    value={ref.email || ''}
-                                                    onChange={(e) => updateReference(ref.id, { email: e.target.value })}
-                                                    placeholder="jane@example.com"
-                                                    className="mt-1"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor={`phone-${ref.id}`}>Phone</Label>
-                                                <Input
-                                                    id={`phone-${ref.id}`}
-                                                    type="tel"
-                                                    value={ref.phone || ''}
-                                                    onChange={(e) => updateReference(ref.id, { phone: e.target.value })}
-                                                    placeholder="+1 (555) 123-4567"
-                                                    className="mt-1"
-                                                />
-                                            </div>
+                                            <UnifiedTextField
+                                                id={`references-${ref.id}-email`}
+                                                section="references"
+                                                fieldKey="email"
+                                                itemId={ref.id}
+                                                label="Email"
+                                                value={ref.email || ''}
+                                                onChange={(value) => updateReference(ref.id, { email: value })}
+                                                placeholder="jane@example.com"
+                                                inputType="email"
+                                            />
+                                            <UnifiedTextField
+                                                id={`references-${ref.id}-phone`}
+                                                section="references"
+                                                fieldKey="phone"
+                                                itemId={ref.id}
+                                                label="Phone"
+                                                value={ref.phone || ''}
+                                                onChange={(value) => updateReference(ref.id, { phone: value })}
+                                                placeholder="+1 (555) 123-4567"
+                                                inputType="tel"
+                                            />
                                         </div>
                                     </CardContent>
                                 )}

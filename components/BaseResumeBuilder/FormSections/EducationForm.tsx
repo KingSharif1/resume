@@ -3,11 +3,9 @@
 import { useState } from 'react';
 import { Education, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { UnifiedTextField, UnifiedTextarea, UnifiedDateField } from '@/components/fields';
 
 interface EducationFormProps {
   education: Education[];
@@ -158,123 +156,125 @@ export function EducationForm({ education, onChange }: EducationFormProps) {
                   <CardContent className="space-y-4">
                     {/* Basic Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`institution-${edu.id}`}>School/University *</Label>
-                        <Input
-                          id={`institution-${edu.id}`}
-                          value={edu.institution}
-                          onChange={(e) => updateEducation(edu.id, { institution: e.target.value })}
-                          placeholder="Harvard University"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`degree-${edu.id}`}>Degree *</Label>
-                        <Input
-                          id={`degree-${edu.id}`}
-                          value={edu.degree}
-                          onChange={(e) => updateEducation(edu.id, { degree: e.target.value })}
-                          placeholder="Bachelor of Science"
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedTextField
+                        id={`education-${edu.id}-institution`}
+                        section="education"
+                        fieldKey="institution"
+                        itemId={edu.id}
+                        label="School/University"
+                        value={edu.institution}
+                        onChange={(value) => updateEducation(edu.id, { institution: value })}
+                        placeholder="Harvard University"
+                        required
+                      />
+                      <UnifiedTextField
+                        id={`education-${edu.id}-degree`}
+                        section="education"
+                        fieldKey="degree"
+                        itemId={edu.id}
+                        label="Degree"
+                        value={edu.degree}
+                        onChange={(value) => updateEducation(edu.id, { degree: value })}
+                        placeholder="Bachelor of Science"
+                        required
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`fieldOfStudy-${edu.id}`}>Field of Study</Label>
-                        <Input
-                          id={`fieldOfStudy-${edu.id}`}
-                          value={edu.fieldOfStudy || ''}
-                          onChange={(e) => updateEducation(edu.id, { fieldOfStudy: e.target.value })}
-                          placeholder="Computer Science"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`location-${edu.id}`}>Location</Label>
-                        <Input
-                          id={`location-${edu.id}`}
-                          value={edu.location || ''}
-                          onChange={(e) => updateEducation(edu.id, { location: e.target.value })}
-                          placeholder="Cambridge, MA"
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedTextField
+                        id={`education-${edu.id}-fieldOfStudy`}
+                        section="education"
+                        fieldKey="fieldOfStudy"
+                        itemId={edu.id}
+                        label="Field of Study"
+                        value={edu.fieldOfStudy || ''}
+                        onChange={(value) => updateEducation(edu.id, { fieldOfStudy: value })}
+                        placeholder="Computer Science"
+                      />
+                      <UnifiedTextField
+                        id={`education-${edu.id}-location`}
+                        section="education"
+                        fieldKey="location"
+                        itemId={edu.id}
+                        label="Location"
+                        value={edu.location || ''}
+                        onChange={(value) => updateEducation(edu.id, { location: value })}
+                        placeholder="Cambridge, MA"
+                      />
                     </div>
 
                     {/* Dates and GPA */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor={`startDate-${edu.id}`}>Start Date</Label>
-                        <Input
-                          id={`startDate-${edu.id}`}
-                          type="month"
-                          value={edu.startDate || ''}
-                          onChange={(e) => updateEducation(edu.id, { startDate: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`endDate-${edu.id}`}>End Date</Label>
-                        <Input
-                          id={`endDate-${edu.id}`}
-                          type="month"
-                          value={edu.endDate || ''}
-                          onChange={(e) => updateEducation(edu.id, { endDate: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`gpa-${edu.id}`}>GPA</Label>
-                        <Input
-                          id={`gpa-${edu.id}`}
-                          value={edu.gpa || ''}
-                          onChange={(e) => updateEducation(edu.id, { gpa: e.target.value })}
-                          placeholder="3.8"
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedDateField
+                        id={`education-${edu.id}-startDate`}
+                        section="education"
+                        fieldKey="startDate"
+                        itemId={edu.id}
+                        label="Start Date"
+                        value={edu.startDate || ''}
+                        onChange={(value) => updateEducation(edu.id, { startDate: value })}
+                      />
+                      <UnifiedDateField
+                        id={`education-${edu.id}-endDate`}
+                        section="education"
+                        fieldKey="endDate"
+                        itemId={edu.id}
+                        label="End Date"
+                        value={edu.endDate || ''}
+                        onChange={(value) => updateEducation(edu.id, { endDate: value })}
+                      />
+                      <UnifiedTextField
+                        id={`education-${edu.id}-gpa`}
+                        section="education"
+                        fieldKey="gpa"
+                        itemId={edu.id}
+                        label="GPA"
+                        value={edu.gpa || ''}
+                        onChange={(value) => updateEducation(edu.id, { gpa: value })}
+                        placeholder="3.8"
+                      />
                     </div>
 
                     {/* Honors */}
-                    <div>
-                      <Label htmlFor={`honors-${edu.id}`}>Honors & Awards</Label>
-                      <Input
-                        id={`honors-${edu.id}`}
-                        value={edu.honors?.join(', ') || ''}
-                        onChange={(e) => updateArrayField(edu.id, 'honors', e.target.value)}
-                        placeholder="Magna Cum Laude, Dean's List"
-                        className="mt-1"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">Separate multiple items with commas</p>
-                    </div>
+                    <UnifiedTextField
+                      id={`education-${edu.id}-honors`}
+                      section="education"
+                      fieldKey="honors"
+                      itemId={edu.id}
+                      label="Honors & Awards"
+                      value={edu.honors?.join(', ') || ''}
+                      onChange={(value) => updateArrayField(edu.id, 'honors', value)}
+                      placeholder="Magna Cum Laude, Dean's List"
+                      helpText="Separate multiple items with commas"
+                    />
 
                     {/* Relevant Coursework */}
-                    <div>
-                      <Label htmlFor={`coursework-${edu.id}`}>Relevant Coursework</Label>
-                      <Textarea
-                        id={`coursework-${edu.id}`}
-                        value={edu.coursework?.join(', ') || ''}
-                        onChange={(e) => updateArrayField(edu.id, 'coursework', e.target.value)}
-                        placeholder="Data Structures, Algorithms, Machine Learning, Database Systems"
-                        className="mt-1 min-h-[60px]"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">Separate multiple courses with commas</p>
-                    </div>
+                    <UnifiedTextarea
+                      id={`education-${edu.id}-coursework`}
+                      section="education"
+                      fieldKey="coursework"
+                      itemId={edu.id}
+                      label="Relevant Coursework"
+                      value={edu.coursework?.join(', ') || ''}
+                      onChange={(value) => updateArrayField(edu.id, 'coursework', value)}
+                      placeholder="Data Structures, Algorithms, Machine Learning, Database Systems"
+                      rows={2}
+                      helpText="Separate multiple courses with commas"
+                    />
 
                     {/* Activities */}
-                    <div>
-                      <Label htmlFor={`activities-${edu.id}`}>Activities & Organizations</Label>
-                      <Textarea
-                        id={`activities-${edu.id}`}
-                        value={edu.activities?.join(', ') || ''}
-                        onChange={(e) => updateArrayField(edu.id, 'activities', e.target.value)}
-                        placeholder="Computer Science Club, Student Government, Debate Team"
-                        className="mt-1 min-h-[60px]"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">Separate multiple activities with commas</p>
-                    </div>
+                    <UnifiedTextarea
+                      id={`education-${edu.id}-activities`}
+                      section="education"
+                      fieldKey="activities"
+                      itemId={edu.id}
+                      label="Activities & Organizations"
+                      value={edu.activities?.join(', ') || ''}
+                      onChange={(value) => updateArrayField(edu.id, 'activities', value)}
+                      placeholder="Computer Science Club, Student Government, Debate Team"
+                      rows={2}
+                      helpText="Separate multiple activities with commas"
+                    />
                   </CardContent>
                 )}
               </Card>

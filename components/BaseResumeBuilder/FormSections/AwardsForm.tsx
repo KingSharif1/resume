@@ -3,11 +3,9 @@
 import { useState } from 'react';
 import { Award, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { UnifiedTextField, UnifiedTextarea, UnifiedDateField } from '@/components/fields';
 
 interface AwardsFormProps {
   awards: Award[];
@@ -131,49 +129,51 @@ export function AwardsForm({ awards, onChange }: AwardsFormProps) {
                 {isExpanded && (
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`title-${award.id}`}>Award Title *</Label>
-                        <Input
-                          id={`title-${award.id}`}
-                          value={award.title}
-                          onChange={(e) => updateAward(award.id, { title: e.target.value })}
-                          placeholder="Employee of the Month"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`issuer-${award.id}`}>Issuer *</Label>
-                        <Input
-                          id={`issuer-${award.id}`}
-                          value={award.issuer}
-                          onChange={(e) => updateAward(award.id, { issuer: e.target.value })}
-                          placeholder="Company Name"
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor={`date-${award.id}`}>Date</Label>
-                      <Input
-                        id={`date-${award.id}`}
-                        type="month"
-                        value={award.date || ''}
-                        onChange={(e) => updateAward(award.id, { date: e.target.value })}
-                        className="mt-1"
+                      <UnifiedTextField
+                        id={`awards-${award.id}-title`}
+                        section="awards"
+                        fieldKey="title"
+                        itemId={award.id}
+                        label="Award Title"
+                        value={award.title}
+                        onChange={(value) => updateAward(award.id, { title: value })}
+                        placeholder="Employee of the Month"
+                        required
+                      />
+                      <UnifiedTextField
+                        id={`awards-${award.id}-issuer`}
+                        section="awards"
+                        fieldKey="issuer"
+                        itemId={award.id}
+                        label="Issuer"
+                        value={award.issuer}
+                        onChange={(value) => updateAward(award.id, { issuer: value })}
+                        placeholder="Company Name"
+                        required
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor={`description-${award.id}`}>Description</Label>
-                      <Textarea
-                        id={`description-${award.id}`}
-                        value={award.description || ''}
-                        onChange={(e) => updateAward(award.id, { description: e.target.value })}
-                        placeholder="Brief description of the award..."
-                        className="mt-1 min-h-[80px]"
-                      />
-                    </div>
+                    <UnifiedDateField
+                      id={`awards-${award.id}-date`}
+                      section="awards"
+                      fieldKey="date"
+                      itemId={award.id}
+                      label="Date"
+                      value={award.date || ''}
+                      onChange={(value) => updateAward(award.id, { date: value })}
+                    />
+
+                    <UnifiedTextarea
+                      id={`awards-${award.id}-description`}
+                      section="awards"
+                      fieldKey="description"
+                      itemId={award.id}
+                      label="Description"
+                      value={award.description || ''}
+                      onChange={(value) => updateAward(award.id, { description: value })}
+                      placeholder="Brief description of the award..."
+                      rows={3}
+                    />
                   </CardContent>
                 )}
               </Card>

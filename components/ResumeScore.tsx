@@ -270,19 +270,21 @@ export function ResumeScore({ profile, className = '', onApplyFix, onDismissTip 
                                                                     <Lightbulb className="w-3 h-3 text-amber-500 mt-0.5 flex-shrink-0" />
                                                                     <button
                                                                         onClick={() => {
-                                                                            // Scroll to the field with the error
-                                                                            const fieldId = tip.itemId 
+                                                                            // Use elementId if available, otherwise construct from section/itemId/field
+                                                                            const fieldId = tip.elementId || (tip.itemId 
                                                                                 ? `${tip.section}-${tip.itemId}-${tip.field}`
-                                                                                : `${tip.section}-${tip.field}`;
+                                                                                : `${tip.section}-${tip.field}`);
                                                                             const element = document.getElementById(fieldId);
                                                                             if (element) {
                                                                                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                                                                 element.focus();
                                                                                 // Add highlight effect
-                                                                                element.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2');
+                                                                                element.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2', 'bg-amber-50');
                                                                                 setTimeout(() => {
-                                                                                    element.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2');
+                                                                                    element.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2', 'bg-amber-50');
                                                                                 }, 2000);
+                                                                            } else {
+                                                                                console.warn('Could not find element:', fieldId);
                                                                             }
                                                                         }}
                                                                         className="text-xs text-slate-700 hover:text-amber-600 text-left transition-colors"

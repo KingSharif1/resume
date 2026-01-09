@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { Interest, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { UnifiedTextField } from '@/components/fields';
 
 interface InterestsFormProps {
     interests: Interest[];
@@ -123,26 +122,27 @@ export function InterestsForm({ interests, onChange }: InterestsFormProps) {
 
                                 {isExpanded && (
                                     <CardContent className="space-y-4">
-                                        <div>
-                                            <Label htmlFor={`name-${int.id}`}>Interest Name *</Label>
-                                            <Input
-                                                id={`name-${int.id}`}
-                                                value={int.name}
-                                                onChange={(e) => updateInterest(int.id, { name: e.target.value })}
-                                                placeholder="Photography, Hiking, Chess"
-                                                className="mt-1"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor={`description-${int.id}`}>Description (Optional)</Label>
-                                            <Input
-                                                id={`description-${int.id}`}
-                                                value={int.description || ''}
-                                                onChange={(e) => updateInterest(int.id, { description: e.target.value })}
-                                                placeholder="Brief details..."
-                                                className="mt-1"
-                                            />
-                                        </div>
+                                        <UnifiedTextField
+                                            id={`interests-${int.id}-name`}
+                                            section="interests"
+                                            fieldKey="name"
+                                            itemId={int.id}
+                                            label="Interest Name"
+                                            value={int.name}
+                                            onChange={(value) => updateInterest(int.id, { name: value })}
+                                            placeholder="Photography, Hiking, Chess"
+                                            required
+                                        />
+                                        <UnifiedTextField
+                                            id={`interests-${int.id}-description`}
+                                            section="interests"
+                                            fieldKey="description"
+                                            itemId={int.id}
+                                            label="Description (Optional)"
+                                            value={int.description || ''}
+                                            onChange={(value) => updateInterest(int.id, { description: value })}
+                                            placeholder="Brief details..."
+                                        />
                                     </CardContent>
                                 )}
                             </Card>

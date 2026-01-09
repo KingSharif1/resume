@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { FolderCard } from '@/components/Dashboard/FolderCard';
 import { ResumeUploadModal } from '@/components/ResumeUploadModal';
+import { TailorResumeModal } from '@/components/Dashboard/TailorResumeModal';
 
 export interface BaseResume {
   id: string;
@@ -39,6 +40,8 @@ export default function Dashboard() {
   const [showPreview, setShowPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showTailorModal, setShowTailorModal] = useState(false);
+  const [selectedBaseResumeId, setSelectedBaseResumeId] = useState<string | undefined>();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -354,6 +357,10 @@ export default function Dashboard() {
                     tailoredResumes={[]} // TODO: Fetch tailored resumes when backend is ready
                     onEdit={(id) => router.push(`/builder?id=${id}`)}
                     onUpdateTitle={updateResumeTitle}
+                    onTailorClick={(baseId: string) => {
+                      setSelectedBaseResumeId(baseId);
+                      setShowTailorModal(true);
+                    }}
                     colorIndex={index}
                   />
                 ))}
@@ -371,6 +378,17 @@ export default function Dashboard() {
             setShowPreview(true);
             setShowUpload(false);
           }}
+        />
+
+        {/* Tailor Resume Modal */}
+        <TailorResumeModal
+          isOpen={showTailorModal}
+          onClose={() => {
+            setShowTailorModal(false);
+            setSelectedBaseResumeId(undefined);
+          }}
+          baseResumes={baseResumes}
+          selectedBaseResumeId={selectedBaseResumeId}
         />
 
         {/* Preview Modal */}

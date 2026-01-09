@@ -1,9 +1,8 @@
 'use client';
 
 import { ContactInfo } from '@/lib/resume-schema';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { UnifiedTextField } from '@/components/fields';
 
 interface ContactFormProps {
   contact: ContactInfo;
@@ -24,36 +23,35 @@ export function ContactForm({ contact, onChange }: ContactFormProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="firstName">First Name *</Label>
-              <Input
-                id="firstName"
-                value={contact.firstName}
-                onChange={(e) => updateField('firstName', e.target.value)}
-                placeholder="John"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="middleName">Middle Name/Initial</Label>
-              <Input
-                id="middleName"
-                value={contact.middleName || ''}
-                onChange={(e) => updateField('middleName', e.target.value)}
-                placeholder="A."
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="lastName">Last Name *</Label>
-              <Input
-                id="lastName"
-                value={contact.lastName}
-                onChange={(e) => updateField('lastName', e.target.value)}
-                placeholder="Doe"
-                className="mt-1"
-              />
-            </div>
+            <UnifiedTextField
+              id="contact-firstName"
+              section="contact"
+              fieldKey="firstName"
+              label="First Name"
+              value={contact.firstName}
+              onChange={(value) => updateField('firstName', value)}
+              placeholder="John"
+              required
+            />
+            <UnifiedTextField
+              id="contact-middleName"
+              section="contact"
+              fieldKey="middleName"
+              label="Middle Name/Initial"
+              value={contact.middleName || ''}
+              onChange={(value) => updateField('middleName', value)}
+              placeholder="A."
+            />
+            <UnifiedTextField
+              id="contact-lastName"
+              section="contact"
+              fieldKey="lastName"
+              label="Last Name"
+              value={contact.lastName}
+              onChange={(value) => updateField('lastName', value)}
+              placeholder="Doe"
+              required
+            />
           </div>
         </CardContent>
       </Card>
@@ -62,38 +60,36 @@ export function ContactForm({ contact, onChange }: ContactFormProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email Address *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={contact.email}
-                onChange={(e) => updateField('email', e.target.value)}
-                placeholder="john.doe@example.com"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={contact.phone || ''}
-                onChange={(e) => updateField('phone', e.target.value)}
-                placeholder="+1 (555) 123-4567"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={contact.location || ''}
-                onChange={(e) => updateField('location', e.target.value)}
-                placeholder="New York, NY"
-                className="mt-1"
-              />
-            </div>
+            <UnifiedTextField
+              id="contact-email"
+              section="contact"
+              fieldKey="email"
+              label="Email Address"
+              value={contact.email}
+              onChange={(value) => updateField('email', value)}
+              placeholder="john.doe@example.com"
+              inputType="email"
+              required
+            />
+            <UnifiedTextField
+              id="contact-phone"
+              section="contact"
+              fieldKey="phone"
+              label="Phone Number"
+              value={contact.phone || ''}
+              onChange={(value) => updateField('phone', value)}
+              placeholder="+1 (555) 123-4567"
+              inputType="tel"
+            />
+            <UnifiedTextField
+              id="contact-location"
+              section="contact"
+              fieldKey="location"
+              label="Location"
+              value={contact.location || ''}
+              onChange={(value) => updateField('location', value)}
+              placeholder="New York, NY"
+            />
           </div>
         </CardContent>
       </Card>
@@ -102,46 +98,46 @@ export function ContactForm({ contact, onChange }: ContactFormProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="linkedin">LinkedIn Profile</Label>
-              <Input
-                id="linkedin"
-                value={contact.linkedin || ''}
-                onChange={(e) => updateField('linkedin', e.target.value)}
-                placeholder="https://linkedin.com/in/johndoe"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="github">GitHub Profile</Label>
-              <Input
-                id="github"
-                value={contact.github || ''}
-                onChange={(e) => updateField('github', e.target.value)}
-                placeholder="https://github.com/johndoe"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="website">Personal Website</Label>
-              <Input
-                id="website"
-                value={contact.website || ''}
-                onChange={(e) => updateField('website', e.target.value)}
-                placeholder="https://johndoe.com"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="portfolio">Portfolio</Label>
-              <Input
-                id="portfolio"
-                value={contact.portfolio || ''}
-                onChange={(e) => updateField('portfolio', e.target.value)}
-                placeholder="https://portfolio.johndoe.com"
-                className="mt-1"
-              />
-            </div>
+            <UnifiedTextField
+              id="contact-linkedin"
+              section="contact"
+              fieldKey="linkedin"
+              label="LinkedIn Profile"
+              value={contact.linkedin || ''}
+              onChange={(value) => updateField('linkedin', value)}
+              placeholder="https://linkedin.com/in/johndoe"
+              inputType="url"
+            />
+            <UnifiedTextField
+              id="contact-github"
+              section="contact"
+              fieldKey="github"
+              label="GitHub Profile"
+              value={contact.github || ''}
+              onChange={(value) => updateField('github', value)}
+              placeholder="https://github.com/johndoe"
+              inputType="url"
+            />
+            <UnifiedTextField
+              id="contact-website"
+              section="contact"
+              fieldKey="website"
+              label="Personal Website"
+              value={contact.website || ''}
+              onChange={(value) => updateField('website', value)}
+              placeholder="https://johndoe.com"
+              inputType="url"
+            />
+            <UnifiedTextField
+              id="contact-portfolio"
+              section="contact"
+              fieldKey="portfolio"
+              label="Portfolio"
+              value={contact.portfolio || ''}
+              onChange={(value) => updateField('portfolio', value)}
+              placeholder="https://portfolio.johndoe.com"
+              inputType="url"
+            />
           </div>
         </CardContent>
       </Card>

@@ -5,10 +5,10 @@ import { Project, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, ChevronDown, ChevronUp, X, Eye, EyeOff } from 'lucide-react';
+import { UnifiedTextField, UnifiedTextarea, UnifiedDateField } from '@/components/fields';
 
 interface ProjectsFormProps {
   projects: Project[];
@@ -194,61 +194,62 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
                 {isExpanded && (
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`name-${project.id}`}>Project Name *</Label>
-                        <Input
-                          id={`name-${project.id}`}
-                          value={project.name}
-                          onChange={(e) => updateProject(project.id, { name: e.target.value })}
-                          placeholder="E-commerce Website"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`role-${project.id}`}>Your Role</Label>
-                        <Input
-                          id={`role-${project.id}`}
-                          value={project.role || ''}
-                          onChange={(e) => updateProject(project.id, { role: e.target.value })}
-                          placeholder="Full Stack Developer"
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedTextField
+                        id={`projects-${project.id}-name`}
+                        section="projects"
+                        fieldKey="name"
+                        itemId={project.id}
+                        label="Project Name"
+                        value={project.name}
+                        onChange={(value) => updateProject(project.id, { name: value })}
+                        placeholder="E-commerce Website"
+                        required
+                      />
+                      <UnifiedTextField
+                        id={`projects-${project.id}-role`}
+                        section="projects"
+                        fieldKey="role"
+                        itemId={project.id}
+                        label="Your Role"
+                        value={project.role || ''}
+                        onChange={(value) => updateProject(project.id, { role: value })}
+                        placeholder="Full Stack Developer"
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`startDate-${project.id}`}>Start Date</Label>
-                        <Input
-                          id={`startDate-${project.id}`}
-                          type="month"
-                          value={project.startDate || ''}
-                          onChange={(e) => updateProject(project.id, { startDate: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`endDate-${project.id}`}>End Date</Label>
-                        <Input
-                          id={`endDate-${project.id}`}
-                          type="month"
-                          value={project.endDate || ''}
-                          onChange={(e) => updateProject(project.id, { endDate: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor={`description-${project.id}`}>Description *</Label>
-                      <Textarea
-                        id={`description-${project.id}`}
-                        value={project.description}
-                        onChange={(e) => updateProject(project.id, { description: e.target.value })}
-                        placeholder="Describe what this project does and your contributions..."
-                        className="mt-1 min-h-[80px]"
+                      <UnifiedDateField
+                        id={`projects-${project.id}-startDate`}
+                        section="projects"
+                        fieldKey="startDate"
+                        itemId={project.id}
+                        label="Start Date"
+                        value={project.startDate || ''}
+                        onChange={(value) => updateProject(project.id, { startDate: value })}
+                      />
+                      <UnifiedDateField
+                        id={`projects-${project.id}-endDate`}
+                        section="projects"
+                        fieldKey="endDate"
+                        itemId={project.id}
+                        label="End Date"
+                        value={project.endDate || ''}
+                        onChange={(value) => updateProject(project.id, { endDate: value })}
                       />
                     </div>
+
+                    <UnifiedTextarea
+                      id={`projects-${project.id}-description`}
+                      section="projects"
+                      fieldKey="description"
+                      itemId={project.id}
+                      label="Description"
+                      value={project.description}
+                      onChange={(value) => updateProject(project.id, { description: value })}
+                      placeholder="Describe what this project does and your contributions..."
+                      rows={3}
+                      required
+                    />
 
                     <div>
                       <Label>Technologies Used</Label>
@@ -300,26 +301,28 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`url-${project.id}`}>Project URL</Label>
-                        <Input
-                          id={`url-${project.id}`}
-                          value={project.url || ''}
-                          onChange={(e) => updateProject(project.id, { url: e.target.value })}
-                          placeholder="https://myproject.com"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`github-${project.id}`}>GitHub Repository</Label>
-                        <Input
-                          id={`github-${project.id}`}
-                          value={project.github || ''}
-                          onChange={(e) => updateProject(project.id, { github: e.target.value })}
-                          placeholder="https://github.com/username/repo"
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedTextField
+                        id={`projects-${project.id}-url`}
+                        section="projects"
+                        fieldKey="url"
+                        itemId={project.id}
+                        label="Project URL"
+                        value={project.url || ''}
+                        onChange={(value) => updateProject(project.id, { url: value })}
+                        placeholder="https://myproject.com"
+                        inputType="url"
+                      />
+                      <UnifiedTextField
+                        id={`projects-${project.id}-github`}
+                        section="projects"
+                        fieldKey="github"
+                        itemId={project.id}
+                        label="GitHub Repository"
+                        value={project.github || ''}
+                        onChange={(value) => updateProject(project.id, { github: value })}
+                        placeholder="https://github.com/username/repo"
+                        inputType="url"
+                      />
                     </div>
 
                     <div>
@@ -338,11 +341,17 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
                       <div className="space-y-2">
                         {project.achievements.map((achievement, index) => (
                           <div key={index} className="flex gap-2">
-                            <Textarea
+                            <UnifiedTextarea
+                              id={`projects-${project.id}-achievements-${index}`}
+                              section="projects"
+                              fieldKey={`achievements[${index}]`}
+                              itemId={project.id}
+                              label=""
                               value={achievement}
-                              onChange={(e) => updateAchievement(project.id, index, e.target.value)}
+                              onChange={(value) => updateAchievement(project.id, index, value)}
                               placeholder="• Achieved 99% uptime with automated deployment pipeline"
-                              className="min-h-[60px]"
+                              rows={2}
+                              className="flex-1"
                             />
                             {project.achievements.length > 1 && (
                               <Button
@@ -350,7 +359,7 @@ export function ProjectsForm({ projects, onChange }: ProjectsFormProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeAchievement(project.id, index)}
-                                className="shrink-0 text-red-600 hover:text-red-700"
+                                className="shrink-0 text-red-600 hover:text-red-700 self-start mt-1"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>

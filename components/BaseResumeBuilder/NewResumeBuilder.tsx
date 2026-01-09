@@ -47,6 +47,7 @@ import { AIChatWidget, ChatSuggestion } from './AIChatWidget';
 import { UnifiedAnalysisPanel } from './UnifiedAnalysisPanel';
 import { TemplateModal } from './TemplateModal';
 import { ChangelogPanel } from '@/components/ChangelogPanel';
+import { JobAnalysisPanel } from './JobAnalysisPanel';
 import { useResumeSettings } from '@/lib/resume-settings-context';
 import { suggestionsRepository } from '@/lib/db/repositories/suggestions-repository';
 
@@ -60,6 +61,8 @@ interface NewResumeBuilderProps {
     onPreview: (profile: ResumeProfile, sectionVisibility: SectionVisibility) => void;
     onAIOptimize: (profile: ResumeProfile) => void;
     onUploadResume?: () => void;
+    isTailorMode?: boolean;
+    initialJobDescription?: string;
 }
 
 export function NewResumeBuilder({
@@ -67,12 +70,17 @@ export function NewResumeBuilder({
     onSave,
     onPreview,
     onAIOptimize,
-    onUploadResume
+    onUploadResume,
+    isTailorMode = false,
+    initialJobDescription = ''
 }: NewResumeBuilderProps) {
     const [profile, setProfile] = useState<ResumeProfile>(initialProfile || createEmptyProfile());
     const [resumeName, setResumeName] = useState("Untitled Resume");
     const [zoomLevel, setZoomLevel] = useState(70);
     const [isResumeAnalysisOpen, setIsResumeAnalysisOpen] = useState(true);
+    
+    // Tailor mode state
+    const [jobDescription, setJobDescription] = useState(initialJobDescription);
     const [openSections, setOpenSections] = useState<Set<SectionType>>(new Set<SectionType>(['contact']));
     const [isLayoutStyleEditorOpen, setIsLayoutStyleEditorOpen] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -515,6 +523,120 @@ export function NewResumeBuilder({
         }
     };
 
+    // Auto-tailor the resume based on job description
+    const handleAutoTailor = async () => {
+        if (!jobDescription || jobDescription.length < 50) {
+            toast.error('Please add a job description first');
+            return;
+        }
+
+        const toastId = toast.loading('Tailoring your resume...');
+        
+        try {
+            // Build resume text from profile
+            const resumeText = buildResumeText(profile);
+            
+            const response = await fetch('/api/tailor-resume', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    resumeText,
+                    jobDescription
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to tailor resume');
+            }
+
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                const tailoredData = data.data;
+                
+                // Apply tailored changes to profile
+                const updates: Partial<ResumeProfile> = {};
+                
+                // Update summary if provided
+                if (tailoredData.summary) {
+                    updates.summary = { content: tailoredData.summary };
+                }
+                
+                // Update skills if provided
+                if (tailoredData.skills) {
+                    updates.skills = {
+                        ...profile.skills,
+                        technical: tailoredData.skills.technical || profile.skills?.technical || [],
+                        soft: tailoredData.skills.soft || profile.skills?.soft || []
+                    };
+                }
+                
+                updateProfile(updates);
+                
+                // Show improvements as changelog entries
+                if (tailoredData.improvements && tailoredData.improvements.length > 0) {
+                    const newEntries: ChangelogEntry[] = tailoredData.improvements.map((improvement: string, idx: number) => 
+                        createChangelogEntry(
+                            'ai',
+                            'summary',
+                            `AI Tailoring: ${improvement}`,
+                            '',
+                            improvement
+                        )
+                    );
+                    setChangelog(prev => [...newEntries, ...prev]);
+                }
+                
+                toast.success('Resume tailored successfully!', { id: toastId });
+            } else {
+                throw new Error('Invalid response from AI');
+            }
+        } catch (error) {
+            console.error('Auto-tailor error:', error);
+            toast.error('Failed to auto-tailor resume. Try using AI chat instead.', { id: toastId });
+        }
+    };
+
+    // Helper function to build resume text for AI
+    const buildResumeText = (p: ResumeProfile): string => {
+        const sections: string[] = [];
+        
+        if (p.contact?.fullName) {
+            sections.push(`Name: ${p.contact.fullName}`);
+        }
+        if (p.summary?.content) {
+            sections.push(`Summary: ${p.summary.content}`);
+        }
+        if (p.skills) {
+            const allSkills: string[] = [];
+            if (p.skills.technical) allSkills.push(...p.skills.technical);
+            if (p.skills.soft) allSkills.push(...p.skills.soft);
+            if (allSkills.length > 0) {
+                sections.push(`Skills: ${allSkills.join(', ')}`);
+            }
+        }
+        if (p.experience?.length > 0) {
+            const expText = p.experience.map(exp => 
+                `${exp.title} at ${exp.company}: ${exp.description || ''}`
+            ).join('\n');
+            sections.push(`Experience:\n${expText}`);
+        }
+        if (p.education?.length > 0) {
+            const eduText = p.education.map(edu => 
+                `${edu.degree} in ${edu.field} from ${edu.institution}`
+            ).join('\n');
+            sections.push(`Education:\n${eduText}`);
+        }
+        if (p.projects?.length > 0) {
+            const projText = p.projects.map(proj => 
+                `${proj.name}: ${proj.description || ''}`
+            ).join('\n');
+            sections.push(`Projects:\n${projText}`);
+        }
+        
+        return sections.join('\n\n');
+    };
+
     useEffect(() => {
         const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
         checkDesktop();
@@ -522,8 +644,8 @@ export function NewResumeBuilder({
         return () => window.removeEventListener('resize', checkDesktop);
     }, []);
 
-    // Resizable Panel State
-    const [leftPanelWidth, setLeftPanelWidth] = useState(50); // Percentage
+    // Resizable Panel State - Tailor mode starts with wider left panel
+    const [leftPanelWidth, setLeftPanelWidth] = useState(isTailorMode ? 55 : 50); // Percentage
     const [isDragging, setIsDragging] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -889,8 +1011,8 @@ export function NewResumeBuilder({
                 <header className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3 flex items-center justify-between sticky top-0 z-50">
                     <div className="flex items-center gap-4 flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-                                CV
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold shadow-sm ${isTailorMode ? 'bg-purple-600' : 'bg-blue-600'}`}>
+                                {isTailorMode ? '✨' : 'CV'}
                             </div>
                             <Input
                                 value={resumeName}
@@ -898,6 +1020,11 @@ export function NewResumeBuilder({
                                 className="border-transparent hover:border-slate-200 focus:border-blue-500 shadow-none focus-visible:ring-0 font-semibold text-lg px-2 w-full max-w-[300px] transition-all"
                                 placeholder="Untitled Resume"
                             />
+                            {isTailorMode && (
+                                <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs font-medium">
+                                    Tailor Mode
+                                </Badge>
+                            )}
                         </div>
                     </div>
 
@@ -991,26 +1118,81 @@ export function NewResumeBuilder({
                     >
                         <div className="max-w-3xl mx-auto py-6 px-6">
 
-                            {/* Target Job Section */}
-                            <div className="mb-4">
-                                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                            <Briefcase className="w-4 h-4" />
+                            {/* Target Job Section - Enhanced for Tailor Mode */}
+                            {isTailorMode ? (
+                                <div className="mb-6">
+                                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-5 shadow-sm">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="p-2.5 bg-purple-600 text-white rounded-xl shadow-sm">
+                                                <Sparkles className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-base font-bold text-slate-900">Target Job</h3>
+                                                <p className="text-xs text-slate-600">Tailoring your resume to match this position</p>
+                                            </div>
                                         </div>
+                                        
+                                        {/* Job Title Input */}
+                                        <div className="mb-4">
+                                            <Label className="text-xs font-semibold text-slate-700 mb-1.5 block">Position Title</Label>
+                                            <Input
+                                                value={profile.targetJob || ''}
+                                                onChange={(e) => updateProfile({ targetJob: e.target.value })}
+                                                placeholder="e.g., Senior Software Engineer at Google"
+                                                className="text-sm bg-white border-slate-200"
+                                            />
+                                        </div>
+                                        
+                                        {/* Job Description Textarea */}
                                         <div>
-                                            <h3 className="text-sm font-semibold text-slate-900">Target Job</h3>
-                                            <p className="text-xs text-slate-500">Tailor your resume to a specific role</p>
+                                            <Label className="text-xs font-semibold text-slate-700 mb-1.5 block">Job Description</Label>
+                                            <textarea
+                                                value={jobDescription}
+                                                onChange={(e) => setJobDescription(e.target.value)}
+                                                placeholder="Paste the full job description here to help AI tailor your resume..."
+                                                className="w-full min-h-[180px] px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                            />
+                                            <p className="text-xs text-slate-500 mt-1.5">
+                                                {jobDescription.length > 0 ? `${jobDescription.length} characters` : 'Add the job posting to get AI-powered suggestions'}
+                                            </p>
                                         </div>
                                     </div>
-                                    <Input
-                                        value={profile.targetJob || ''}
-                                        onChange={(e) => updateProfile({ targetJob: e.target.value })}
-                                        placeholder="e.g., Senior Software Engineer at Google"
-                                        className="text-sm"
-                                    />
+                                    
+                                    {/* Job Analysis Panel - Shows requirements and gaps */}
+                                    {jobDescription.length > 50 && (
+                                        <div className="mt-4">
+                                            <JobAnalysisPanel
+                                                jobDescription={jobDescription}
+                                                profile={profile}
+                                                onApplySuggestion={(section, change) => {
+                                                    toast.success(`Suggestion for ${section} noted. Use AI chat to apply changes.`);
+                                                }}
+                                                onAutoTailor={handleAutoTailor}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="mb-4">
+                                    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                                <Briefcase className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-slate-900">Target Job</h3>
+                                                <p className="text-xs text-slate-500">Tailor your resume to a specific role</p>
+                                            </div>
+                                        </div>
+                                        <Input
+                                            value={profile.targetJob || ''}
+                                            onChange={(e) => updateProfile({ targetJob: e.target.value })}
+                                            placeholder="e.g., Senior Software Engineer at Google"
+                                            className="text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
 
                             {/* Unified Analysis Panel */}

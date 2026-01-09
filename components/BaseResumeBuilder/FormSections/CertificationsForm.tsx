@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { Certification, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { UnifiedTextField, UnifiedDateField } from '@/components/fields';
 
 interface CertificationsFormProps {
   certifications: Certification[];
@@ -145,72 +144,73 @@ export function CertificationsForm({ certifications, onChange }: CertificationsF
                 {isExpanded && (
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`name-${cert.id}`}>Certification Name *</Label>
-                        <Input
-                          id={`name-${cert.id}`}
-                          value={cert.name}
-                          onChange={(e) => updateCertification(cert.id, { name: e.target.value })}
-                          placeholder="AWS Certified Solutions Architect"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`issuer-${cert.id}`}>Issuing Organization *</Label>
-                        <Input
-                          id={`issuer-${cert.id}`}
-                          value={cert.issuer}
-                          onChange={(e) => updateCertification(cert.id, { issuer: e.target.value })}
-                          placeholder="Amazon Web Services"
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedTextField
+                        id={`certifications-${cert.id}-name`}
+                        section="certifications"
+                        fieldKey="name"
+                        itemId={cert.id}
+                        label="Certification Name"
+                        value={cert.name}
+                        onChange={(value) => updateCertification(cert.id, { name: value })}
+                        placeholder="AWS Certified Solutions Architect"
+                        required
+                      />
+                      <UnifiedTextField
+                        id={`certifications-${cert.id}-issuer`}
+                        section="certifications"
+                        fieldKey="issuer"
+                        itemId={cert.id}
+                        label="Issuing Organization"
+                        value={cert.issuer}
+                        onChange={(value) => updateCertification(cert.id, { issuer: value })}
+                        placeholder="Amazon Web Services"
+                        required
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`date-${cert.id}`}>Issue Date</Label>
-                        <Input
-                          id={`date-${cert.id}`}
-                          type="month"
-                          value={cert.date || ''}
-                          onChange={(e) => updateCertification(cert.id, { date: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`expiryDate-${cert.id}`}>Expiration Date</Label>
-                        <Input
-                          id={`expiryDate-${cert.id}`}
-                          type="month"
-                          value={cert.expiryDate || ''}
-                          onChange={(e) => updateCertification(cert.id, { expiryDate: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedDateField
+                        id={`certifications-${cert.id}-date`}
+                        section="certifications"
+                        fieldKey="date"
+                        itemId={cert.id}
+                        label="Issue Date"
+                        value={cert.date || ''}
+                        onChange={(value) => updateCertification(cert.id, { date: value })}
+                      />
+                      <UnifiedDateField
+                        id={`certifications-${cert.id}-expiryDate`}
+                        section="certifications"
+                        fieldKey="expiryDate"
+                        itemId={cert.id}
+                        label="Expiration Date"
+                        value={cert.expiryDate || ''}
+                        onChange={(value) => updateCertification(cert.id, { expiryDate: value })}
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`credentialId-${cert.id}`}>Credential ID</Label>
-                        <Input
-                          id={`credentialId-${cert.id}`}
-                          value={cert.credentialId || ''}
-                          onChange={(e) => updateCertification(cert.id, { credentialId: e.target.value })}
-                          placeholder="ABC-123-XYZ"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`url-${cert.id}`}>Credential URL</Label>
-                        <Input
-                          id={`url-${cert.id}`}
-                          value={cert.url || ''}
-                          onChange={(e) => updateCertification(cert.id, { url: e.target.value })}
-                          placeholder="https://..."
-                          className="mt-1"
-                        />
-                      </div>
+                      <UnifiedTextField
+                        id={`certifications-${cert.id}-credentialId`}
+                        section="certifications"
+                        fieldKey="credentialId"
+                        itemId={cert.id}
+                        label="Credential ID"
+                        value={cert.credentialId || ''}
+                        onChange={(value) => updateCertification(cert.id, { credentialId: value })}
+                        placeholder="ABC-123-XYZ"
+                      />
+                      <UnifiedTextField
+                        id={`certifications-${cert.id}-url`}
+                        section="certifications"
+                        fieldKey="url"
+                        itemId={cert.id}
+                        label="Credential URL"
+                        value={cert.url || ''}
+                        onChange={(value) => updateCertification(cert.id, { url: value })}
+                        placeholder="https://..."
+                        inputType="url"
+                      />
                     </div>
                   </CardContent>
                 )}

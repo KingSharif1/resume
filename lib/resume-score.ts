@@ -1,10 +1,13 @@
 import { ResumeProfile } from './resume-schema';
+import { extractAllResumeText } from './fields/extract-resume-text';
+import { FieldValue } from './fields/field-types';
 
 export interface ActionableTip {
     message: string;
     section?: string; // e.g., 'contact', 'experience', 'summary'
     field?: string; // e.g., 'firstName', 'company', 'description'
     itemId?: string; // For array items like experience[0].id
+    elementId?: string; // DOM element ID for scrolling/highlighting
     originalText?: string;
     suggestedText?: string;
     canAutoFix?: boolean; // Whether this tip can be auto-applied
@@ -243,11 +246,9 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
         const tips: string[] = [];
         const actionableTips: ActionableTip[] = [];
         
-        // Calculate content metrics for sensitivity
-        const wordCount = profile.experience.reduce((sum, exp) => {
-            const words = (exp.description + ' ' + exp.achievements.join(' ')).split(/\s+/).filter(w => w.length > 0);
-            return sum + words.length;
-        }, 0);
+        // Use unified text extraction to scan ALL resume sections
+        const allFields = extractAllResumeText(profile);
+        console.log('  📝 Scanning', allFields.length, 'text fields across all sections');
 
         // Consistent date formatting (deduct 2 pts if missing)
         const hasDates = profile.experience.every(exp => exp.startDate);
@@ -265,45 +266,7 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
             tips.push('Remove or fill empty achievement bullets');
         }
 
-        // Text quality checks - collect all text content
-        const allText = [
-            profile.summary?.content || '',
-            ...profile.experience.flatMap(exp => [
-                exp.position || '',
-                exp.company || '',
-                exp.description || '',
-                ...exp.achievements
-            ]),
-            ...profile.education.flatMap(edu => [
-                edu.degree || '',
-                edu.institution || '',
-                edu.fieldOfStudy || ''
-            ]),
-            ...profile.projects.flatMap(proj => [
-                proj.name || '',
-                proj.description || '',
-                proj.role || '',
-                ...proj.achievements
-            ])
-        ].join(' ').toLowerCase();
-
-        // Word quality check - look for very short or suspiciously incomplete words (deduct 1 pt)
-        const words = allText.split(/\s+/).filter(w => w.length > 0);
-        const suspiciousWords = words.filter(w => {
-            // Words that are 2-4 chars but don't look like common short words
-            if (w.length >= 2 && w.length <= 4) {
-                const commonShortWords = ['a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 
-                    'do', 'does', 'did', 'will', 'can', 'may', 'must', 'to', 'of', 'in', 'on', 'at', 'by', 'for', 'with',
-                    'from', 'as', 'or', 'and', 'but', 'not', 'my', 'our', 'his', 'her', 'its', 'all', 'any', 'each', 'some',
-                    'web', 'app', 'api', 'sql', 'aws', 'gcp', 'css', 'html', 'php', 'java', 'c++', 'ios', 'ux', 'ui', 'seo',
-                    'led', 'ran', 'made', 'built', 'grew', 'cut', 'won', 'got', 'set', 'put', 'took', 'gave', 'kept', 'held',
-                    'year', 'team', 'role', 'work', 'code', 'data', 'user', 'test', 'plan', 'tool', 'file', 'page', 'site'];
-                return !commonShortWords.includes(w);
-            }
-            return false;
-        });
-        
-        // Check for common obvious typos with specific feedback and location
+        // Common typos to check for
         const typoMap: Record<string, string> = {
             'teh': 'the',
             'recieve': 'receive',
@@ -317,69 +280,69 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
             'compnay': 'company',
             'projcet': 'project',
             'skils': 'skills',
-            'experinece': 'experience'
+            'experinece': 'experience',
+            'acheive': 'achieve',
+            'acheived': 'achieved',
+            'accomodate': 'accommodate',
+            'occassion': 'occasion',
+            'occurence': 'occurrence',
+            'recomend': 'recommend',
+            'succesful': 'successful',
+            'untill': 'until',
+            'wierd': 'weird',
+            'beleive': 'believe',
+            'calender': 'calendar',
+            'collegue': 'colleague',
+            'commited': 'committed',
+            'enviroment': 'environment',
+            'goverment': 'government',
+            'immediatly': 'immediately',
+            'independant': 'independent',
+            'liason': 'liaison',
+            'neccessary': 'necessary',
+            'occuring': 'occurring',
+            'posession': 'possession',
+            'priviledge': 'privilege',
+            'reccomend': 'recommend',
+            'refered': 'referred',
+            'relevent': 'relevant',
+            'succeded': 'succeeded',
+            'tommorow': 'tomorrow',
+            'writting': 'writing'
         };
         
-        // Find typos and their locations
-        Object.keys(typoMap).forEach(typo => {
-            const correction = typoMap[typo];
+        // Track found typos to avoid duplicates
+        const foundTypos = new Set<string>();
+        
+        // Scan ALL fields for typos using unified extraction
+        allFields.forEach(field => {
+            const lowerValue = field.value.toLowerCase();
             
-            // Check in summary
-            if (profile.summary?.content?.toLowerCase().includes(typo)) {
-                score -= 1;
-                tips.push(`Fix spelling: "${typo}" → "${correction}"`);
-                actionableTips.push({
-                    message: `Fix spelling: "${typo}" → "${correction}"`,
-                    section: 'summary',
-                    field: 'content',
-                    originalText: typo,
-                    suggestedText: correction,
-                    canAutoFix: true
-                });
-            }
-            
-            // Check in experience
-            profile.experience.forEach(exp => {
-                const expText = (exp.description + ' ' + exp.achievements.join(' ')).toLowerCase();
-                if (expText.includes(typo)) {
-                    score -= 1;
-                    tips.push(`Fix spelling in ${exp.company}: "${typo}" → "${correction}"`);
-                    actionableTips.push({
-                        message: `Fix spelling: "${typo}" → "${correction}"`,
-                        section: 'experience',
-                        field: 'description',
-                        itemId: exp.id,
-                        originalText: typo,
-                        suggestedText: correction,
-                        canAutoFix: true
-                    });
-                }
-            });
-            
-            // Check in projects
-            profile.projects.forEach(proj => {
-                const projText = (proj.description + ' ' + proj.achievements.join(' ')).toLowerCase();
-                if (projText.includes(typo)) {
-                    score -= 1;
-                    tips.push(`Fix spelling in ${proj.name}: "${typo}" → "${correction}"`);
-                    actionableTips.push({
-                        message: `Fix spelling: "${typo}" → "${correction}"`,
-                        section: 'projects',
-                        field: 'description',
-                        itemId: proj.id,
-                        originalText: typo,
-                        suggestedText: correction,
-                        canAutoFix: true
-                    });
+            Object.entries(typoMap).forEach(([typo, correction]) => {
+                if (lowerValue.includes(typo)) {
+                    const tipKey = `${field.elementId}-${typo}`;
+                    if (!foundTypos.has(tipKey)) {
+                        foundTypos.add(tipKey);
+                        score -= 1;
+                        tips.push(`Fix spelling in ${field.label}: "${typo}" → "${correction}"`);
+                        actionableTips.push({
+                            message: `Fix spelling: "${typo}" → "${correction}"`,
+                            section: field.section,
+                            field: field.fieldKey,
+                            itemId: field.itemId,
+                            elementId: field.elementId,
+                            originalText: typo,
+                            suggestedText: correction,
+                            canAutoFix: true
+                        });
+                    }
                 }
             });
         });
         
-        // Add feedback for suspicious incomplete words
-        if (suspiciousWords.length > 3) {
-            score -= 1;
-            const examples = suspiciousWords.slice(0, 3).join(', ');
-            tips.push(`Check for incomplete words: "${examples}"${suspiciousWords.length > 3 ? ` (+${suspiciousWords.length - 3} more)` : ''}`);
+        // Log typo findings
+        if (foundTypos.size > 0) {
+            console.log('  ⚠️ Found', foundTypos.size, 'typos across resume');
         }
 
         // Unprofessional language with specific examples (deduct 2 pts)
@@ -394,19 +357,34 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
             'pretty': 'very/quite',
         };
         
-        const foundUnprofessional: string[] = [];
-        Object.keys(unprofessionalMap).forEach(word => {
-            const regex = new RegExp(`\\b${word}\\b`, 'i');
-            if (regex.test(allText)) {
-                foundUnprofessional.push(`"${word}" → ${unprofessionalMap[word]}`);
-            }
+        // Scan all fields for unprofessional language
+        const foundUnprofessional = new Set<string>();
+        allFields.forEach(field => {
+            const lowerValue = field.value.toLowerCase();
+            Object.entries(unprofessionalMap).forEach(([word, suggestion]) => {
+                const regex = new RegExp(`\\b${word}\\b`, 'i');
+                if (regex.test(lowerValue)) {
+                    const tipKey = `${field.elementId}-${word}`;
+                    if (!foundUnprofessional.has(tipKey)) {
+                        foundUnprofessional.add(tipKey);
+                        tips.push(`Replace informal language in ${field.label}: "${word}" → ${suggestion}`);
+                        actionableTips.push({
+                            message: `Replace "${word}" with ${suggestion}`,
+                            section: field.section,
+                            field: field.fieldKey,
+                            itemId: field.itemId,
+                            elementId: field.elementId,
+                            originalText: word,
+                            suggestedText: suggestion.split('/')[0], // Use first suggestion
+                            canAutoFix: true
+                        });
+                    }
+                }
+            });
         });
         
-        if (foundUnprofessional.length > 0) {
+        if (foundUnprofessional.size > 0) {
             score -= 2;
-            foundUnprofessional.forEach(issue => {
-                tips.push(`Replace informal language: ${issue}`);
-            });
         }
 
         // Inconsistent capitalization with actionable tips (deduct 2 pts)
@@ -420,6 +398,7 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
                 message: `Capitalize first name: "${profile.contact.firstName}" → "${capitalized}"`,
                 section: 'contact',
                 field: 'firstName',
+                elementId: 'contact-firstName',
                 originalText: profile.contact.firstName,
                 suggestedText: capitalized,
                 canAutoFix: true
@@ -433,6 +412,7 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
                 message: `Capitalize last name: "${profile.contact.lastName}" → "${capitalized}"`,
                 section: 'contact',
                 field: 'lastName',
+                elementId: 'contact-lastName',
                 originalText: profile.contact.lastName,
                 suggestedText: capitalized,
                 canAutoFix: true
@@ -449,6 +429,7 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
                     section: 'experience',
                     field: 'position',
                     itemId: exp.id,
+                    elementId: `experience-${exp.id}-position`,
                     originalText: exp.position,
                     suggestedText: capitalized,
                     canAutoFix: true
@@ -463,6 +444,7 @@ export function calculateResumeScore(profile: ResumeProfile): ResumeScore {
                     section: 'experience',
                     field: 'company',
                     itemId: exp.id,
+                    elementId: `experience-${exp.id}-company`,
                     originalText: exp.company,
                     suggestedText: capitalized,
                     canAutoFix: true

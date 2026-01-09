@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import { WorkExperience, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { UnifiedTextField, UnifiedTextarea, UnifiedDateField } from '@/components/fields';
 
 interface ExperienceFormProps {
   experiences: WorkExperience[];
@@ -181,64 +180,67 @@ export function ExperienceForm({ experiences, onChange }: ExperienceFormProps) {
                   <CardContent className="space-y-4">
                     {/* Basic Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`position-${experience.id}`}>Job Title *</Label>
-                        <Input
-                          id={`position-${experience.id}`}
-                          value={experience.position}
-                          onChange={(e) => updateExperience(experience.id, { position: e.target.value })}
-                          placeholder="Software Engineer"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`company-${experience.id}`}>Company *</Label>
-                        <Input
-                          id={`company-${experience.id}`}
-                          value={experience.company}
-                          onChange={(e) => updateExperience(experience.id, { company: e.target.value })}
-                          placeholder="Tech Corp"
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor={`location-${experience.id}`}>Location</Label>
-                      <Input
-                        id={`location-${experience.id}`}
-                        value={experience.location || ''}
-                        onChange={(e) => updateExperience(experience.id, { location: e.target.value })}
-                        placeholder="San Francisco, CA"
-                        className="mt-1"
+                      <UnifiedTextField
+                        id={`experience-${experience.id}-position`}
+                        section="experience"
+                        fieldKey="position"
+                        itemId={experience.id}
+                        label="Job Title"
+                        value={experience.position}
+                        onChange={(value) => updateExperience(experience.id, { position: value })}
+                        placeholder="Software Engineer"
+                        required
+                      />
+                      <UnifiedTextField
+                        id={`experience-${experience.id}-company`}
+                        section="experience"
+                        fieldKey="company"
+                        itemId={experience.id}
+                        label="Company"
+                        value={experience.company}
+                        onChange={(value) => updateExperience(experience.id, { company: value })}
+                        placeholder="Tech Corp"
+                        required
                       />
                     </div>
 
+                    <UnifiedTextField
+                      id={`experience-${experience.id}-location`}
+                      section="experience"
+                      fieldKey="location"
+                      itemId={experience.id}
+                      label="Location"
+                      value={experience.location || ''}
+                      onChange={(value) => updateExperience(experience.id, { location: value })}
+                      placeholder="San Francisco, CA"
+                    />
+
                     {/* Dates */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`startDate-${experience.id}`}>Start Date *</Label>
-                        <Input
-                          id={`startDate-${experience.id}`}
-                          type="month"
-                          value={experience.startDate}
-                          onChange={(e) => updateExperience(experience.id, { startDate: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`endDate-${experience.id}`}>End Date</Label>
-                        <Input
-                          id={`endDate-${experience.id}`}
-                          type="month"
+                      <UnifiedDateField
+                        id={`experience-${experience.id}-startDate`}
+                        section="experience"
+                        fieldKey="startDate"
+                        itemId={experience.id}
+                        label="Start Date"
+                        value={experience.startDate}
+                        onChange={(value) => updateExperience(experience.id, { startDate: value })}
+                        required
+                      />
+                      <div className="space-y-2">
+                        <UnifiedDateField
+                          id={`experience-${experience.id}-endDate`}
+                          section="experience"
+                          fieldKey="endDate"
+                          itemId={experience.id}
+                          label="End Date"
                           value={experience.endDate || ''}
-                          onChange={(e) => updateExperience(experience.id, { endDate: e.target.value })}
+                          onChange={(value) => updateExperience(experience.id, { endDate: value })}
                           disabled={experience.current}
-                          className="mt-1"
                         />
-                        <div className="flex items-center space-x-2 mt-2">
+                        <div className="flex items-center space-x-2">
                           <Switch
-                            id={`current-${experience.id}`}
+                            id={`experience-${experience.id}-current`}
                             checked={experience.current}
                             onCheckedChange={(checked) => {
                               updateExperience(experience.id, {
@@ -247,7 +249,7 @@ export function ExperienceForm({ experiences, onChange }: ExperienceFormProps) {
                               });
                             }}
                           />
-                          <Label htmlFor={`current-${experience.id}`} className="text-sm">
+                          <Label htmlFor={`experience-${experience.id}-current`} className="text-sm">
                             I currently work here
                           </Label>
                         </div>
@@ -255,16 +257,17 @@ export function ExperienceForm({ experiences, onChange }: ExperienceFormProps) {
                     </div>
 
                     {/* Description */}
-                    <div>
-                      <Label htmlFor={`description-${experience.id}`}>Job Description</Label>
-                      <Textarea
-                        id={`description-${experience.id}`}
-                        value={experience.description}
-                        onChange={(e) => updateExperience(experience.id, { description: e.target.value })}
-                        placeholder="Describe your role and responsibilities..."
-                        className="mt-1 min-h-[80px]"
-                      />
-                    </div>
+                    <UnifiedTextarea
+                      id={`experience-${experience.id}-description`}
+                      section="experience"
+                      fieldKey="description"
+                      itemId={experience.id}
+                      label="Job Description"
+                      value={experience.description}
+                      onChange={(value) => updateExperience(experience.id, { description: value })}
+                      placeholder="Describe your role and responsibilities..."
+                      rows={3}
+                    />
 
                     {/* Achievements */}
                     <div>
@@ -283,11 +286,17 @@ export function ExperienceForm({ experiences, onChange }: ExperienceFormProps) {
                       <div className="space-y-2">
                         {experience.achievements.map((achievement, achIndex) => (
                           <div key={achIndex} className="flex gap-2">
-                            <Textarea
+                            <UnifiedTextarea
+                              id={`experience-${experience.id}-achievements-${achIndex}`}
+                              section="experience"
+                              fieldKey={`achievements[${achIndex}]`}
+                              itemId={experience.id}
+                              label=""
                               value={achievement}
-                              onChange={(e) => updateAchievement(experience.id, achIndex, e.target.value)}
+                              onChange={(value) => updateAchievement(experience.id, achIndex, value)}
                               placeholder="• Increased team productivity by 30% through process improvements"
-                              className="min-h-[60px]"
+                              rows={2}
+                              className="flex-1"
                             />
                             {experience.achievements.length > 1 && (
                               <Button
@@ -295,7 +304,7 @@ export function ExperienceForm({ experiences, onChange }: ExperienceFormProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeAchievement(experience.id, achIndex)}
-                                className="shrink-0 text-red-600 hover:text-red-700"
+                                className="shrink-0 text-red-600 hover:text-red-700 self-start mt-1"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>

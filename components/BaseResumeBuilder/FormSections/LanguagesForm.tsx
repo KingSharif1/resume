@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { Language, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2 } from 'lucide-react';
+import { UnifiedTextField } from '@/components/fields';
 
 interface LanguagesFormProps {
   languages: Language[];
@@ -73,23 +72,24 @@ export function LanguagesForm({ languages, onChange }: LanguagesFormProps) {
             <Card key={language.id}>
               <CardContent className="pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <UnifiedTextField
+                    id={`languages-${language.id}-name`}
+                    section="languages"
+                    fieldKey="name"
+                    itemId={language.id}
+                    label="Language"
+                    value={language.name}
+                    onChange={(value) => updateLanguage(language.id, { name: value })}
+                    placeholder="English, Spanish, French..."
+                    required
+                  />
                   <div>
-                    <Label htmlFor={`name-${language.id}`}>Language *</Label>
-                    <Input
-                      id={`name-${language.id}`}
-                      value={language.name}
-                      onChange={(e) => updateLanguage(language.id, { name: e.target.value })}
-                      placeholder="English, Spanish, French..."
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`proficiency-${language.id}`}>Proficiency Level *</Label>
+                    <Label htmlFor={`languages-${language.id}-proficiency`}>Proficiency Level *</Label>
                     <Select
                       value={language.proficiency}
                       onValueChange={(value) => updateLanguage(language.id, { proficiency: value as Language['proficiency'] })}
                     >
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger id={`languages-${language.id}-proficiency`} className="mt-1">
                         <SelectValue placeholder="Select proficiency" />
                       </SelectTrigger>
                       <SelectContent>
@@ -102,21 +102,22 @@ export function LanguagesForm({ languages, onChange }: LanguagesFormProps) {
                     </Select>
                   </div>
                   <div className="flex items-end gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor={`certification-${language.id}`}>Certification</Label>
-                      <Input
-                        id={`certification-${language.id}`}
-                        value={language.certification || ''}
-                        onChange={(e) => updateLanguage(language.id, { certification: e.target.value })}
-                        placeholder="TOEFL, IELTS, etc."
-                        className="mt-1"
-                      />
-                    </div>
+                    <UnifiedTextField
+                      id={`languages-${language.id}-certification`}
+                      section="languages"
+                      fieldKey="certification"
+                      itemId={language.id}
+                      label="Certification"
+                      value={language.certification || ''}
+                      onChange={(value) => updateLanguage(language.id, { certification: value })}
+                      placeholder="TOEFL, IELTS, etc."
+                      className="flex-1"
+                    />
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => removeLanguage(language.id)}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600 hover:text-red-700 mb-1"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

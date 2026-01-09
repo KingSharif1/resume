@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailored Resume Builder - Right Sidebar Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: #f8fafc;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .description {
+            color: #64748b;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Right Sidebar */
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: 350px;
+        }
+
+        /* Score Section */
+        .score-section {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .score-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .circular-progress {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(#3b82f6 0% 78%, #e2e8f0 78% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .circular-progress::before {
+            content: '';
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+        }
+
+        .score-number {
+            position: relative;
+            z-index: 1;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .score-subtext {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        /* Job Requirements Section - EXPANDED */
+        .job-section {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .job-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .job-title-area {
+            flex: 1;
+        }
+
+        .job-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .job-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chevron {
+            width: 20px;
+            height: 20px;
+            color: #94a3b8;
+            transition: transform 0.2s;
+        }
+
+        .chevron.expanded {
+            transform: rotate(180deg);
+        }
+
+        /* Requirements List */
+        .requirements-list {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: start;
+            gap: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .requirement-item:hover {
+            background: #f1f5f9;
+        }
+
+        .requirement-item.matched {
+            background: #dcfce7;
+            border-left: 3px solid #22c55e;
+        }
+
+        .requirement-item.missing {
+            background: #fef2f2;
+            border-left: 3px solid #ef4444;
+        }
+
+        .requirement-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid #cbd5e1;
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .requirement-checkbox.checked {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+
+        .requirement-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .requirement-text {
+            flex: 1;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .requirement-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .requirement-badge.required {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .requirement-badge.preferred {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* Job Description Expandable */
+        .job-description-toggle {
+            margin-top: 12px;
+            padding: 10px;
+            background: #eff6ff;
+            border: 1px dashed #3b82f6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: #3b82f6;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .job-description-toggle:hover {
+            background: #dbeafe;
+        }
+
+        /* Scan Section */
+        .scan-section {
+            padding: 20px;
+        }
+
+        .scan-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .scan-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .scan-button {
+            padding: 6px 12px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .suggestion-item {
+            padding: 12px;
+            background: #fefce8;
+            border-left: 3px solid #eab308;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #713f12;
+        }
+
+        /* Minimized State */
+        .minimized-indicator {
+            padding: 12px;
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: #3b82f6;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 6px;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #166534;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>✨ Tailored Resume Builder - Right Sidebar Design</h1>
+        <p class="description">
+            Same builder, adapted right sidebar! When editing a tailored resume, the "Target Job" section transforms
+            into an expandable "Job Requirements" checklist that tracks alignment with the job posting.
+        </p>
+
+        <div class="comparison">
+            <!-- Base Resume (for reference) -->
+            <div class="panel">
+                <div class="panel-title">Base Resume Sidebar (Current)</div>
+                <div class="sidebar">
+                    <div class="score-section">
+                        <div class="score-badge">
+                            <div class="circular-progress">
+                                <span class="score-number">85</span>
+                            </div>
+                            <div>
+                                <div class="score-label">Resume Score</div>
+                                <div class="score-subtext">Pretty good</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="job-section">
+                        <div class="job-label">Target Job</div>
+                        <input type="text" value="Software Engineer"
+                            style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                    </div>
+
+                    <div class="scan-section">
+                        <div class="scan-header">
+                            <div class="scan-title">Scan</div>
+                            <button class="scan-button">Scan</button>
+                        </div>
+                        <div class="suggestions-list">
+                            <div class="suggestion-item">
+                                Consider adding more metrics to quantify achievements
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tailored Resume (NEW!) -->
+            <div class="panel">
+                <div class="panel-title">Tailored Resume Sidebar (NEW!) ⭐</div>
+                <div class="sidebar">
+                    <!-- Score - Now shows JOB MATCH instead of general score -->
+                    <div class="score-section">
+                        <div class="score-badge">
+                            <div class="circular-progress">
+                                <span class="score-number">78%</span>
+                            </div>
+                            <div>
+                                <div class="score-label">Job Match</div>
+                                <div class="score-subtext">Good alignment</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Requirements - EXPANDED -->
+                    <div class="job-section">
+                        <div class="job-header">
+                            <div class="job-title-area">
+                                <div class="job-label">Job Requirements</div>
+                                <div class="job-title">
+                                    Senior Software Engineer
+                                    <svg class="chevron expanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Requirements Checklist -->
+                        <div class="requirements-list">
+                            <div class="requirement-item matched">
+                                <div class="requirement-checkbox checked"></div>
+                                <div class="requirement-text">React & TypeScript</div>
+                                <span class="requirement-badge required">Required</span>
+                            </div>
+
+                            <div class="requirement-item matched">
+                                <div class="requirement-checkbox checked"></div>
+                                <div class="requirement-text">5+ years experience</div>
+                                <span class="requirement-badge required">Required</span>
+                            </div>
+
+                            <div class="requirement-item missing">
+                                <div class="requirement-checkbox"></div>
+                                <div class="requirement-text">Docker & Kubernetes</div>
+                                <span class="requirement-badge required">Required</span>
+                            </div>
+
+                            <div class="requirement-item matched">
+                                <div class="requirement-checkbox checked"></div>
+                                <div class="requirement-text">RESTful API design</div>
+                                <span class="requirement-badge preferred">Preferred</span>
+                            </div>
+
+                            <div class="requirement-item missing">
+                                <div class="requirement-checkbox"></div>
+                                <div class="requirement-text">AWS or Azure cloud</div>
+                                <span class="requirement-badge preferred">Preferred</span>
+                            </div>
+
+                            <div class="requirement-item">
+                                <div class="requirement-checkbox"></div>
+                                <div class="requirement-text">Team leadership</div>
+                                <span class="requirement-badge preferred">Preferred</span>
+                            </div>
+                        </div>
+
+                        <!-- View Full Job Description -->
+                        <div class="job-description-toggle">
+                            📄 View Full Job Description
+                        </div>
+                    </div>
+
+                    <!-- Scan Section - AI Suggestions -->
+                    <div class="scan-section">
+                        <div class="scan-header">
+                            <div class="scan-title">AI Suggestions</div>
+                            <button class="scan-button">Re-tailor</button>
+                        </div>
+                        <div class="suggestions-list">
+                            <div class="suggestion-item">
+                                Add Docker/Kubernetes to skills - it's a required skill!
+                            </div>
+                            <div class="suggestion-item">
+                                Mention cloud experience in your summary
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Features -->
+        <div class="info-box">
+            <div class="info-title">✨ Key Features</div>
+            <div class="info-text">
+                <strong>✅ Matched requirements</strong> show in green with checkmarks<br>
+                <strong>❌ Missing requirements</strong> show in red - AI suggests adding them<br>
+                <strong>📊 Real-time score</strong> updates as you edit<br>
+                <strong>📄 Job description</strong> can be expanded in a modal/panel<br>
+                <strong>🔄 Re-tailor button</strong> regenerates based on current content
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

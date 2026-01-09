@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import { VolunteerExperience, generateId } from '@/lib/resume-schema';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { UnifiedTextField, UnifiedTextarea, UnifiedDateField } from '@/components/fields';
 
 interface VolunteerFormProps {
   volunteer: VolunteerExperience[];
@@ -141,70 +139,70 @@ export function VolunteerForm({ volunteer, onChange }: VolunteerFormProps) {
                 {isExpanded && (
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`organization-${vol.id}`}>Organization *</Label>
-                        <Input
-                          id={`organization-${vol.id}`}
-                          value={vol.organization}
-                          onChange={(e) => updateVolunteer(vol.id, { organization: e.target.value })}
-                          placeholder="Red Cross"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`role-${vol.id}`}>Role *</Label>
-                        <Input
-                          id={`role-${vol.id}`}
-                          value={vol.role}
-                          onChange={(e) => updateVolunteer(vol.id, { role: e.target.value })}
-                          placeholder="Volunteer Coordinator"
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor={`location-${vol.id}`}>Location</Label>
-                      <Input
-                        id={`location-${vol.id}`}
-                        value={vol.location || ''}
-                        onChange={(e) => updateVolunteer(vol.id, { location: e.target.value })}
-                        placeholder="New York, NY"
-                        className="mt-1"
+                      <UnifiedTextField
+                        id={`volunteer-${vol.id}-organization`}
+                        section="volunteer"
+                        fieldKey="organization"
+                        itemId={vol.id}
+                        label="Organization"
+                        value={vol.organization}
+                        onChange={(value) => updateVolunteer(vol.id, { organization: value })}
+                        placeholder="Red Cross"
+                        required
+                      />
+                      <UnifiedTextField
+                        id={`volunteer-${vol.id}-role`}
+                        section="volunteer"
+                        fieldKey="role"
+                        itemId={vol.id}
+                        label="Role"
+                        value={vol.role}
+                        onChange={(value) => updateVolunteer(vol.id, { role: value })}
+                        placeholder="Volunteer Coordinator"
+                        required
                       />
                     </div>
 
+                    <UnifiedTextField
+                      id={`volunteer-${vol.id}-location`}
+                      section="volunteer"
+                      fieldKey="location"
+                      itemId={vol.id}
+                      label="Location"
+                      value={vol.location || ''}
+                      onChange={(value) => updateVolunteer(vol.id, { location: value })}
+                      placeholder="New York, NY"
+                    />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`startDate-${vol.id}`}>Start Date</Label>
-                        <Input
-                          id={`startDate-${vol.id}`}
-                          type="month"
-                          value={vol.startDate || ''}
-                          onChange={(e) => updateVolunteer(vol.id, { startDate: e.target.value })}
-                          className="mt-1"
+                      <UnifiedDateField
+                        id={`volunteer-${vol.id}-startDate`}
+                        section="volunteer"
+                        fieldKey="startDate"
+                        itemId={vol.id}
+                        label="Start Date"
+                        value={vol.startDate || ''}
+                        onChange={(value) => updateVolunteer(vol.id, { startDate: value })}
+                      />
+                      <div className="space-y-2">
+                        <UnifiedDateField
+                          id={`volunteer-${vol.id}-endDate`}
+                          section="volunteer"
+                          fieldKey="endDate"
+                          itemId={vol.id}
+                          label="End Date"
+                          value={vol.endDate || ''}
+                          onChange={(value) => updateVolunteer(vol.id, { endDate: value })}
+                          disabled={vol.current}
                         />
-                      </div>
-                      <div>
-                        <Label htmlFor={`endDate-${vol.id}`}>End Date</Label>
-                        <div className="flex gap-2 items-center">
-                          <Input
-                            id={`endDate-${vol.id}`}
-                            type="month"
-                            value={vol.endDate || ''}
-                            onChange={(e) => updateVolunteer(vol.id, { endDate: e.target.value })}
-                            disabled={vol.current}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div className="flex items-center space-x-2 mt-2">
+                        <div className="flex items-center space-x-2">
                           <Checkbox
-                            id={`current-${vol.id}`}
+                            id={`volunteer-${vol.id}-current`}
                             checked={vol.current}
                             onCheckedChange={(checked) => updateVolunteer(vol.id, { current: checked as boolean })}
                           />
                           <label
-                            htmlFor={`current-${vol.id}`}
+                            htmlFor={`volunteer-${vol.id}-current`}
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                           >
                             I currently volunteer here
@@ -213,28 +211,30 @@ export function VolunteerForm({ volunteer, onChange }: VolunteerFormProps) {
                       </div>
                     </div>
 
-                    <div>
-                      <Label htmlFor={`description-${vol.id}`}>Description</Label>
-                      <Textarea
-                        id={`description-${vol.id}`}
-                        value={vol.description}
-                        onChange={(e) => updateVolunteer(vol.id, { description: e.target.value })}
-                        placeholder="Describe your responsibilities and impact..."
-                        className="mt-1 min-h-[100px]"
-                      />
-                    </div>
+                    <UnifiedTextarea
+                      id={`volunteer-${vol.id}-description`}
+                      section="volunteer"
+                      fieldKey="description"
+                      itemId={vol.id}
+                      label="Description"
+                      value={vol.description}
+                      onChange={(value) => updateVolunteer(vol.id, { description: value })}
+                      placeholder="Describe your responsibilities and impact..."
+                      rows={4}
+                    />
 
-                    <div>
-                      <Label htmlFor={`achievements-${vol.id}`}>Key Achievements</Label>
-                      <Textarea
-                        id={`achievements-${vol.id}`}
-                        value={vol.achievements?.join('\n') || ''}
-                        onChange={(e) => updateAchievements(vol.id, e.target.value)}
-                        placeholder="• Organized charity event raising $5,000&#10;• Managed team of 10 volunteers"
-                        className="mt-1 min-h-[100px]"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">Enter each achievement on a new line</p>
-                    </div>
+                    <UnifiedTextarea
+                      id={`volunteer-${vol.id}-achievements`}
+                      section="volunteer"
+                      fieldKey="achievements"
+                      itemId={vol.id}
+                      label="Key Achievements"
+                      value={vol.achievements?.join('\n') || ''}
+                      onChange={(value) => updateAchievements(vol.id, value)}
+                      placeholder="• Organized charity event raising $5,000&#10;• Managed team of 10 volunteers"
+                      rows={4}
+                      helpText="Enter each achievement on a new line"
+                    />
                   </CardContent>
                 )}
               </Card>

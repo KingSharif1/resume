@@ -19,6 +19,10 @@ export default function BuilderPage() {
   const [profile, setProfile] = useState<ResumeProfile>(createEmptyProfile());
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  
+  // Tailor mode state
+  const [isTailorMode, setIsTailorMode] = useState(false);
+  const [jobDescription, setJobDescription] = useState('');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,15 +32,36 @@ export default function BuilderPage() {
 
     const loadResume = async () => {
       const resumeId = searchParams.get('id');
-      if (resumeId && user?.id) {
+      const baseId = searchParams.get('baseId');
+      const mode = searchParams.get('mode');
+      
+      // Check if we're in tailor mode
+      const tailorMode = mode === 'tailor';
+      setIsTailorMode(tailorMode);
+      
+      // If tailor mode, retrieve job description from sessionStorage
+      if (tailorMode) {
+        const storedJobDescription = sessionStorage.getItem('tailorJobDescription');
+        if (storedJobDescription) {
+          setJobDescription(storedJobDescription);
+          // Clear it after retrieval to avoid stale data
+          sessionStorage.removeItem('tailorJobDescription');
+        }
+      }
+      
+      // Determine which ID to use (baseId for tailor mode, id for normal mode)
+      const idToLoad = tailorMode ? baseId : resumeId;
+      
+      if (idToLoad && user?.id) {
         try {
-          const response = await fetch(`/api/resumes?id=${resumeId}&userId=${user.id}`);
+          const response = await fetch(`/api/resumes?id=${idToLoad}&userId=${user.id}`);
           if (response.ok) {
             const data = await response.json();
             if (data.resume) {
               // Transform DB data to ResumeProfile
               const loadedProfile: ResumeProfile = {
-                id: data.resume.id,
+                // For tailor mode, don't use the base resume's ID (we're creating a new tailored version)
+                id: tailorMode ? undefined : data.resume.id,
                 contact: data.resume.contact_info,
                 summary: { content: data.resume.summary },
                 experience: data.resume.experience || [],
@@ -53,10 +78,10 @@ export default function BuilderPage() {
                 customSections: [],
                 settings: data.resume.settings || undefined,
                 targetJob: data.resume.target_job || '',
-                resumeName: data.resume.title || 'Untitled Resume',
+                resumeName: tailorMode ? `${data.resume.title} - Tailored` : (data.resume.title || 'Untitled Resume'),
                 metadata: {
-                  createdAt: data.resume.created_at,
-                  updatedAt: data.resume.updated_at,
+                  createdAt: tailorMode ? new Date().toISOString() : data.resume.created_at,
+                  updatedAt: tailorMode ? new Date().toISOString() : data.resume.updated_at,
                   version: '1.0.0'
                 }
               };
@@ -159,6 +184,8 @@ export default function BuilderPage() {
             onPreview={handlePreview}
             onAIOptimize={handleAIOptimize}
             onUploadResume={handleUploadResume}
+            isTailorMode={isTailorMode}
+            initialJobDescription={jobDescription}
           />
         </SuggestionHoverProvider>
       </ResumeSettingsProvider>

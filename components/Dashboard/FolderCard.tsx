@@ -28,6 +28,7 @@ interface FolderCardProps {
     tailoredResumes?: TailoredResume[];
     onEdit: (id: string) => void;
     onUpdateTitle?: (id: string, newTitle: string) => Promise<void>;
+    onTailorClick?: (baseResumeId: string) => void;
     colorIndex: number;
 }
 
@@ -38,7 +39,7 @@ const FOLDER_COLORS = [
     { bg: 'bg-orange-100/40', paper: 'bg-orange-50/60', tab: 'bg-orange-300/70', icon: 'bg-orange-500', pill: 'bg-white/60', text: 'text-orange-900' },
 ];
 
-export function FolderCard({ resume, tailoredResumes = [], onEdit, onUpdateTitle, colorIndex }: FolderCardProps) {
+export function FolderCard({ resume, tailoredResumes = [], onEdit, onUpdateTitle, onTailorClick, colorIndex }: FolderCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const router = useRouter();
     const color = FOLDER_COLORS[colorIndex % FOLDER_COLORS.length];
@@ -204,7 +205,11 @@ export function FolderCard({ resume, tailoredResumes = [], onEdit, onUpdateTitle
                                         className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 rounded-xl text-sm font-semibold shadow-sm"
                                         onClick={() => {
                                             setIsExpanded(false);
-                                            router.push(`/builder?baseId=${resume.id}&mode=tailor`);
+                                            if (onTailorClick) {
+                                                onTailorClick(resume.id);
+                                            } else {
+                                                router.push(`/builder?baseId=${resume.id}&mode=tailor`);
+                                            }
                                         }}
                                     >
                                         <Sparkles className="w-4 h-4 mr-2" />
